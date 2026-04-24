@@ -8,28 +8,35 @@
       </p>
     </div>
     <button
-      (click)="simulateUpload()"
+      (click)="fileInput.click()"
       [disabled]="isUploading()"
       mat-raised-button color="primary" class="primary-btn"
     >
       <lucide-icon [img]="UploadIcon" class="btn-icon"></lucide-icon>
       {{ isUploading() ? 'Procesando...' : 'Cargar Archivo Batch' }}
     </button>
+    <input
+      #fileInput
+      type="file"
+      (change)="handleFileSelect($event)"
+      style="display: none;"
+      accept=".txt,.csv"
+    >
   </div>
 
   @if (isUploading()) {
     <div class="upload-progress-card">
       <div class="progress-info">
-        <span class="lote-name">Procesando Lote: CARTERA_20240319.csv</span>
+        <span class="lote-name">Procesando Archivo...</span>
         <span class="percentage">{{ progress() }}%</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" [style.width.%]="progress()"></div>
       </div>
       <div class="progress-steps">
-        <span>Validando esquema...</span>
-        <span>Verificando saldos...</span>
-        <span>Conciliando con CORE...</span>
+        <span>Subiendo archivo...</span>
+        <span>Procesando registros...</span>
+        <span>Validando integridad...</span>
       </div>
     </div>
   }
@@ -76,26 +83,23 @@
         Historial de Cargas Batch
       </h4>
       <div class="batch-list">
-        @for (batch of batches; track batch.name) {
+        @for (batch of realBatches(); track batch.id) {
           <div class="batch-item">
             <div class="batch-header">
-              <span class="batch-name">{{ batch.name }}</span>
+              <span class="batch-name">{{ batch.filename }}</span>
               <span [class]="'status-badge-small ' + batch.status.toLowerCase()">
                 {{ batch.status }}
               </span>
             </div>
             <div class="batch-footer">
               <div class="batch-meta">
-                <span>Registros: {{ batch.records | number }}</span>
-                @if (batch.errors > 0) {
-                  <span class="error-text">Errores: {{ batch.errors }}</span>
-                }
+                <span>Registros: {{ batch.recordCount | number }}</span>
               </div>
-              <span class="date-text">{{ batch.date }}</span>
+              <span class="date-text">{{ batch.uploadDate | date:'shortDate' }}</span>
             </div>
-            @if (batch.errors > 0) {
-              <button class="action-link">
-                Ver Errores <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
+            @if (batch.status === 'VALIDATED') {
+              <button mat-button color="primary" (click)="promoteBatch(batch.id)">
+                Promover a Maestro <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
               </button>
             }
           </div>

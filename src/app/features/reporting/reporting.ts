@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -9,6 +9,8 @@ import {
   History,
   ShieldCheck
 } from 'lucide-angular';
+import { AdminService } from '../../services/admin.service';
+import { AuditLog } from '../../models/types';
 
 @Component({
   selector: 'app-reporting',
@@ -17,13 +19,17 @@ import {
   templateUrl: './reporting.html',
   styleUrl: './reporting.css'
 })
-export class ReportingComponent {
+export class ReportingComponent implements OnInit {
+  private adminService = inject(AdminService);
+
   readonly BarChart3Icon = BarChart3;
   readonly PieIcon = PieIcon;
   readonly DownloadIcon = Download;
   readonly CalendarIcon = Calendar;
   readonly HistoryIcon = History;
   readonly ShieldCheckIcon = ShieldCheck;
+
+  realAuditLogs = signal<AuditLog[]>([]);
 
   channelEffectiveness = [
     { name: 'WhatsApp', value: 75, color: '#10989B' },
@@ -41,9 +47,9 @@ export class ReportingComponent {
     { day: 'Sab', amount: 2100000 },
   ];
 
-  auditLogs = [
-    { user: 'Admin_Camilo', action: 'Modificó Política de Riesgo Alto', date: 'Hace 2 horas', type: 'Config' },
-    { user: 'System_IA', action: 'Actualizó pesos de scoring v3.2', date: 'Hace 5 horas', type: 'Model' },
-    { user: 'Supervisor_Elena', action: 'Aprobó excepción de cobro #992', date: 'Ayer', type: 'Auth' },
-  ];
+  ngOnInit() {
+    this.adminService.getAuditLogs().subscribe(logs => {
+      this.realAuditLogs.set(logs);
+    });
+  }
 }
