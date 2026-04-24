@@ -1,0 +1,37 @@
+<header class="header">
+  <div class="header-left">
+    <!-- Active module name could be passed via input or service -->
+    <h2 class="title">BankVision</h2>
+  </div>
+
+  <div class="header-right">
+    <div class="search-container">
+      <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+      <input
+        type="text"
+        placeholder="Buscar asociado..."
+        class="search-input"
+      />
+    </div>
+
+    <button class="notification-btn">
+      <lucide-icon [img]="BellIcon" class="bell-icon"></lucide-icon>
+      <span class="notification-dot"></span>
+    </button>
+
+    @if (authService.user(); as user) {
+      <div class="user-profile">
+        <div class="user-info">
+          <p class="user-name">{{ user.name }}</p>
+          <p class="user-role">{{ user.role }}</p>
+        </div>
+        <div class="user-avatar">
+          {{ getInitials(user.name) }}
+        </div>
+        <button (click)="logout()" class="logout-btn" title="Cerrar Sesión">
+          <lucide-icon [img]="XIcon" class="logout-icon"></lucide-icon>
+        </button>
+      </div>
+    }
+  </div>
+</header>

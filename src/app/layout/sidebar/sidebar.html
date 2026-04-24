@@ -1,0 +1,32 @@
+<aside [class.open]="isSidebarOpen()" class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-box">
+      <span class="logo-text">BV</span>
+    </div>
+    @if (isSidebarOpen()) {
+      <div class="brand-name">BankVision</div>
+    }
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (m of modules; track m.id) {
+      <a
+        [routerLink]="m.path"
+        routerLinkActive="active"
+        class="nav-item"
+        [title]="m.name"
+      >
+        <lucide-icon [img]="m.icon" class="nav-icon"></lucide-icon>
+        @if (isSidebarOpen()) {
+          <span class="nav-text">{{ m.name }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <button (click)="toggleSidebar()" class="toggle-btn">
+      <lucide-icon [img]="isSidebarOpen() ? XIcon : MenuIcon" class="toggle-icon"></lucide-icon>
+    </button>
+  </div>
+</aside>
