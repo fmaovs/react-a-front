@@ -1,0 +1,80 @@
+<div class="dashboard-grid">
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-card">
+        <div class="stat-header">
+          <div [class]="'stat-icon-box ' + stat.color">
+            <lucide-icon [img]="stat.icon" class="stat-icon"></lucide-icon>
+          </div>
+          <span [class]="'stat-change ' + (stat.change.startsWith('+') ? 'positive' : 'negative')">
+            {{ stat.change }}
+          </span>
+        </div>
+        <div class="stat-content">
+          <p class="stat-label">{{ stat.label }}</p>
+          <h3 class="stat-value">{{ stat.value }}</h3>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Charts/Info Grid -->
+  <div class="info-grid">
+    <div class="chart-container">
+      <div class="chart-header">
+        <h3 class="chart-title">Carga de Trabajo por Agente</h3>
+        <div class="live-indicator">
+          <span class="pulse-dot"></span>
+          <span class="live-text">Monitoreo en Vivo</span>
+        </div>
+      </div>
+
+      <div class="agent-list">
+        @for (agent of agentLoad(); track agent.name) {
+          <div class="agent-item">
+            <div class="agent-info">
+              <div class="agent-profile">
+                <div class="agent-avatar">{{ agent.initials }}</div>
+                <span class="agent-name">{{ agent.name }}</span>
+              </div>
+              <div class="agent-stats">
+                <span class="agent-count">{{ agent.count }} casos</span>
+                <span class="agent-percentage">{{ agent.percentage | number:'1.1-1' }}% de la carga total</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="agent.percentage"></div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="chart-footer">
+        <p class="footer-text">
+          El nivelador de cargas distribuye automáticamente los casos críticos y de alto monto.
+        </p>
+        <a routerLink="/settings" class="footer-link">Configurar Reglas</a>
+      </div>
+    </div>
+
+    <div class="compliance-card gradient-brand">
+      <div class="compliance-header">
+        <h3 class="compliance-title">Cumplimiento Ley 2300</h3>
+        <p class="compliance-desc">
+          Todas las estrategias de contacto están parametrizadas bajo la normativa de "Dejen de fregar", respetando horarios y canales autorizados.
+        </p>
+      </div>
+      <div class="compliance-content">
+        <div class="schedule-info">
+          <span>Horarios Habilitados</span>
+          <span class="font-bold">L-V 7am - 7pm</span>
+        </div>
+        <div class="compliance-progress">
+          <div class="compliance-fill" style="width: 100%"></div>
+        </div>
+        <p class="compliance-note">* Auditoría inalterable activa para cada interacción.</p>
+      </div>
+    </div>
+  </div>
+</div>

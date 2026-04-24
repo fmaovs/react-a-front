@@ -1,0 +1,79 @@
+<div class="login-container">
+  <!-- Background Accents -->
+  <div class="background-accents">
+    <div class="accent accent-1"></div>
+    <div class="accent accent-2"></div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo-box">
+        <lucide-icon [img]="ShieldIcon" class="icon-white"></lucide-icon>
+      </div>
+      <h1>BankVision</h1>
+      <p class="subtitle">Sistema de Gestión de Cobranza</p>
+    </div>
+
+    <form (submit)="handleSubmit()" #loginForm="ngForm" class="login-form">
+      <div class="form-group">
+        <label>Email Corporativo</label>
+        <div class="input-relative">
+          <lucide-icon [img]="MailIcon" class="input-icon"></lucide-icon>
+          <input
+            type="email"
+            name="email"
+            required
+            [(ngModel)]="email"
+            placeholder="usuario@fintra.co"
+            class="form-input"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Contraseña</label>
+          <button type="button" class="link-btn">¿Olvidó su clave?</button>
+        </div>
+        <div class="input-relative">
+          <lucide-icon [img]="LockIcon" class="input-icon"></lucide-icon>
+          <input
+            type="password"
+            name="password"
+            required
+            [(ngModel)]="password"
+            placeholder="••••••••"
+            class="form-input"
+          />
+        </div>
+      </div>
+
+      @if (error()) {
+        <div class="error-box">
+          <lucide-icon [img]="AlertCircleIcon" class="error-icon"></lucide-icon>
+          {{ error() }}
+        </div>
+      }
+
+      <button
+        type="submit"
+        [disabled]="isLoading() || !loginForm.form.valid"
+        mat-raised-button color="primary" class="submit-btn"
+      >
+        @if (isLoading()) {
+          <div class="spinner"></div>
+        } @else {
+          Ingresar al Sistema
+          <lucide-icon [img]="ChevronRightIcon" class="btn-icon"></lucide-icon>
+        }
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>
+        Acceso restringido a personal autorizado. <br />
+        Protegido por políticas de seguridad BankVision.
+      </p>
+    </div>
+  </div>
+</div>

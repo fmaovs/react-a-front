@@ -1,0 +1,165 @@
+<div class="module-container">
+  <div class="module-header">
+    <div class="header-text">
+      <h3 class="module-title">M5. Gestión de Casos y Asesores</h3>
+      <p class="module-subtitle">Bitácora de gestión, asignación de casos y seguimiento de acuerdos.</p>
+    </div>
+    <div class="header-actions">
+      <div class="advisor-avatars">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="avatar">A{{i}}</div>
+        }
+        <div class="avatar plus">+8</div>
+      </div>
+      <button class="outline-btn">
+        <lucide-icon [img]="FilterIcon" class="btn-icon-small"></lucide-icon>
+        Filtrar
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-card">
+        <p class="stat-label">{{ stat.label }}</p>
+        <div class="stat-value-container">
+          <h4 class="stat-value">{{ stat.value }}</h4>
+          <div [class]="'stat-dot ' + stat.color"></div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="card full-width no-padding overflow-hidden">
+    <div class="card-header">
+      <h4 class="card-title-text">Cola de Gestión Prioritaria</h4>
+      <button class="link-btn">Ver todos los casos</button>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Asociado / Obligación</th>
+            <th>Score IA</th>
+            <th>Valor a Pagar</th>
+            <th>Días Mora</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (caseItem of store.cases(); track caseItem.id) {
+            @if (getAssociate(caseItem.associateId); as associate) {
+              <tr class="table-row group">
+                <td>
+                  <div class="associate-info">
+                    <p class="associate-name">{{ associate.name }}</p>
+                    <p class="associate-doc">{{ associate.document }}</p>
+                  </div>
+                </td>
+                <td>
+                  <div class="score-container">
+                    <div class="score-row">
+                      <div class="score-bar">
+                        <div class="score-fill" [style.width.%]="(associate.score / 1000) * 100"></div>
+                      </div>
+                      <span class="score-value">{{ associate.score }}</span>
+                    </div>
+                    <span class="score-label">Score IA</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-container">
+                    <span class="amount-value">${{ associate.balance | number }}</span>
+                    <span class="amount-label">Monto Total</span>
+                  </div>
+                </td>
+                <td>
+                  <span [class]="'mora-text ' + (associate.daysOverdue > 60 ? 'critical' : associate.daysOverdue > 30 ? 'warning' : 'good')">
+                    {{ associate.daysOverdue }} días
+                  </span>
+                </td>
+                <td>
+                  <div class="status-container">
+                    <span
+                      class="status-badge"
+                      [style.backgroundColor]="getStatusInfo(caseItem.status).color"
+                    >
+                      {{ getStatusInfo(caseItem.status).name }}
+                    </span>
+                    <span class="last-action">{{ associate.lastAction || 'Sin gestión' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="action-buttons opacity-0">
+                    <button class="icon-action-btn accent" title="Ver Detalle">
+                      <lucide-icon [img]="ExternalLinkIcon" class="icon-16"></lucide-icon>
+                    </button>
+                    <button class="icon-action-btn gray">
+                      <lucide-icon [img]="MoreVerticalIcon" class="icon-16"></lucide-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="DollarSignIcon" class="accent-icon"></lucide-icon>
+        Gestión de Acuerdos
+      </h4>
+      <div class="agreement-list">
+        <div class="agreement-box">
+          <div class="agreement-header">
+            <span class="agreement-id">Acuerdo de Pago #AC-102</span>
+            <span class="agreement-expiry">Vence: Mañana</span>
+          </div>
+          <div class="agreement-user">
+            <div class="user-avatar-box">
+              <lucide-icon [img]="UserCheckIcon" class="accent-icon"></lucide-icon>
+            </div>
+            <div class="user-details">
+              <p class="user-name">Ricardo Gómez</p>
+              <p class="user-meta">Monto: $1,500,000 (3 cuotas)</p>
+            </div>
+          </div>
+          <div class="agreement-actions">
+            <button class="btn-confirm">Confirmar Recaudo</button>
+            <button class="btn-reschedule">Reprogramar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="FileTextIcon" class="accent-icon"></lucide-icon>
+        Bitácora de Actividad Reciente
+      </h4>
+      <div class="log-list">
+        @for (log of logs; track log.target + log.time; let i = $index) {
+          <div class="log-item">
+            @if (i < logs.length - 1) {
+              <div class="log-line"></div>
+            }
+            <div class="log-dot"></div>
+            <div class="log-content">
+              <p class="log-text">
+                <span class="log-user">{{ log.user }}</span>
+                <span class="log-action">{{ log.action }}</span>
+              </p>
+              <p class="log-target">Asociado: {{ log.target }}</p>
+            </div>
+            <span class="log-time">{{ log.time }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

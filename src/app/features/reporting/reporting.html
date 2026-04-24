@@ -1,0 +1,119 @@
+<div class="module-container">
+  <div class="module-header">
+    <div class="header-text">
+      <h3 class="module-title">M7. Reporting, Auditoría y Gobierno</h3>
+      <p class="module-subtitle">Indicadores de gestión, monitoreo del modelo y trazabilidad inalterable.</p>
+    </div>
+    <div class="header-actions">
+      <button class="outline-btn">
+        <lucide-icon [img]="CalendarIcon" class="btn-icon-small"></lucide-icon>
+        Últimos 30 días
+      </button>
+      <button class="primary-btn shadow-lg">
+        <lucide-icon [img]="DownloadIcon" class="btn-icon"></lucide-icon>
+        Exportar Reporte
+      </button>
+    </div>
+  </div>
+
+  <div class="top-grid">
+    <div class="card lg-span">
+      <h4 class="card-title">
+        <lucide-icon [img]="BarChart3Icon" class="accent-icon"></lucide-icon>
+        Recuperación Diaria (COP)
+      </h4>
+      <div class="chart-box">
+        <!-- SVG Area Chart -->
+        <svg viewBox="0 0 400 200" class="area-chart">
+          <defs>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10989B" stop-opacity="0.2" />
+              <stop offset="100%" stop-color="#10989B" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <polyline
+            fill="url(#areaGradient)"
+            points="40,180 40,120 100,100 160,130 220,80 280,60 340,150 340,180"
+          />
+          <polyline
+            fill="none"
+            stroke="#10989B"
+            stroke-width="3"
+            points="40,120 100,100 160,130 220,80 280,60 340,150"
+          />
+          <line x1="40" y1="180" x2="380" y2="180" stroke="#f0f0f0" />
+          @for (d of dailyRecovery; track d.day; let i = $index) {
+            <text [attr.x]="40 + (i * 60)" y="195" class="chart-label">{{ d.day }}</text>
+          }
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="PieIcon" class="accent-icon"></lucide-icon>
+        Efectividad por Canal
+      </h4>
+      <div class="bar-chart-vertical">
+        @for (item of channelEffectiveness; track item.name) {
+          <div class="bar-row">
+            <span class="bar-label">{{ item.name }}</span>
+            <div class="bar-container">
+              <div class="bar-fill" [style.width.%]="item.value" [style.backgroundColor]="item.color"></div>
+              <span class="bar-value">{{ item.value }}%</span>
+            </div>
+          </div>
+        }
+      </div>
+      <p class="chart-note">* Porcentaje de promesas de pago generadas por canal.</p>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="HistoryIcon" class="accent-icon"></lucide-icon>
+        Auditoría de Cambios (Gobierno)
+      </h4>
+      <div class="audit-list">
+        @for (audit of auditLogs; track audit.action + audit.date) {
+          <div class="audit-item">
+            <div class="audit-left">
+              <div class="audit-avatar">{{ audit.type[0] }}</div>
+              <div class="audit-info">
+                <p class="audit-action">{{ audit.action }}</p>
+                <p class="audit-user">Por: {{ audit.user }}</p>
+              </div>
+            </div>
+            <span class="audit-date">{{ audit.date }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="ShieldCheckIcon" class="accent-icon"></lucide-icon>
+        Monitoreo de Salud del Modelo
+      </h4>
+      <div class="health-grid">
+        <div class="health-card green">
+          <p class="health-label">Precisión Scoring</p>
+          <p class="health-value">94.2%</p>
+        </div>
+        <div class="health-card blue">
+          <p class="health-label">Deriva de Datos</p>
+          <p class="health-value">0.02%</p>
+        </div>
+        <div class="health-card violet">
+          <p class="health-label">Explicabilidad</p>
+          <p class="health-value">SHAP/LIME</p>
+        </div>
+        <div class="health-card amber">
+          <p class="health-label">Último Retrain</p>
+          <p class="health-value">18 Mar</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

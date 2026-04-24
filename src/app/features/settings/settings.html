@@ -1,0 +1,242 @@
+<div class="module-container">
+  <div class="module-header">
+    <div class="header-text">
+      <h3 class="module-title">Configuración de Parámetros</h3>
+      <p class="module-subtitle">Administración de políticas, niveles de riesgo y especificaciones técnicas.</p>
+    </div>
+    <button
+      (click)="handleSave()"
+      [disabled]="isSaving()"
+      class="primary-btn shadow-lg"
+    >
+      <lucide-icon [img]="SaveIcon" class="btn-icon"></lucide-icon>
+      {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+    </button>
+  </div>
+
+  <div class="tab-switcher">
+    @for (tab of tabs; track tab.id) {
+      <button
+        (click)="activeTab.set(tab.id)"
+        [class.active]="activeTab() === tab.id"
+        class="tab-btn"
+      >
+        <lucide-icon [img]="tab.icon" class="tab-icon"></lucide-icon>
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <div class="settings-content card no-padding">
+    @if (activeTab() === 'policies') {
+      <div class="settings-section">
+        <div class="section-header">
+          <h4 class="section-title">Políticas de Cobranza</h4>
+          <button class="accent-btn-small"><lucide-icon [img]="PlusIcon" class="mini-icon"></lucide-icon> Nueva Política</button>
+        </div>
+        <div class="risk-levels-list">
+          @for (item of riskLevels(); track item.level; let i = $index) {
+            <div class="risk-item group">
+              <div [class]="'risk-indicator ' + item.color"></div>
+              <div class="risk-grid">
+                <div class="risk-col">
+                  <span class="label">Nivel</span>
+                  <p class="value bold">{{ item.level }}</p>
+                </div>
+                <div class="risk-col">
+                  <span class="label">Rango Score</span>
+                  <p class="value mono">{{ item.score }}</p>
+                </div>
+                <div class="risk-col">
+                  <span class="label">Días Mora</span>
+                  <p class="value mono">{{ item.mora }}</p>
+                </div>
+                <div class="risk-col">
+                  <span class="label">Acción Sugerida</span>
+                  <p class="value">{{ item.action }}</p>
+                </div>
+              </div>
+              <button (click)="removeRiskLevel(i)" class="delete-btn opacity-0 group-hover-opacity-100">
+                <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-header">
+          <h4 class="section-title">Parámetros de Scoring IA</h4>
+          <div class="header-meta">
+            <button class="text-link">Restablecer</button>
+            <span class="badge-total green">Total: 100%</span>
+          </div>
+        </div>
+        <div class="ai-params-grid">
+          <div class="ai-sliders">
+            @for (v of aiVariables(); track v.label) {
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">{{ v.label }}</span>
+                  <span class="slider-value">{{ v.weight }}%</span>
+                </div>
+                <input type="range" [value]="v.weight" class="range-input" />
+              </div>
+            }
+          </div>
+          <div class="ai-note gradient-light">
+            <div class="note-header">
+              <lucide-icon [img]="InfoIcon" class="accent-icon-small"></lucide-icon>
+              <span class="note-title">Nota Técnica</span>
+            </div>
+            <p class="note-text">
+              El motor de IA recalibra estos pesos mensualmente basándose en la efectividad de las promesas de pago cumplidas.
+            </p>
+            <div class="note-status">
+              <span class="pulse-dot"></span>
+              <span class="status-label-green">Aprendizaje Activo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'users') {
+      <div class="settings-section">
+        <div class="section-header">
+          <h4 class="section-title">Gestión de Usuarios</h4>
+          <button class="accent-btn-small"><lucide-icon [img]="UserPlusIcon" class="mini-icon"></lucide-icon> Nuevo Usuario</button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Último Acceso</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr class="table-row group">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar-small">{{ user.name[0] }}</div>
+                      <div class="user-info">
+                        <p class="name">{{ user.name }}</p>
+                        <p class="email">{{ user.email }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="role-text">{{ user.role }}</span></td>
+                  <td>
+                    <span [class]="'badge-small ' + (user.status === 'Activo' ? 'green' : 'red')">
+                      {{ user.status }}
+                    </span>
+                  </td>
+                  <td class="last-login">{{ user.lastLogin }}</td>
+                  <td>
+                    <div class="action-row justify-end">
+                      <button (click)="toggleUserStatus(user.id)" class="icon-btn-gray">
+                        <lucide-icon [img]="LockIcon" class="mini-icon"></lucide-icon>
+                      </button>
+                      <button (click)="removeUser(user.id)" class="icon-btn-gray hover-red">
+                        <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'rules') {
+      <div class="settings-section">
+        <h4 class="section-title">Reglas de Asignación Automática</h4>
+        <div class="assignment-grid">
+          @for (rule of store.assignmentRules(); track rule.id) {
+            <div class="assignment-card">
+              <div class="assignment-header">
+                <div class="icon-box-blue"><lucide-icon [img]="UsersIcon" class="mini-icon"></lucide-icon></div>
+                <h5 class="rule-name">{{ rule.name }}</h5>
+              </div>
+              <div class="rule-details">
+                @if (rule.minAmount) {
+                  <div class="rule-detail"><span>Monto Mínimo:</span> <strong>${{ rule.minAmount | number }}</strong></div>
+                }
+                @if (rule.riskLevels) {
+                  <div class="rule-detail"><span>Riesgos:</span> <div class="tags">@for (r of rule.riskLevels; track r) { <span class="tag">{{r}}</span> }</div></div>
+                }
+              </div>
+              <div class="rule-footer">
+                <span class="badge-small green">Activa</span>
+                <span class="priority">Prioridad: {{ rule.priority }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'file-structure') {
+      <div class="settings-section">
+        <h4 class="section-title">Especificación de Archivo Batch</h4>
+        <div class="layout-previews">
+          <div class="layout-box"><span>H|FECHA|LOTE</span></div>
+          <div class="layout-box"><span>D|DETALLE...</span></div>
+          <div class="layout-box"><span>T|TOTALES</span></div>
+        </div>
+        <div class="table-container mt-2">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Posición</th>
+                <th>Campo</th>
+                <th>Tipo</th>
+                <th>Req.</th>
+                <th>Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of fields(); track f.name) {
+                <tr class="table-row">
+                  <td class="mono small">{{ f.pos }}</td>
+                  <td class="bold blue">{{ f.name }}</td>
+                  <td class="small">{{ f.type }}</td>
+                  <td><span class="badge-small green">{{ f.req }}</span></td>
+                  <td class="small gray">{{ f.desc }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'case-statuses') {
+      <div class="settings-section">
+        <h4 class="section-title">Catálogo de Estados de Casos</h4>
+        <div class="status-grid">
+          @for (st of store.caseStatuses(); track st.id) {
+            <div class="status-card-simple">
+              <div class="status-header">
+                <div class="status-dot-large" [style.backgroundColor]="st.color"></div>
+                <h5 class="st-name">{{ st.name }}</h5>
+              </div>
+              <p class="st-desc">{{ st.description }}</p>
+              <div class="st-badges">
+                @if (st.isInitial) { <span class="badge-pill blue">Inicial</span> }
+                @if (st.isFinal) { <span class="badge-pill gray">Final</span> }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

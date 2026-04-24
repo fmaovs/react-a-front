@@ -1,0 +1,106 @@
+<div class="module-container">
+  <div class="module-header">
+    <div class="header-text">
+      <h3 class="module-title">M1. Integración y Adquisición de Datos</h3>
+      <p class="module-subtitle">
+        Gestión de ingesta vía API y Archivos Batch (TXT/CSV).
+        <button class="link-btn">Ver Estructura de Archivo</button>
+      </p>
+    </div>
+    <button
+      (click)="simulateUpload()"
+      [disabled]="isUploading()"
+      mat-raised-button color="primary" class="primary-btn"
+    >
+      <lucide-icon [img]="UploadIcon" class="btn-icon"></lucide-icon>
+      {{ isUploading() ? 'Procesando...' : 'Cargar Archivo Batch' }}
+    </button>
+  </div>
+
+  @if (isUploading()) {
+    <div class="upload-progress-card">
+      <div class="progress-info">
+        <span class="lote-name">Procesando Lote: CARTERA_20240319.csv</span>
+        <span class="percentage">{{ progress() }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progress()"></div>
+      </div>
+      <div class="progress-steps">
+        <span>Validando esquema...</span>
+        <span>Verificando saldos...</span>
+        <span>Conciliando con CORE...</span>
+      </div>
+    </div>
+  }
+
+  <div class="content-grid">
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="DatabaseIcon" class="accent-icon"></lucide-icon>
+        Estado de Conexión CORE
+      </h4>
+      <div class="card-content">
+        <div class="status-box online">
+          <div class="status-left">
+            <lucide-icon [img]="CheckCircle2Icon" class="status-icon"></lucide-icon>
+            <div class="status-text">
+              <p class="status-title">API Gateway Activo</p>
+              <p class="status-meta">Latencia: 45ms | Uptime: 99.9%</p>
+            </div>
+          </div>
+          <span class="status-badge">ONLINE</span>
+        </div>
+
+        <div class="endpoint-list">
+          <p class="section-label">Endpoints Recientes</p>
+          @for (api of endpoints; track api.path) {
+            <div class="endpoint-item">
+              <div class="endpoint-left">
+                <span class="method-badge">{{ api.method }}</span>
+                <span class="path-text">{{ api.path }}</span>
+              </div>
+              <div class="endpoint-right">
+                <span class="status-code">{{ api.status }}</span>
+                <span class="time-text">{{ api.time }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="card-title">
+        <lucide-icon [img]="ClockIcon" class="accent-icon"></lucide-icon>
+        Historial de Cargas Batch
+      </h4>
+      <div class="batch-list">
+        @for (batch of batches; track batch.name) {
+          <div class="batch-item">
+            <div class="batch-header">
+              <span class="batch-name">{{ batch.name }}</span>
+              <span [class]="'status-badge-small ' + batch.status.toLowerCase()">
+                {{ batch.status }}
+              </span>
+            </div>
+            <div class="batch-footer">
+              <div class="batch-meta">
+                <span>Registros: {{ batch.records | number }}</span>
+                @if (batch.errors > 0) {
+                  <span class="error-text">Errores: {{ batch.errors }}</span>
+                }
+              </div>
+              <span class="date-text">{{ batch.date }}</span>
+            </div>
+            @if (batch.errors > 0) {
+              <button class="action-link">
+                Ver Errores <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

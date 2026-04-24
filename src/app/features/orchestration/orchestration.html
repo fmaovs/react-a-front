@@ -1,0 +1,226 @@
+<div class="module-container">
+  <div class="module-header">
+    <div class="header-text">
+      <h3 class="module-title">M4. Orquestación Omnicanal</h3>
+      <p class="module-subtitle">Ejecución automatizada de campañas y gestión de canales digitales.</p>
+    </div>
+    <button mat-raised-button color="primary" class="primary-btn">
+      <lucide-icon [img]="SendIcon" class="btn-icon"></lucide-icon>
+      Lanzar Campaña
+    </button>
+  </div>
+
+  <div class="tab-switcher-main">
+    <button
+      (click)="activeTab.set('dashboard')"
+      [class.active]="activeTab() === 'dashboard'"
+      class="tab-main-btn"
+    >
+      Dashboard de Ejecución
+    </button>
+    <button
+      (click)="activeTab.set('templates')"
+      [class.active]="activeTab() === 'templates'"
+      class="tab-main-btn"
+    >
+      Gestión de Plantillas
+    </button>
+  </div>
+
+  @if (activeTab() === 'dashboard') {
+    <div class="dashboard-view">
+      <div class="channels-grid">
+        @for (ch of channels; track ch.name) {
+          <div class="channel-card">
+            <div class="channel-header">
+              <div [class]="'channel-icon-box ' + ch.colorClass">
+                <lucide-icon [img]="ch.icon" class="icon-white"></lucide-icon>
+              </div>
+              <div class="channel-status">
+                <span class="status-dot-green"></span>
+                <span class="status-text-green">Activo</span>
+              </div>
+            </div>
+            <h4 class="channel-name">{{ ch.name }}</h4>
+            <div class="channel-stats">
+              <div class="stats-info">
+                <span class="stats-label">Entregados</span>
+                <span class="stats-value">{{ (ch.delivered / ch.sent) * 100 | number:'1.0-0' }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div [class]="'progress-fill ' + ch.colorClass" [style.width.%]="(ch.delivered / ch.sent) * 100"></div>
+              </div>
+              <p class="stats-meta">{{ ch.sent | number }} enviados hoy</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="info-grid">
+        <div class="card lg-span">
+          <h4 class="card-title">
+            <lucide-icon [img]="UsersIcon" class="accent-icon"></lucide-icon>
+            Campañas en Ejecución
+          </h4>
+          <div class="campaign-list">
+            @for (camp of campaigns; track camp.name) {
+              <div class="campaign-item">
+                <div class="campaign-header">
+                  <div>
+                    <h5 class="campaign-name">{{ camp.name }}</h5>
+                    <p class="campaign-segment">Segmento: {{ camp.segment }}</p>
+                  </div>
+                  <span [class]="'status-badge ' + (camp.status === 'Completada' ? 'green' : 'blue')">
+                    {{ camp.status }}
+                  </span>
+                </div>
+                <div class="campaign-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill accent" [style.width.%]="camp.progress"></div>
+                  </div>
+                  <span class="progress-text">{{ camp.progress }}%</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="card-title">Eventos en Tiempo Real</h4>
+          <div class="event-list">
+            @for (ev of events; track ev.user + ev.time) {
+              <div class="event-item">
+                <div [class]="'event-icon ' + ev.type">
+                  @if (ev.type === 'failed') {
+                    <lucide-icon [img]="XCircleIcon" class="mini-icon"></lucide-icon>
+                  } @else {
+                    <lucide-icon [img]="CheckCircle2Icon" class="mini-icon"></lucide-icon>
+                  }
+                </div>
+                <div class="event-info">
+                  <p class="event-user">{{ ev.user }}</p>
+                  <p class="event-desc">
+                    {{ ev.type === 'delivered' ? 'Entregado' : ev.type === 'read' ? 'Leído' : 'Fallido' }} vía {{ ev.channel }}
+                  </p>
+                </div>
+                <span class="event-time">{{ ev.time }}</span>
+              </div>
+            }
+          </div>
+          <button class="outline-btn full-width mt-2">Ver Bitácora Completa</button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="templates-view">
+      @if (showToast()) {
+        <div class="toast">
+          <lucide-icon [img]="CheckCircle2Icon" class="icon-white"></lucide-icon>
+          <span class="toast-text">Plantilla guardada correctamente</span>
+        </div>
+      }
+
+      <div class="header-text mb-2">
+        <h3 class="module-title-small">Parametrización de Plantillas</h3>
+        <p class="module-subtitle">Configure los mensajes personalizados para cada canal de contacto.</p>
+      </div>
+
+      <div class="templates-grid">
+        <div class="editor-column">
+          <div class="card">
+            <div class="channel-selector">
+              @for (ch of ['WhatsApp', 'SMS', 'Email', 'Voz / VoIP']; track ch) {
+                <button
+                  (click)="activeChannel.set(ch)"
+                  [class.active]="activeChannel() === ch"
+                  class="channel-btn"
+                >
+                  {{ ch }}
+                </button>
+              }
+            </div>
+
+            <div class="editor-container">
+              <div class="editor-header">
+                <label class="editor-label">Cuerpo del Mensaje</label>
+                <button class="icon-btn"><lucide-icon [img]="CopyIcon" class="tiny-icon"></lucide-icon></button>
+              </div>
+              <textarea
+                [(ngModel)]="currentText"
+                class="editor-textarea"
+                placeholder="Escribe el mensaje aquí..."
+              ></textarea>
+              <div class="tags-container">
+                @for (tag of ['{{NOMBRE_COMPLETO}}', '{{VALOR_A_PAGAR}}', '{{NUM_OBLIGACION}}', '{{FECHA_VENC}}', '{{LINK_PAGO}}']; track tag) {
+                  <button (click)="currentText.set(currentText() + ' ' + tag)" class="tag-btn">
+                    {{ tag }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="editor-footer">
+              <button
+                (click)="handleSave()"
+                [disabled]="isSaving()"
+                mat-raised-button color="primary" class="primary-btn"
+              >
+                <lucide-icon [img]="SaveIcon" class="btn-icon"></lucide-icon>
+                {{ isSaving() ? 'Guardando...' : 'Guardar Plantilla' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-column">
+          <div class="card h-full">
+            <h4 class="card-title">
+              <lucide-icon [img]="EyeIcon" class="accent-icon"></lucide-icon>
+              Vista Previa
+            </h4>
+            <div [class]="'preview-box ' + (activeChannel() === 'WhatsApp' ? 'whatsapp' : 'standard')">
+              @if (activeChannel() === 'WhatsApp') {
+                <div class="wa-message">
+                  <div class="wa-bubble">
+                    {{ getPreviewText() }}
+                    <span class="wa-time">10:45 AM</span>
+                  </div>
+                </div>
+              } @else if (activeChannel() === 'SMS') {
+                <div class="sms-message">
+                  {{ getPreviewText() }}
+                </div>
+              } @else if (activeChannel() === 'Email') {
+                <div class="email-message">
+                  <div class="email-subject">Asunto: Recordatorio de Pago - BankVision</div>
+                  <div class="email-body">
+                    {{ getPreviewText() }}
+                  </div>
+                </div>
+              } @else {
+                <div class="voip-preview">
+                  <div class="voip-icon-box pulse">
+                    <lucide-icon [img]="PhoneIcon" class="accent-icon-large"></lucide-icon>
+                  </div>
+                  <p class="voip-meta">"Transcripción de audio generada por IA"</p>
+                  <p class="voip-text">{{ getPreviewText() }}</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="vars-card gradient-light">
+            <h5 class="vars-title">Variables Disponibles</h5>
+            <div class="vars-list">
+              <div class="var-item"><code>{{'{{NOMBRE_COMPLETO}}'}}</code> <span>Nombre del asociado</span></div>
+              <div class="var-item"><code>{{'{{VALOR_A_PAGAR}}'}}</code> <span>Monto total exigible</span></div>
+              <div class="var-item"><code>{{'{{NUM_OBLIGACION}}'}}</code> <span>ID de la deuda</span></div>
+              <div class="var-item"><code>{{'{{FECHA_VENC}}'}}</code> <span>Fecha límite de pago</span></div>
+              <div class="var-item"><code>{{'{{LINK_PAGO}}'}}</code> <span>URL personalizada</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
