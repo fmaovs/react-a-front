@@ -76,16 +76,16 @@
         Auditoría de Cambios (Gobierno)
       </h4>
       <div class="audit-list">
-        @for (audit of auditLogs; track audit.action + audit.date) {
+        @for (audit of realAuditLogs(); track audit.id) {
           <div class="audit-item">
             <div class="audit-left">
-              <div class="audit-avatar">{{ audit.type[0] }}</div>
+              <div class="audit-avatar">A</div>
               <div class="audit-info">
                 <p class="audit-action">{{ audit.action }}</p>
-                <p class="audit-user">Por: {{ audit.user }}</p>
+                <p class="audit-user">Por: {{ audit.userId }}</p>
               </div>
             </div>
-            <span class="audit-date">{{ audit.date }}</span>
+            <span class="audit-date">{{ audit.timestamp | date:'short' }}</span>
           </div>
         }
       </div>

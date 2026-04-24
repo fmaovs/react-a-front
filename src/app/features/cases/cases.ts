@@ -50,7 +50,7 @@ export class CasesComponent {
     return this.store.caseStatuses().find(s => s.id === statusId) || { name: statusId, color: '#64748b' };
   }
 
-  getAssociate(id: string) {
+  getAssociate(id: number) {
     return this.store.associates().find(a => a.id === id);
   }
 }

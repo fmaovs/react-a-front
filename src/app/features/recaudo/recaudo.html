@@ -32,24 +32,20 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of links; track row.name + row.expiry) {
+            @for (agreement of realAgreements(); track agreement.id) {
               <tr class="table-row">
-                <td class="font-bold">{{ row.name }}</td>
-                <td class="font-mono text-sm">{{ row.amount }}</td>
-                <td class="text-xs gray-text">{{ row.expiry }}</td>
+                <td class="font-bold">Caso #{{ agreement.caseId }}</td>
+                <td class="font-mono text-sm">{{ agreement.totalAmount | currency }}</td>
+                <td class="text-xs gray-text">{{ agreement.createdAt | date:'shortDate' }}</td>
                 <td>
-                  <span [class]="'status-badge ' + row.status.toLowerCase()">
-                    {{ row.status }}
+                  <span [class]="'status-badge ' + agreement.status.toLowerCase()">
+                    {{ agreement.status }}
                   </span>
                 </td>
                 <td>
                   <div class="channel-cell">
-                    @if (row.channel === 'Email') {
-                      <lucide-icon [img]="SendIcon" class="mini-icon"></lucide-icon>
-                    } @else {
-                      <lucide-icon [img]="SmartphoneIcon" class="mini-icon"></lucide-icon>
-                    }
-                    {{ row.channel }}
+                    <lucide-icon [img]="LinkIcon" class="mini-icon"></lucide-icon>
+                    Web Link
                   </div>
                 </td>
               </tr>

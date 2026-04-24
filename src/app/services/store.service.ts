@@ -1,10 +1,15 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { Associate, Case, Policy, Campaign, CaseStatus, AssignmentRule } from '../models/types';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { Client, Case, Policy, Campaign, CaseStatus, AssignmentRule, Associate, CaseNote } from '../models/types';
+import { PortfolioService } from './portfolio.service';
+import { CaseService } from './case.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
+  private portfolioService = inject(PortfolioService);
+  private caseService = inject(CaseService);
+
   associates = signal<Associate[]>([]);
   cases = signal<Case[]>([]);
   policies = signal<Policy[]>([]);
@@ -13,7 +18,43 @@ export class StoreService {
   assignmentRules = signal<AssignmentRule[]>([]);
 
   constructor() {
-    this.initializeMockData();
+    this.loadInitialData();
+  }
+
+  private loadInitialData() {
+    this.portfolioService.getClients().subscribe({
+      next: (clients) => {
+        const mappedAssociates: Associate[] = clients.map(c => ({
+          ...c,
+          document: c.documentNumber,
+          risk: c.riskLevel as any,
+          balance: 0, // Will be updated by obligations
+          daysOverdue: 0,
+          propensity: 'Media' // Default for mapping
+        }));
+        this.associates.set(mappedAssociates);
+        this.loadObligations();
+      },
+      error: () => this.initializeMockData()
+    });
+  }
+
+  private loadObligations() {
+    this.portfolioService.getObligations().subscribe(obs => {
+      this.associates.update(prev => prev.map(a => {
+        const clientObs = obs.filter(o => o.clientId === a.id);
+        const totalBalance = clientObs.reduce((sum, o) => sum + o.currentBalance, 0);
+        const maxDays = Math.max(0, ...clientObs.map(o => o.daysPastDue));
+        return { ...a, balance: totalBalance, daysOverdue: maxDays };
+      }));
+      this.loadCases();
+    });
+  }
+
+  private loadCases() {
+    this.caseService.getCases().subscribe(cases => {
+      this.cases.set(cases);
+    });
   }
 
   private initializeMockData() {
@@ -31,19 +72,19 @@ export class StoreService {
     ];
 
     const mockAssociates: Associate[] = [
-      { id: '1', name: 'Juan Pérez', document: '10203040', email: 'juan@example.com', phone: '3001234567', segment: 'Preventiva', score: 850, propensity: 'Alta', risk: 'Bajo', balance: 1500000, daysOverdue: -5 },
-      { id: '2', name: 'Maria Garcia', document: '50607080', email: 'maria@example.com', phone: '3109876543', segment: 'Administrativa', score: 420, propensity: 'Media', risk: 'Alto', balance: 4250000, daysOverdue: 15 },
-      { id: '3', name: 'Carlos Ruiz', document: '90102030', email: 'carlos@example.com', phone: '3201112233', segment: 'Temprana', score: 680, propensity: 'Alta', risk: 'Medio', balance: 6800000, daysOverdue: 45 },
-      { id: '4', name: 'Ana Lopez', document: '40506070', email: 'ana@example.com', phone: '3154445566', segment: 'Prejurídica', score: 150, propensity: 'Baja', risk: 'Crítico', balance: 12500000, daysOverdue: 95 },
+      { id: 1, name: 'Juan Pérez', documentNumber: '10203040', documentType: 'CC', document: '10203040', email: 'juan@example.com', phone: '3001234567', segment: 'Preventiva', score: 850, riskLevel: 'Bajo', risk: 'Bajo', balance: 1500000, daysOverdue: -5, propensity: 'Alta' },
+      { id: 2, name: 'Maria Garcia', documentNumber: '50607080', documentType: 'CC', document: '50607080', email: 'maria@example.com', phone: '3109876543', segment: 'Administrativa', score: 420, riskLevel: 'Alto', risk: 'Alto', balance: 4250000, daysOverdue: 15, propensity: 'Media' },
+      { id: 3, name: 'Carlos Ruiz', documentNumber: '90102030', documentType: 'CC', document: '90102030', email: 'carlos@example.com', phone: '3201112233', segment: 'Temprana', score: 680, riskLevel: 'Medio', risk: 'Medio', balance: 6800000, daysOverdue: 45, propensity: 'Alta' },
+      { id: 4, name: 'Ana Lopez', documentNumber: '40506070', documentType: 'CC', document: '40506070', email: 'ana@example.com', phone: '3154445566', segment: 'Prejurídica', score: 150, riskLevel: 'Crítico', risk: 'Crítico', balance: 12500000, daysOverdue: 95, propensity: 'Baja' },
     ];
 
     const mockCases: Case[] = mockAssociates.map(a => ({
-      id: `CS-${a.id}`,
-      associateId: a.id,
+      id: a.id,
+      clientId: a.id,
       status: a.daysOverdue > 90 ? 'ST-005' : a.daysOverdue > 0 ? 'ST-002' : 'ST-001',
       priority: a.risk === 'Crítico' ? 'Crítica' : a.risk === 'Alto' ? 'Alta' : a.risk === 'Medio' ? 'Media' : 'Baja',
-      notes: [],
-      agreements: []
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }));
 
     const mockPolicies: Policy[] = [
@@ -70,13 +111,16 @@ export class StoreService {
     this.associates.update(prev => [...prev, a]);
   }
 
-  updateCase(id: string, updates: Partial<Case>) {
+  updateCase(id: number, updates: Partial<Case>) {
     this.cases.update(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
   }
 
-  addNoteToCase(caseId: string, text: string) {
-    const note = { date: new Date().toISOString(), text, author: 'Camilo Cantor' };
-    this.cases.update(prev => prev.map(c => c.id === caseId ? { ...c, notes: [note, ...c.notes] } : c));
+  addNoteToCase(caseId: number, text: string) {
+    this.caseService.addNote(caseId, text).subscribe(note => {
+      // In a real app we might want to update the local signal,
+      // but for simplicity we reload or rely on backend sync
+      this.loadCases();
+    });
   }
 
   addCampaign(c: Campaign) {
@@ -117,7 +161,7 @@ export class StoreService {
 
     this.cases.update(prevCases => {
       return prevCases.map(c => {
-        const associate = this.associates().find(a => a.id === c.associateId);
+        const associate = this.associates().find(a => a.id === c.clientId);
         if (!associate) return c;
 
         const shouldAssign = this.assignmentRules().some(rule => {

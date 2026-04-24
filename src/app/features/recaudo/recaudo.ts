@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -12,6 +12,8 @@ import {
   ArrowRight,
   Plus
 } from 'lucide-angular';
+import { CollectionService } from '../../services/collection.service';
+import { PaymentAgreement, Installment } from '../../models/types';
 
 @Component({
   selector: 'app-recaudo',
@@ -20,8 +22,12 @@ import {
   templateUrl: './recaudo.html',
   styleUrl: './recaudo.css'
 })
-export class RecaudoComponent {
+export class RecaudoComponent implements OnInit {
+  private collectionService = inject(CollectionService);
+
   isGenerating = signal(false);
+  realAgreements = signal<PaymentAgreement[]>([]);
+  realInstallments = signal<Installment[]>([]);
 
   readonly DollarSignIcon = DollarSign;
   readonly LinkIcon = LinkIcon;
@@ -33,21 +39,28 @@ export class RecaudoComponent {
   readonly ArrowRightIcon = ArrowRight;
   readonly PlusIcon = Plus;
 
-  links = [
-    { name: 'Juan Pérez', amount: '$150,000', expiry: '24 Mar 2024', status: 'Pagado', channel: 'WhatsApp' },
-    { name: 'Maria Garcia', amount: '$420,000', expiry: '22 Mar 2024', status: 'Pendiente', channel: 'SMS' },
-    { name: 'Carlos Ruiz', amount: '$280,000', expiry: '20 Mar 2024', status: 'Vencido', channel: 'Email' },
-    { name: 'Ana Lopez', amount: '$85,000', expiry: '25 Mar 2024', status: 'Pendiente', channel: 'WhatsApp' },
-  ];
-
   gateways = [
     { name: 'PSE / ACH', status: 'Activo', icon: this.CheckCircle2Icon },
     { name: 'Bancolombia', status: 'Activo', icon: this.CheckCircle2Icon },
     { name: 'Wompi', status: 'Mantenimiento', icon: this.ClockIcon },
   ];
 
+  ngOnInit() {
+    this.loadData();
+  }
+
+  loadData() {
+    this.collectionService.getAgreements().subscribe(data => this.realAgreements.set(data));
+    this.collectionService.getInstallments().subscribe(data => this.realInstallments.set(data));
+  }
+
   handleGenerate() {
     this.isGenerating.set(true);
+    // Logic to create a new agreement could go here
     setTimeout(() => this.isGenerating.set(false), 1500);
+  }
+
+  payInstallment(id: number) {
+    this.collectionService.payInstallment(id).subscribe(() => this.loadData());
   }
 }

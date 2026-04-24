@@ -31,12 +31,11 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.error.set('');
 
-    setTimeout(() => {
-      const success = this.authService.login(this.email, this.password);
+    this.authService.login(this.email, this.password).subscribe(success => {
+      this.isLoading.set(false);
       if (!success) {
-        this.error.set('Credenciales incorrectas. Intente con admin@fintra.co / admin123');
-        this.isLoading.set(false);
+        this.error.set('Credenciales incorrectas. Verifique su usuario y contraseña.');
       }
-    }, 1000);
+    });
   }
 }

@@ -49,7 +49,7 @@
         </thead>
         <tbody>
           @for (caseItem of store.cases(); track caseItem.id) {
-            @if (getAssociate(caseItem.associateId); as associate) {
+            @if (getAssociate(caseItem.clientId); as associate) {
               <tr class="table-row group">
                 <td>
                   <div class="associate-info">
