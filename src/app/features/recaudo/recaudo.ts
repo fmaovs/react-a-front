@@ -1,5 +1,6 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import {
   LucideAngularModule,
   DollarSign,
@@ -18,7 +19,7 @@ import { PaymentAgreement, Installment } from '../../models/types';
 @Component({
   selector: 'app-recaudo',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, MatButtonModule],
   templateUrl: './recaudo.html',
   styleUrl: './recaudo.css'
 })

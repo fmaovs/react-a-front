@@ -104,22 +104,23 @@
     @if (activeTab() === 'users') {
       <div class="settings-section">
         <div class="section-header">
-          <h4 class="section-title">Gestión de Usuarios</h4>
-          <button class="accent-btn-small"><lucide-icon [img]="UserPlusIcon" class="mini-icon"></lucide-icon> Nuevo Usuario</button>
+          <h4 class="section-title">Gestión de Usuarios (Backend CRUD)</h4>
+          <button (click)="addUser()" class="accent-btn-small">
+            <lucide-icon [img]="UserPlusIcon" class="mini-icon"></lucide-icon> Nuevo Usuario
+          </button>
         </div>
         <div class="table-container">
           <table class="data-table">
             <thead>
               <tr>
                 <th>Usuario</th>
+                <th>Username</th>
                 <th>Rol</th>
-                <th>Estado</th>
-                <th>Último Acceso</th>
                 <th class="text-right">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              @for (user of users(); track user.id) {
+              @for (user of realUsers(); track user.id) {
                 <tr class="table-row group">
                   <td>
                     <div class="user-cell">
@@ -130,21 +131,15 @@
                       </div>
                     </div>
                   </td>
+                  <td><span class="mono">{{ user.username }}</span></td>
                   <td><span class="role-text">{{ user.role }}</span></td>
                   <td>
-                    <span [class]="'badge-small ' + (user.status === 'Activo' ? 'green' : 'red')">
-                      {{ user.status }}
-                    </span>
-                  </td>
-                  <td class="last-login">{{ user.lastLogin }}</td>
-                  <td>
                     <div class="action-row justify-end">
-                      <button (click)="toggleUserStatus(user.id)" class="icon-btn-gray">
-                        <lucide-icon [img]="LockIcon" class="mini-icon"></lucide-icon>
-                      </button>
-                      <button (click)="removeUser(user.id)" class="icon-btn-gray hover-red">
-                        <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
-                      </button>
+                      @if (user.id) {
+                        <button (click)="removeUser(user.id)" class="icon-btn-gray hover-red">
+                          <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>

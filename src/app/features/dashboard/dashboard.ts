@@ -41,10 +41,22 @@ export class DashboardComponent {
     });
   });
 
-  stats = [
-    { label: 'Cartera Total', value: '$1.2B', change: '+2.4%', icon: this.DatabaseIcon, color: 'blue' },
-    { label: 'Tasa de Recuperación', value: '78.5%', change: '+5.2%', icon: this.BarChart3Icon, color: 'emerald' },
-    { label: 'Casos Activos', value: '1,240', change: '-12', icon: this.BriefcaseIcon, color: 'amber' },
-    { label: 'Efectividad Contacto', value: '64.2%', change: '+1.8%', icon: this.MessageSquareIcon, color: 'violet' },
-  ];
+  totalBalance = computed(() => {
+    return this.store.associates().reduce((sum, a) => sum + a.balance, 0);
+  });
+
+  activeCasesCount = computed(() => this.store.cases().length);
+
+  stats = computed(() => [
+    { label: 'Cartera Total', value: this.formatCurrency(this.totalBalance()), change: '', icon: this.DatabaseIcon, color: 'blue' },
+    { label: 'Tasa de Recuperación', value: '78.5%', change: '', icon: this.BarChart3Icon, color: 'emerald' },
+    { label: 'Casos Activos', value: this.activeCasesCount().toLocaleString(), change: '', icon: this.BriefcaseIcon, color: 'amber' },
+    { label: 'Efectividad Contacto', value: '64.2%', change: '', icon: this.MessageSquareIcon, color: 'violet' },
+  ]);
+
+  private formatCurrency(value: number): string {
+    if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    return `$${value.toLocaleString()}`;
+  }
 }

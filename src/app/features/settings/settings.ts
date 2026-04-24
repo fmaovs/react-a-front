@@ -1,7 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../services/store.service';
+import { UserService } from '../../services/user.service';
+import { User } from '../../models/types';
 import {
   LucideAngularModule,
   Settings2,
@@ -37,8 +39,10 @@ interface Tab {
   templateUrl: './settings.html',
   styleUrl: './settings.css'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   store = inject(StoreService);
+  private userService = inject(UserService);
+
   activeTab = signal<TabId>('policies');
   isSaving = signal(false);
 
@@ -91,11 +95,17 @@ export class SettingsComponent {
   ]);
 
   // Users sub-state
-  users = signal([
-    { id: '1', name: 'Admin Principal', email: 'admin@fintra.co', role: 'Administrador', status: 'Activo', lastLogin: '2024-03-15 10:30' },
-    { id: '2', name: 'Coordinador Cobranza', email: 'coord@fintra.co', role: 'Supervisor', status: 'Activo', lastLogin: '2024-03-15 09:15' },
-    { id: '3', name: 'Agente Externo 01', email: 'agente01@externo.com', role: 'Agente', status: 'Bloqueado', lastLogin: '2024-03-10 16:45' },
-  ]);
+  realUsers = signal<User[]>([]);
+
+  ngOnInit() {
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.userService.getUsers().subscribe(users => {
+      this.realUsers.set(users);
+    });
+  }
 
   handleSave() {
     this.isSaving.set(true);
@@ -108,11 +118,18 @@ export class SettingsComponent {
     this.riskLevels.update(prev => prev.filter((_, i) => i !== index));
   }
 
-  removeUser(id: string) {
-    this.users.update(prev => prev.filter(u => u.id !== id));
+  removeUser(id: number) {
+    this.userService.deleteUser(id).subscribe(() => this.loadUsers());
   }
 
-  toggleUserStatus(id: string) {
-    this.users.update(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'Activo' ? 'Bloqueado' : 'Activo' } : u));
+  addUser() {
+    // Basic example of adding a user
+    const newUser: Partial<User> = {
+      username: 'nuevo_usuario',
+      name: 'Nuevo Usuario',
+      email: 'nuevo@bankvision.com',
+      role: 'AGENT'
+    };
+    this.userService.createUser(newUser).subscribe(() => this.loadUsers());
   }
 }

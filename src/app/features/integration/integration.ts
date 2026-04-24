@@ -1,5 +1,6 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import {
   LucideAngularModule,
   Database,
@@ -10,16 +11,18 @@ import {
 } from 'lucide-angular';
 import { IntegrationService } from '../../services/integration.service';
 import { Batch } from '../../models/types';
+import { StoreService } from '../../services/store.service';
 
 @Component({
   selector: 'app-integration',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, MatButtonModule],
   templateUrl: './integration.html',
   styleUrl: './integration.css'
 })
 export class IntegrationComponent implements OnInit {
   private integrationService = inject(IntegrationService);
+  private store = inject(StoreService);
 
   isUploading = signal(false);
   progress = signal(0);
@@ -75,6 +78,8 @@ export class IntegrationComponent implements OnInit {
   promoteBatch(id: number) {
     this.integrationService.promoteBatch(id).subscribe(() => {
       this.loadBatches();
+      // After promotion, new clients/obligations/cases should appear
+      this.store.refreshData();
     });
   }
 }
