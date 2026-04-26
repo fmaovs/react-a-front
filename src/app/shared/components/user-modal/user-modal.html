@@ -85,7 +85,7 @@
           <label>Rol de Acceso</label>
           <mat-form-field appearance="outline" class="custom-select">
             <mat-select name="roleId" [(ngModel)]="userData.roleId">
-              @for (role of roles; track role.id) {
+              @for (role of roles(); track role.id) {
                 <mat-option [value]="role.id">{{ role.name }}</mat-option>
               }
             </mat-select>

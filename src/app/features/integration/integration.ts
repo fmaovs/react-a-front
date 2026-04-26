@@ -26,6 +26,7 @@ export class IntegrationComponent implements OnInit {
 
   isUploading = signal(false);
   progress = signal(0);
+  uploadError = signal('');
   realBatches = signal<Batch[]>([]);
 
   readonly DatabaseIcon = Database;
@@ -45,10 +46,16 @@ export class IntegrationComponent implements OnInit {
   }
 
   loadBatches() {
-    this.integrationService.getBatches().subscribe(response => {
-      // API returns a Page object or Array
-      const batches = response.content || response;
-      this.realBatches.set(batches);
+    this.integrationService.getBatches().subscribe({
+      next: response => {
+        // API returns a Page object or Array
+        const batches = response.content || response;
+        this.realBatches.set(batches);
+      },
+      error: err => {
+        this.realBatches.set([]);
+        this.uploadError.set(err?.error?.message || 'No fue posible consultar los lotes');
+      }
     });
   }
 
@@ -60,19 +67,33 @@ export class IntegrationComponent implements OnInit {
   }
 
   uploadFile(file: File) {
+    this.uploadError.set('');
     this.isUploading.set(true);
     this.progress.set(30);
     this.integrationService.uploadBatch(file).subscribe({
-      next: () => {
+      next: (response) => {
+        if (response?.status === 'FAILED' || response?.status === 'ERROR') {
+          this.isUploading.set(false);
+          this.progress.set(0);
+          this.uploadError.set(response?.message || 'No fue posible procesar el lote');
+          this.loadBatches();
+          return;
+        }
+
         this.progress.set(100);
         setTimeout(() => {
           this.isUploading.set(false);
           this.loadBatches();
         }, 1000);
       },
-      error: () => {
+      error: (err) => {
         this.isUploading.set(false);
         this.progress.set(0);
+        this.uploadError.set(
+          err?.error?.message ||
+          'Error procesando lote. Verifique que exista al menos un asesor activo.'
+        );
+        this.loadBatches();
       }
     });
   }

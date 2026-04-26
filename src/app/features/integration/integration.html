@@ -41,6 +41,12 @@
     </div>
   }
 
+  @if (uploadError()) {
+    <div class="upload-progress-card">
+      <span class="error-text">{{ uploadError() }}</span>
+    </div>
+  }
+
   <div class="content-grid">
     <div class="card">
       <h4 class="card-title">

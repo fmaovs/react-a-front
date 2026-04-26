@@ -21,12 +21,38 @@ export class CaseService {
     return this.http.get<Case>(`${this.apiUrl}/${id}`);
   }
 
-  updateCase(id: number, updates: Partial<Case>): Observable<Case> {
-    return this.http.put<Case>(`${this.apiUrl}/${id}`, updates);
+  createCase(clientId: number, description: string): Observable<Case> {
+    return this.http.post<Case>(this.apiUrl, null, {
+      params: { clientId, description }
+    });
+  }
+
+  updateCase(id: number, updates: { description?: string; status?: Case['status']; priority?: Case['priority'] }): Observable<Case> {
+    return this.http.put<Case>(`${this.apiUrl}/${id}`, null, {
+      params: {
+        ...(updates.description ? { description: updates.description } : {}),
+        ...(updates.status ? { status: updates.status } : {}),
+        ...(updates.priority ? { priority: updates.priority } : {})
+      }
+    });
+  }
+
+  escalateCase(id: number, reason: string): Observable<Case> {
+    return this.http.post<Case>(`${this.apiUrl}/${id}/escalate`, null, {
+      params: { reason }
+    });
+  }
+
+  resolveCase(id: number, resolution: string): Observable<Case> {
+    return this.http.post<Case>(`${this.apiUrl}/${id}/resolve`, null, {
+      params: { resolution }
+    });
   }
 
   addNote(caseId: number, content: string): Observable<CaseNote> {
-    return this.http.post<CaseNote>(`${this.apiUrl}/${caseId}/notes`, { content });
+    return this.http.post<CaseNote>(`${this.apiUrl}/${caseId}/notes`, null, {
+      params: { content }
+    });
   }
 
   getNotes(caseId: number): Observable<CaseNote[]> {

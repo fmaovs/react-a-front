@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User, UserCreateRequest, UserUpdateRequest } from '../models/types';
+import { User, UserCreateRequest, UserUpdateRequest, RoleOption } from '../models/types';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
@@ -13,6 +13,10 @@ export class UserService {
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.apiUrl);
+  }
+
+  getRoles(): Observable<RoleOption[]> {
+    return this.http.get<RoleOption[]>(`${this.apiUrl}/roles`);
   }
 
   getUser(id: number): Observable<User> {

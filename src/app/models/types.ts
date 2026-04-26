@@ -28,6 +28,12 @@ export interface UserUpdateRequest {
   status: string;
 }
 
+export interface RoleOption {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 export interface Page<T> {
   content: T[];
   totalElements: number;
@@ -43,6 +49,35 @@ export interface DashboardMetrics {
   dailyCollections: number;
   riskDistribution: { [key: string]: number };
   monthlyRecovery: { [key: string]: number };
+  openCases?: number;
+  inProgressCases?: number;
+  escalatedCases?: number;
+  resolvedCases?: number;
+  totalCases?: number;
+  activeAdvisors?: number;
+}
+
+export interface DashboardSummary {
+  kpis: {
+    totalPortfolioValue: number;
+    openCases: number;
+    inProgressCases: number;
+    escalatedCases: number;
+    resolvedCases: number;
+    totalCases: number;
+    activeAdvisors: number;
+  };
+  advisorMetrics?: Array<{
+    advisorId: number;
+    advisorCode: string;
+    advisorName: string;
+    totalAssigned: number;
+    openCases: number;
+    inProgressCases: number;
+    escalatedCases: number;
+    resolvedCases: number;
+    closedCases: number;
+  }>;
 }
 
 export interface Client {
@@ -79,19 +114,43 @@ export interface Batch {
 
 export interface Case {
   id: number;
-  clientId: number;
+  caseNumber?: string;
+  client?: {
+    id?: number;
+    fullName?: string;
+    documentNumber?: string;
+  };
+  obligation?: {
+    id?: number;
+    client?: {
+      id?: number;
+      fullName?: string;
+      documentNumber?: string;
+    };
+    obligationNumber?: string;
+    currentBalance?: number;
+    totalBalance?: number;
+    daysPastDue?: number;
+  };
+  advisorId?: number;
+  batchId?: number;
+  assignedTo?: number | string;
   status: 'OPEN' | 'IN_PROGRESS' | 'ESCALATED' | 'RESOLVED' | 'CLOSED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  assignedTo?: string;
+  contactAttempts?: number;
+  aiEscalationCount?: number;
+  resolutionType?: string;
   createdAt: string;
   updatedAt: string;
+  resolvedAt?: string;
 }
 
 export interface CaseNote {
   id: number;
-  caseId: number;
+  caseEntity?: { id: number };
+  noteType?: 'INTERNAL' | 'CUSTOMER_VISIBLE';
   content: string;
-  author: string;
+  createdBy?: number;
   createdAt: string;
 }
 
