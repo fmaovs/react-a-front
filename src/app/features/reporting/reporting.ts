@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule,
@@ -10,6 +10,7 @@ import {
   ShieldCheck
 } from 'lucide-angular';
 import { AdminService } from '../../services/admin.service';
+import { DashboardService } from '../../services/dashboard.service';
 import { AuditLog } from '../../models/types';
 
 @Component({
@@ -21,6 +22,7 @@ import { AuditLog } from '../../models/types';
 })
 export class ReportingComponent implements OnInit {
   private adminService = inject(AdminService);
+  private dashboardService = inject(DashboardService);
 
   readonly BarChart3Icon = BarChart3;
   readonly PieIcon = PieIcon;
@@ -30,6 +32,7 @@ export class ReportingComponent implements OnInit {
   readonly ShieldCheckIcon = ShieldCheck;
 
   realAuditLogs = signal<AuditLog[]>([]);
+  dailyCollections = signal<any[]>([]);
 
   channelEffectiveness = [
     { name: 'WhatsApp', value: 75, color: '#10989B' },
@@ -38,18 +41,22 @@ export class ReportingComponent implements OnInit {
     { name: 'SMS', value: 38, color: '#001822' },
   ];
 
-  dailyRecovery = [
-    { day: 'Lun', amount: 4500000 },
-    { day: 'Mar', amount: 5200000 },
-    { day: 'Mie', amount: 3800000 },
-    { day: 'Jue', amount: 6100000 },
-    { day: 'Vie', amount: 7500000 },
-    { day: 'Sab', amount: 2100000 },
-  ];
+  dailyRecoveryData = computed(() => {
+    const data = this.dailyCollections();
+    if (!data || data.length === 0) return [];
+
+    return data.map(item => ({
+      day: item.label || item.date,
+      amount: item.amount
+    }));
+  });
 
   ngOnInit() {
     this.adminService.getAuditLogs().subscribe(logs => {
       this.realAuditLogs.set(logs);
+    });
+    this.dashboardService.getDailyCollections().subscribe(data => {
+      this.dailyCollections.set(data);
     });
   }
 }

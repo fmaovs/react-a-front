@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Case, CaseNote } from '../models/types';
+import { Case, CaseNote, Page } from '../models/types';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
@@ -11,8 +11,10 @@ export class CaseService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/management/cases`;
 
-  getCases(): Observable<Case[]> {
-    return this.http.get<Case[]>(this.apiUrl);
+  getCases(page: number = 0, size: number = 20): Observable<Page<Case>> {
+    return this.http.get<Page<Case>>(this.apiUrl, {
+      params: { page, size }
+    });
   }
 
   getCase(id: number): Observable<Case> {
