@@ -29,10 +29,13 @@ export class StoreService {
   private loadInitialData() {
     // We use forkJoin to wait for both clients and obligations to have a consistent view
     forkJoin({
-      clients: this.portfolioService.getClients(),
-      obligations: this.portfolioService.getObligations()
+      clientsPage: this.portfolioService.getClients(),
+      obligationsPage: this.portfolioService.getObligations()
     }).subscribe({
-      next: ({ clients, obligations }) => {
+      next: ({ clientsPage, obligationsPage }) => {
+        const clients = clientsPage.content;
+        const obligations = obligationsPage.content;
+
         const mappedAssociates: Associate[] = clients.map(c => {
           const clientObs = obligations.filter(o => o.clientId === c.id);
           const totalBalance = clientObs.reduce((sum, o) => sum + o.currentBalance, 0);
@@ -40,6 +43,7 @@ export class StoreService {
 
           return {
             ...c,
+            name: c.fullName,
             document: c.documentNumber,
             risk: c.riskLevel as any,
             balance: totalBalance,
@@ -56,8 +60,8 @@ export class StoreService {
 
   private loadCases() {
     this.caseService.getCases().subscribe({
-      next: (cases) => {
-        this.cases.set(cases);
+      next: (page) => {
+        this.cases.set(page.content);
       },
       error: (err) => console.error('Error loading cases', err)
     });

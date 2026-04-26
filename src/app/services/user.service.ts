@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User } from '../models/types';
+import { User, UserCreateRequest, UserUpdateRequest } from '../models/types';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 
@@ -19,15 +19,19 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/${id}`);
   }
 
-  createUser(user: Partial<User>): Observable<User> {
+  createUser(user: UserCreateRequest): Observable<User> {
     return this.http.post<User>(this.apiUrl, user);
   }
 
-  updateUser(id: number, user: Partial<User>): Observable<User> {
+  updateUser(id: number, user: UserUpdateRequest): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${id}`, user);
   }
 
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  toggleStatus(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/${id}/toggle-status`, {});
   }
 }

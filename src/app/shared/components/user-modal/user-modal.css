@@ -1,0 +1,158 @@
+.modal-container {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-left {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.icon-box {
+  width: 40px;
+  height: 40px;
+  background: #f0fdfa;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10989B;
+}
+
+.header-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.header-text h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #001822;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.input-relative {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+.custom-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px 0 40px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  color: #001822;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #10989B;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(16, 152, 155, 0.1);
+}
+
+.custom-select {
+  width: 100%;
+}
+
+::ng-deep .custom-select .mat-mdc-text-field-wrapper {
+  background-color: #f8fafc !important;
+}
+
+.modal-footer {
+  margin-top: 2rem;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  gap: 1rem;
+}
+
+.cancel-btn {
+  font-weight: 600;
+  color: #64748b !important;
+}
+
+.save-btn {
+  background-color: #10989B !important;
+  color: white !important;
+  font-weight: 600 !important;
+  height: 44px !important;
+  padding: 0 1.5rem !important;
+  border-radius: 8px !important;
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.mini-icon {
+  width: 16px;
+  height: 16px;
+}

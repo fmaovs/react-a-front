@@ -22,7 +22,8 @@ export class HeaderComponent {
   readonly BellIcon = Bell;
   readonly XIcon = X;
 
-  getInitials(name: string): string {
+  getInitials(name: string | undefined): string {
+    if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('');
   }
 

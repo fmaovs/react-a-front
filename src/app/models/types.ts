@@ -1,28 +1,66 @@
 export interface User {
   id?: number;
   username: string;
-  name: string;
+  fullName: string;
   email: string;
-  role: 'ADMIN' | 'SUPERVISOR' | 'AGENT' | 'AUDITOR';
+  roleName?: string;
+  status: string;
+  createdAt?: string;
+  lastLogin?: string;
   token?: string;
+  // Compatibility fields
+  name?: string;
+  role?: any;
+}
+
+export interface UserCreateRequest {
+  username: string;
+  email: string;
+  password?: string;
+  fullName: string;
+  roleId: number;
+}
+
+export interface UserUpdateRequest {
+  email: string;
+  fullName: string;
+  roleId?: number;
+  status: string;
+}
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+export interface DashboardMetrics {
+  totalPortfolioValue: number;
+  activeCases: number;
+  recoveryRate: number;
+  dailyCollections: number;
+  riskDistribution: { [key: string]: number };
+  monthlyRecovery: { [key: string]: number };
 }
 
 export interface Client {
   id: number;
   documentNumber: string;
   documentType: string;
-  name: string;
+  fullName: string; // Updated from name to match ClientDTO
   email: string;
   phone: string;
   segment: string;
   riskLevel: string;
-  score: number;
+  creditScore: number; // Updated from score to match ClientDTO
 }
 
 export interface Obligation {
   id: number;
   clientId: number;
-  productType: string;
+  obligationNumber: string;
   principalAmount: number;
   currentBalance: number;
   daysPastDue: number;
@@ -31,17 +69,19 @@ export interface Obligation {
 
 export interface Batch {
   id: number;
-  filename: string;
-  uploadDate: string;
-  status: 'PENDING' | 'VALIDATED' | 'PROMOTED' | 'FAILED';
-  recordCount: number;
+  fileName: string; // Updated from filename to match Batch schema
+  uploadDate?: string;
+  uploadedAt?: string;
+  createdAt?: string;
+  status: 'STAGING' | 'UPLOADED' | 'VALIDATING' | 'VALIDATED' | 'PROCESSING' | 'PROMOTED' | 'COMPLETED' | 'FAILED';
+  totalRecords: number; // Updated from recordCount
 }
 
 export interface Case {
   id: number;
   clientId: number;
-  status: string;
-  priority: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'ESCALATED' | 'RESOLVED' | 'CLOSED';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   assignedTo?: string;
   createdAt: string;
   updatedAt: string;
@@ -70,7 +110,7 @@ export interface Installment {
   installmentNumber: number;
   dueDate: string;
   amount: number;
-  status: 'PENDING' | 'PAID' | 'OVERDUE';
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
 }
 
 export interface AuditLog {
@@ -89,6 +129,7 @@ export interface Associate extends Client {
   daysOverdue: number;
   lastAction?: string;
   propensity: 'Alta' | 'Media' | 'Baja';
+  name: string; // Keep for UI
 }
 
 export interface Policy {

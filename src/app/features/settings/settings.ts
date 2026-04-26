@@ -1,9 +1,11 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { StoreService } from '../../services/store.service';
 import { UserService } from '../../services/user.service';
-import { User } from '../../models/types';
+import { User, UserCreateRequest, UserUpdateRequest } from '../../models/types';
+import { UserModalComponent } from '../../shared/components/user-modal/user-modal';
 import {
   LucideAngularModule,
   Settings2,
@@ -35,13 +37,14 @@ interface Tab {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, MatDialogModule],
   templateUrl: './settings.html',
   styleUrl: './settings.css'
 })
 export class SettingsComponent implements OnInit {
   store = inject(StoreService);
   private userService = inject(UserService);
+  private dialog = inject(MatDialog);
 
   activeTab = signal<TabId>('policies');
   isSaving = signal(false);
@@ -119,17 +122,47 @@ export class SettingsComponent implements OnInit {
   }
 
   removeUser(id: number) {
-    this.userService.deleteUser(id).subscribe(() => this.loadUsers());
+    if (confirm('¿Está seguro de eliminar este usuario?')) {
+      this.userService.deleteUser(id).subscribe(() => this.loadUsers());
+    }
   }
 
   addUser() {
-    // Basic example of adding a user
-    const newUser: Partial<User> = {
-      username: 'nuevo_usuario',
-      name: 'Nuevo Usuario',
-      email: 'nuevo@bankvision.com',
-      role: 'AGENT'
-    };
-    this.userService.createUser(newUser).subscribe(() => this.loadUsers());
+    const dialogRef = this.dialog.open(UserModalComponent, {
+      width: '500px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const request: UserCreateRequest = {
+          username: result.username,
+          email: result.email,
+          fullName: result.fullName,
+          password: result.password,
+          roleId: result.roleId
+        };
+        this.userService.createUser(request).subscribe(() => this.loadUsers());
+      }
+    });
+  }
+
+  editUser(user: User) {
+    const dialogRef = this.dialog.open(UserModalComponent, {
+      width: '500px',
+      data: { user }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && user.id) {
+        const request: UserUpdateRequest = {
+          email: result.email,
+          fullName: result.fullName,
+          roleId: result.roleId,
+          status: result.status
+        };
+        this.userService.updateUser(user.id, request).subscribe(() => this.loadUsers());
+      }
+    });
   }
 }

@@ -124,18 +124,21 @@
                 <tr class="table-row group">
                   <td>
                     <div class="user-cell">
-                      <div class="avatar-small">{{ user.name[0] }}</div>
+                      <div class="avatar-small">{{ (user.fullName || user.username)[0] }}</div>
                       <div class="user-info">
-                        <p class="name">{{ user.name }}</p>
+                        <p class="name">{{ user.fullName }}</p>
                         <p class="email">{{ user.email }}</p>
                       </div>
                     </div>
                   </td>
                   <td><span class="mono">{{ user.username }}</span></td>
-                  <td><span class="role-text">{{ user.role }}</span></td>
+                  <td><span class="role-text">{{ user.roleName }}</span></td>
                   <td>
                     <div class="action-row justify-end">
                       @if (user.id) {
+                        <button (click)="editUser(user)" class="icon-btn-gray">
+                          <lucide-icon [img]="Settings2Icon" class="mini-icon"></lucide-icon>
+                        </button>
                         <button (click)="removeUser(user.id)" class="icon-btn-gray hover-red">
                           <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
                         </button>

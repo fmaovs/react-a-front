@@ -45,7 +45,9 @@ export class IntegrationComponent implements OnInit {
   }
 
   loadBatches() {
-    this.integrationService.getBatches().subscribe(batches => {
+    this.integrationService.getBatches().subscribe(response => {
+      // API returns a Page object or Array
+      const batches = response.content || response;
       this.realBatches.set(batches);
     });
   }
