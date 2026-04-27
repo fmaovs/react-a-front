@@ -226,3 +226,26 @@ export interface AssignmentRule {
   priority: number;
   isActive: boolean;
 }
+
+export interface ZolevTokenResponse {
+  respuesta: {
+    codigo: number;
+    mensaje: string;
+  };
+  salida: {
+    token: string;
+  };
+}
+
+export interface PaymentLinkRequest {
+  clientId: number;
+  obligationId: number;
+  amount: number;
+  zolevToken: string;
+}
+
+export interface PaymentLinkResponse {
+  paymentUrl: string;
+  paymentId: string;
+  status: string;
+}

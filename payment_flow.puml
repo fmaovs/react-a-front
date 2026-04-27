@@ -1,0 +1,24 @@
+@startuml
+actor User
+participant "Angular Frontend" as FE
+participant "BankVision Backend" as BE
+participant "Zolev API (Token)" as ZT
+participant "Zolev API (Payment)" as ZP
+
+User -> FE: Click "Nuevo Link de Pago"
+FE -> FE: Open Form/Search Client
+User -> FE: Select Client & Obligation, Set Amount
+FE -> ZT: POST /api/token/obtener (with Zolev credentials)
+ZT --> FE: Return Token
+
+FE -> FE: Show Loading Animation
+FE -> BE: POST /api/recaudo/generate-link (DTO: clientId, obligationId, amount, token, etc.)
+BE -> BE: Validate Client/Obligation
+BE -> ZP: POST /api/pago/crearpago (with Token)
+ZP --> BE: Return paymentId
+BE -> BE: Save Payment Record & Generate Link URL
+BE --> FE: Return Generated Link URL
+
+FE -> FE: Hide Loading Animation
+FE -> User: Show Generated Link & "Copy" button
+@enduml

@@ -11,20 +11,20 @@ export class PortfolioService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/portfolio`;
 
-  getClients(page: number = 0, size: number = 20): Observable<Page<Client>> {
-    return this.http.get<Page<Client>>(`${this.apiUrl}/clients`, {
-      params: { page, size }
-    });
+  getClients(page: number = 0, size: number = 20, search: string = ''): Observable<Page<Client>> {
+    const params: any = { page, size };
+    if (search) params.search = search;
+    return this.http.get<Page<Client>>(`${this.apiUrl}/clients`, { params });
   }
 
   getClient(id: number): Observable<Client> {
     return this.http.get<Client>(`${this.apiUrl}/clients/${id}`);
   }
 
-  getObligations(page: number = 0, size: number = 20): Observable<Page<Obligation>> {
-    return this.http.get<Page<Obligation>>(`${this.apiUrl}/obligations`, {
-      params: { page, size }
-    });
+  getObligations(page: number = 0, size: number = 20, clientId?: number): Observable<Page<Obligation>> {
+    const params: any = { page, size };
+    if (clientId) params.clientId = clientId;
+    return this.http.get<Page<Obligation>>(`${this.apiUrl}/obligations`, { params });
   }
 
   getObligation(id: number): Observable<Obligation> {
