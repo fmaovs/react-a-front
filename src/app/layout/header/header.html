@@ -9,8 +9,10 @@
       <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
       <input
         type="text"
-        placeholder="Buscar asociado..."
+        placeholder="Buscar caso, cliente, obligación..."
         class="search-input"
+        [value]="store.searchQuery()"
+        (input)="store.searchQuery.set($any($event.target).value)"
       />
     </div>
 

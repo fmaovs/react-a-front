@@ -17,6 +17,7 @@ export class StoreService {
   campaigns = signal<Campaign[]>([]);
   caseStatuses = signal<CaseStatus[]>([]);
   assignmentRules = signal<AssignmentRule[]>([]);
+  searchQuery = signal<string>('');
 
   constructor() {
     this.refreshData();

@@ -2,7 +2,7 @@
   <div class="module-header">
     <div class="header-text">
       <h3 class="module-title">M5. Gestion de Casos y Asesores</h3>
-      <p class="module-subtitle">Operacion de casos con actualizacion de estado, prioridad, notas y resolucion.</p>
+      <p class="module-subtitle">Cola de gestión IA — trazabilidad, escalamiento a humano y resolución estructurada.</p>
     </div>
     <div class="header-actions">
       <button class="outline-btn" (click)="loadCases()">
@@ -24,39 +24,12 @@
     }
   </div>
 
-  <div class="card">
-    <h4 class="card-title">
-      <lucide-icon [img]="PlusIcon" class="accent-icon"></lucide-icon>
-      Crear Caso
-    </h4>
-    <div class="create-grid">
-      <input
-        class="custom-input"
-        type="number"
-        min="1"
-        placeholder="Client ID"
-        [(ngModel)]="newCaseClientId"
-      />
-      <input
-        class="custom-input"
-        type="text"
-        placeholder="Descripcion del caso"
-        [(ngModel)]="newCaseDescription"
-      />
-      <button class="primary-action-btn" (click)="createCase()">Crear</button>
-    </div>
-  </div>
-
   <div class="card full-width no-padding overflow-hidden">
     <div class="card-header">
-      <h4 class="card-title-text">Cola de Gestion</h4>
+      <h4 class="card-title-text">Cola de Gestión</h4>
       <div class="filter-block">
         <lucide-icon [img]="FilterIcon" class="btn-icon-small"></lucide-icon>
-        <select
-          class="filter-select"
-          [ngModel]="selectedStatusFilter()"
-          (ngModelChange)="selectedStatusFilter.set($event)"
-        >
+        <select class="filter-select" [ngModel]="selectedStatusFilter()" (ngModelChange)="selectedStatusFilter.set($event)">
           <option value="ALL">Todos</option>
           @for (status of statuses; track status) {
             <option [value]="status">{{ status }}</option>
@@ -87,6 +60,8 @@
           </thead>
           <tbody>
             @for (caseItem of filteredCases(); track caseItem.id) {
+
+              <!-- Fila principal -->
               <tr class="table-row">
                 <td>
                   <div class="assoc-col">
@@ -116,23 +91,23 @@
                     <span class="status-pill" [style.backgroundColor]="getStatusColor(caseItem.status)">
                       {{ caseItem.status }}
                     </span>
-                    <select
-                      class="compact-select"
-                      [ngModel]="caseItem.status"
-                      (ngModelChange)="changeStatus(caseItem.id, $event)"
-                    >
+                    <select class="compact-select"
+                            [ngModel]="caseItem.status"
+                            (ngModelChange)="changeStatus(caseItem.id, $event)">
                       @for (status of statuses; track status) {
                         <option [value]="status">{{ status }}</option>
                       }
                     </select>
+                    @if (caseItem.escalatedAdvisorName) {
+                      <p class="associate-doc">→ {{ caseItem.escalatedAdvisorName }}</p>
+                    }
+                    @if (caseItem.resolutionType) {
+                      <p class="associate-doc">{{ getResolutionLabel(caseItem.resolutionType) }}</p>
+                    }
                   </div>
                 </td>
                 <td>
-                  <select
-                    class="compact-select"
-                    [ngModel]="caseItem.priority"
-                    (ngModelChange)="changePriority(caseItem.id, $event)"
-                  >
+                  <select class="compact-select" [ngModel]="caseItem.priority" (ngModelChange)="changePriority(caseItem.id, $event)">
                     @for (priority of priorities; track priority) {
                       <option [value]="priority">{{ priority }}</option>
                     }
@@ -140,21 +115,158 @@
                 </td>
                 <td>
                   <div class="action-bar">
-                    <button class="small-btn neutral" (click)="addNote(caseItem.id)">
-                      <lucide-icon [img]="FileTextIcon" class="icon-16"></lucide-icon>
-                      Nota
+                    <button class="action-btn neutral"
+                            [class.active]="isPanelOpen(caseItem.id, 'note')"
+                            (click)="openPanel(caseItem.id, 'note')"
+                            title="Nota">
+                      <lucide-icon [img]="FileTextIcon" class="action-icon"></lucide-icon>
+                      <span class="action-label">Nota</span>
                     </button>
-                    <button class="small-btn warn" (click)="escalate(caseItem.id)">
-                      <lucide-icon [img]="AlertTriangleIcon" class="icon-16"></lucide-icon>
-                      Escalar
+
+                    <button class="action-btn warn"
+                            [class.active]="isPanelOpen(caseItem.id, 'escalate')"
+                            [disabled]="caseItem.status === 'RESOLVED' || caseItem.status === 'CLOSED'"
+                            (click)="openPanel(caseItem.id, 'escalate')"
+                            title="Escalar">
+                      <lucide-icon [img]="AlertTriangleIcon" class="action-icon"></lucide-icon>
+                      <span class="action-label">Escalar</span>
                     </button>
-                    <button class="small-btn ok" (click)="resolve(caseItem.id)">
-                      <lucide-icon [img]="CheckCircle2Icon" class="icon-16"></lucide-icon>
-                      Resolver
+
+                    <button class="action-btn ok"
+                            [class.active]="isPanelOpen(caseItem.id, 'resolve')"
+                            [disabled]="caseItem.status === 'RESOLVED' || caseItem.status === 'CLOSED'"
+                            (click)="openPanel(caseItem.id, 'resolve')"
+                            title="Resolver">
+                      <lucide-icon [img]="CheckCircle2Icon" class="action-icon"></lucide-icon>
+                      <span class="action-label">Resolver</span>
+                    </button>
+
+                    <button class="action-btn neutral"
+                            [class.active]="isPanelOpen(caseItem.id, 'notes')"
+                            (click)="openPanel(caseItem.id, 'notes')"
+                            title="Historial">
+                      <lucide-icon [img]="isPanelOpen(caseItem.id, 'notes') ? ChevronUpIcon : ChevronDownIcon" class="action-icon"></lucide-icon>
                     </button>
                   </div>
                 </td>
               </tr>
+
+              <!-- Panel de NOTA -->
+              @if (isPanelOpen(caseItem.id, 'note')) {
+                <tr class="panel-row">
+                  <td colspan="7">
+                    <div class="action-panel">
+                      <p class="panel-title">
+                        <lucide-icon [img]="FileTextIcon" class="icon-16"></lucide-icon>
+                        Dejar nota de trazabilidad — caso {{ caseItem.caseNumber || caseItem.id }}
+                      </p>
+                      <div class="panel-fields">
+                        <select class="custom-input" [(ngModel)]="noteType">
+                          <option value="INTERNAL">Interna (solo equipo)</option>
+                          <option value="CUSTOMER_VISIBLE">Visible al cliente</option>
+                        </select>
+                        <textarea class="custom-input panel-textarea" rows="3"
+                                  placeholder="Describe la acción realizada o el evento observado..."
+                                  [(ngModel)]="noteContent"></textarea>
+                      </div>
+                      <div class="panel-actions">
+                        <button class="small-btn ok" (click)="submitNote(caseItem.id)" [disabled]="!noteContent.trim()">Guardar nota</button>
+                        <button class="small-btn neutral" (click)="closePanel()">Cancelar</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+
+              <!-- Panel de ESCALAMIENTO -->
+              @if (isPanelOpen(caseItem.id, 'escalate')) {
+                <tr class="panel-row">
+                  <td colspan="7">
+                    <div class="action-panel warn-panel">
+                      <p class="panel-title">
+                        <lucide-icon [img]="AlertTriangleIcon" class="icon-16"></lucide-icon>
+                        Escalar a asesor humano — el sistema asignará al de menor carga
+                      </p>
+                      <div class="panel-fields">
+                        <label class="panel-label">Razón de escalamiento</label>
+                        <select class="custom-input" [(ngModel)]="escalationReason">
+                          @for (r of escalationReasons; track r.value) {
+                            <option [value]="r.value">{{ r.label }}</option>
+                          }
+                        </select>
+                      </div>
+                      <p class="panel-hint">La IA dejará una nota automática con el contexto del escalamiento.</p>
+                      <div class="panel-actions">
+                        <button class="small-btn warn" (click)="submitEscalate(caseItem.id)">Confirmar escalamiento</button>
+                        <button class="small-btn neutral" (click)="closePanel()">Cancelar</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+
+              <!-- Panel de RESOLUCIÓN -->
+              @if (isPanelOpen(caseItem.id, 'resolve')) {
+                <tr class="panel-row">
+                  <td colspan="7">
+                    <div class="action-panel ok-panel">
+                      <p class="panel-title">
+                        <lucide-icon [img]="CheckCircle2Icon" class="icon-16"></lucide-icon>
+                        Resolver caso — {{ caseItem.caseNumber || caseItem.id }}
+                      </p>
+                      <div class="panel-fields">
+                        <label class="panel-label">Tipo de resolución</label>
+                        <select class="custom-input" [(ngModel)]="resolutionType">
+                          @for (r of resolutionTypes; track r.value) {
+                            <option [value]="r.value">{{ r.label }} &nbsp; {{ r.obligationEffect }}</option>
+                          }
+                        </select>
+                        <textarea class="custom-input panel-textarea" rows="2"
+                                  placeholder="Detalle adicional (opcional)..."
+                                  [(ngModel)]="resolutionDetails"></textarea>
+                      </div>
+                      <p class="panel-hint">La IA actualizará el estado de la obligación según el tipo seleccionado.</p>
+                      <div class="panel-actions">
+                        <button class="small-btn ok" (click)="submitResolve(caseItem.id)">Confirmar resolución</button>
+                        <button class="small-btn neutral" (click)="closePanel()">Cancelar</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+
+              <!-- Panel de NOTAS (historial) -->
+              @if (isPanelOpen(caseItem.id, 'notes')) {
+                <tr class="panel-row">
+                  <td colspan="7">
+                    <div class="action-panel notes-panel">
+                      <p class="panel-title">
+                        Historial de trazabilidad — {{ getNotesForCase(caseItem.id).length }} nota(s)
+                      </p>
+                      @if (getNotesForCase(caseItem.id).length === 0) {
+                        <p class="panel-hint">Sin notas registradas.</p>
+                      } @else {
+                        <div class="notes-list">
+                          @for (note of getNotesForCase(caseItem.id); track note.id) {
+                            <div class="note-item">
+                              <div class="note-header">
+                                <span [class]="'source-badge ' + (note.source === 'AI' ? 'ai' : 'human')">
+                                  <lucide-icon [img]="note.source === 'AI' ? BotIcon : UserIcon" class="icon-12"></lucide-icon>
+                                  {{ note.source === 'AI' ? 'IA' : 'Humano' }}
+                                </span>
+                                <span class="note-type-badge">{{ note.noteType === 'CUSTOMER_VISIBLE' ? 'Visible cliente' : 'Interna' }}</span>
+                                <span class="note-date">{{ note.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                              </div>
+                              <p class="note-content">{{ note.content }}</p>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+
             }
 
             @if (!filteredCases().length) {

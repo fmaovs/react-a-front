@@ -139,7 +139,10 @@ export interface Case {
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   contactAttempts?: number;
   aiEscalationCount?: number;
-  resolutionType?: string;
+  resolutionType?: 'PAYMENT_COMPLETE' | 'PAYMENT_AGREEMENT' | 'WRITE_OFF' | 'UNABLE_TO_COLLECT' | 'DISPUTE_RESOLVED';
+  escalationReason?: 'MAX_CONTACT_ATTEMPTS' | 'PAYMENT_REFUSED' | 'HIGH_RISK_SCORE' | 'LEGAL_REQUIRED' | 'COMPLEX_SITUATION';
+  escalatedToAdvisorId?: number;
+  escalatedAdvisorName?: string;
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
@@ -149,6 +152,7 @@ export interface CaseNote {
   id: number;
   caseEntity?: { id: number };
   noteType?: 'INTERNAL' | 'CUSTOMER_VISIBLE';
+  source?: 'AI' | 'HUMAN';
   content: string;
   createdBy?: number;
   createdAt: string;
