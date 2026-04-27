@@ -2,25 +2,24 @@
   <div class="module-header">
     <div class="header-text">
       <h3 class="module-title">Configuración de Parámetros</h3>
-      <p class="module-subtitle">Administración de políticas, niveles de riesgo y especificaciones técnicas.</p>
+      <p class="module-subtitle">Scoring IA, segmentación, flujo de cobranza y usuarios — sin redeployment.</p>
     </div>
-    <button
-      (click)="handleSave()"
-      [disabled]="isSaving()"
-      class="primary-btn shadow-lg"
-    >
-      <lucide-icon [img]="SaveIcon" class="btn-icon"></lucide-icon>
-      {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+    <button class="outline-btn" (click)="loadAll()">
+      <lucide-icon [img]="RefreshCwIcon" class="btn-icon-small"></lucide-icon>
+      Recargar
     </button>
   </div>
 
+  @if (saveSuccess()) {
+    <div class="success-banner">{{ saveSuccess() }}</div>
+  }
+  @if (saveError()) {
+    <div class="error-banner">{{ saveError() }}</div>
+  }
+
   <div class="tab-switcher">
     @for (tab of tabs; track tab.id) {
-      <button
-        (click)="activeTab.set(tab.id)"
-        [class.active]="activeTab() === tab.id"
-        class="tab-btn"
-      >
+      <button (click)="activeTab.set(tab.id)" [class.active]="activeTab() === tab.id" class="tab-btn">
         <lucide-icon [img]="tab.icon" class="tab-icon"></lucide-icon>
         {{ tab.label }}
       </button>
@@ -28,83 +27,279 @@
   </div>
 
   <div class="settings-content card no-padding">
-    @if (activeTab() === 'policies') {
-      <div class="settings-section">
-        <div class="section-header">
-          <h4 class="section-title">Políticas de Cobranza</h4>
-          <button class="accent-btn-small"><lucide-icon [img]="PlusIcon" class="mini-icon"></lucide-icon> Nueva Política</button>
-        </div>
-        <div class="risk-levels-list">
-          @for (item of riskLevels(); track item.level; let i = $index) {
-            <div class="risk-item group">
-              <div [class]="'risk-indicator ' + item.color"></div>
-              <div class="risk-grid">
-                <div class="risk-col">
-                  <span class="label">Nivel</span>
-                  <p class="value bold">{{ item.level }}</p>
-                </div>
-                <div class="risk-col">
-                  <span class="label">Rango Score</span>
-                  <p class="value mono">{{ item.score }}</p>
-                </div>
-                <div class="risk-col">
-                  <span class="label">Días Mora</span>
-                  <p class="value mono">{{ item.mora }}</p>
-                </div>
-                <div class="risk-col">
-                  <span class="label">Acción Sugerida</span>
-                  <p class="value">{{ item.action }}</p>
-                </div>
+
+    <!-- ══ TAB: SCORING IA ══════════════════════════════════════════════════ -->
+    @if (activeTab() === 'scoring') {
+      @if (activeModel(); as model) {
+        <div class="settings-section">
+
+          <!-- Pesos del modelo -->
+          <div class="section-header">
+            <h4 class="section-title">Pesos del Modelo — versión {{ model.modelVersion }}</h4>
+            <span [class]="'badge-total ' + (weightsTotal() === 100 ? 'green' : 'red')">
+              Total: {{ weightsTotal() }}%
+            </span>
+          </div>
+          <div class="ai-sliders">
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Historial de Pago</span>
+                <span class="slider-value">{{ getWeight('weightPaymentHistory') }}%</span>
               </div>
-              <button (click)="removeRiskLevel(i)" class="delete-btn opacity-0 group-hover-opacity-100">
-                <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
-              </button>
+              <input type="range" min="0" max="100"
+                     [value]="getWeight('weightPaymentHistory')"
+                     (input)="updateWeight('weightPaymentHistory', +$any($event.target).value)"
+                     class="range-input" />
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Días de Mora</span>
+                <span class="slider-value">{{ getWeight('weightDaysPastDue') }}%</span>
+              </div>
+              <input type="range" min="0" max="100"
+                     [value]="getWeight('weightDaysPastDue')"
+                     (input)="updateWeight('weightDaysPastDue', +$any($event.target).value)"
+                     class="range-input" />
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Frecuencia de Incumplimiento</span>
+                <span class="slider-value">{{ getWeight('weightDefaultFrequency') }}%</span>
+              </div>
+              <input type="range" min="0" max="100"
+                     [value]="getWeight('weightDefaultFrequency')"
+                     (input)="updateWeight('weightDefaultFrequency', +$any($event.target).value)"
+                     class="range-input" />
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Antigüedad del Cliente</span>
+                <span class="slider-value">{{ getWeight('weightSeniority') }}%</span>
+              </div>
+              <input type="range" min="0" max="100"
+                     [value]="getWeight('weightSeniority')"
+                     (input)="updateWeight('weightSeniority', +$any($event.target).value)"
+                     class="range-input" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Umbrales de riesgo -->
+          <div class="section-header">
+            <h4 class="section-title">Umbrales de Riesgo (Puntaje → Nivel)</h4>
+            <button class="small-btn ok" (click)="saveThresholds()" [disabled]="isSaving()">Guardar umbrales</button>
+          </div>
+          <div class="param-table">
+            <div class="param-table-head">
+              <span>Nivel de Riesgo</span><span>Puntaje Mínimo</span><span>Puntaje Máximo</span>
+            </div>
+            @for (t of thresholds(); track t.riskLevel; let i = $index) {
+              <div class="param-table-row">
+                <select class="custom-input compact" [(ngModel)]="t.riskLevel">
+                  @for (level of RISK_LEVELS; track level) {
+                    <option [value]="level">{{ level }}</option>
+                  }
+                </select>
+                <input type="number" class="custom-input compact" [(ngModel)]="t.minScore" min="0" max="100" />
+                <input type="number" class="custom-input compact" [(ngModel)]="t.maxScore" min="0" max="100" />
+              </div>
+            }
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Canales de contacto -->
+          <div class="section-header">
+            <h4 class="section-title">Canal de Contacto por Nivel de Riesgo</h4>
+            <button class="small-btn ok" (click)="saveChannels()" [disabled]="isSaving()">Guardar canales</button>
+          </div>
+          <div class="param-table">
+            <div class="param-table-head">
+              <span>Nivel de Riesgo</span><span>Canal</span>
+            </div>
+            @for (c of channels(); track c.riskLevel) {
+              <div class="param-table-row">
+                <span class="param-label">{{ c.riskLevel }}</span>
+                <select class="custom-input compact" [(ngModel)]="c.contactChannel">
+                  @for (ch of CHANNELS; track ch) {
+                    <option [value]="ch">{{ ch }}</option>
+                  }
+                </select>
+              </div>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="loading-row">Cargando configuración de scoring...</div>
+      }
+    }
+
+    <!-- ══ TAB: SEGMENTACIÓN & CUOTAS ════════════════════════════════════════ -->
+    @if (activeTab() === 'segmentation') {
+      <div class="settings-section">
+
+        <!-- Reglas de segmento -->
+        <div class="section-header">
+          <h4 class="section-title">Segmentación por Días de Mora</h4>
+          <button class="small-btn ok" (click)="saveSegmentRules()" [disabled]="isSaving()">Guardar segmentación</button>
+        </div>
+        <p class="panel-hint">Define qué segmento y prioridad de caso corresponde a cada rango de mora. maxDías vacío = sin límite (∞).</p>
+        <div class="param-table">
+          <div class="param-table-head">
+            <span>Días Mín.</span><span>Días Máx.</span><span>Segmento</span><span>Prioridad Caso</span><span>Etiqueta</span>
+          </div>
+          @for (r of segmentRules(); track r.id ?? $index) {
+            <div class="param-table-row">
+              <input type="number" class="custom-input compact" [(ngModel)]="r.minDays" min="0" />
+              <input type="number" class="custom-input compact" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
+              <select class="custom-input compact" [(ngModel)]="r.segment">
+                @for (s of SEGMENTS; track s) { <option [value]="s">{{ s }}</option> }
+              </select>
+              <select class="custom-input compact" [(ngModel)]="r.casePriority">
+                @for (p of PRIORITIES; track p) { <option [value]="p">{{ p }}</option> }
+              </select>
+              <input type="text" class="custom-input compact" [(ngModel)]="r.label" placeholder="Ej. 31 – 90 días" />
             </div>
           }
         </div>
 
         <div class="divider"></div>
 
+        <!-- Reglas de cuotas -->
         <div class="section-header">
-          <h4 class="section-title">Parámetros de Scoring IA</h4>
-          <div class="header-meta">
-            <button class="text-link">Restablecer</button>
-            <span class="badge-total green">Total: 100%</span>
-          </div>
+          <h4 class="section-title">Cuotas de Acuerdo de Pago por Mora</h4>
+          <button class="small-btn ok" (click)="saveInstallmentRules()" [disabled]="isSaving()">Guardar cuotas</button>
         </div>
-        <div class="ai-params-grid">
-          <div class="ai-sliders">
-            @for (v of aiVariables(); track v.label) {
-              <div class="slider-group">
-                <div class="slider-header">
-                  <span class="slider-label">{{ v.label }}</span>
-                  <span class="slider-value">{{ v.weight }}%</span>
-                </div>
-                <input type="range" [value]="v.weight" class="range-input" />
-              </div>
-            }
+        <p class="panel-hint">Define cuántas cuotas se ofrecen según los días de mora del cliente.</p>
+        <div class="param-table">
+          <div class="param-table-head">
+            <span>Días Mín.</span><span>Días Máx.</span><span>Cuotas</span><span>Etiqueta</span>
           </div>
-          <div class="ai-note gradient-light">
-            <div class="note-header">
-              <lucide-icon [img]="InfoIcon" class="accent-icon-small"></lucide-icon>
-              <span class="note-title">Nota Técnica</span>
+          @for (r of installmentRules(); track r.id ?? $index) {
+            <div class="param-table-row">
+              <input type="number" class="custom-input compact" [(ngModel)]="r.minDays" min="0" />
+              <input type="number" class="custom-input compact" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
+              <input type="number" class="custom-input compact" [(ngModel)]="r.installments" min="1" max="36" />
+              <input type="text" class="custom-input compact" [(ngModel)]="r.label" placeholder="Ej. 90 – 179 días" />
             </div>
-            <p class="note-text">
-              El motor de IA recalibra estos pesos mensualmente basándose en la efectividad de las promesas de pago cumplidas.
-            </p>
-            <div class="note-status">
-              <span class="pulse-dot"></span>
-              <span class="status-label-green">Aprendizaje Activo</span>
-            </div>
-          </div>
+          }
         </div>
       </div>
     }
 
+    <!-- ══ TAB: FLUJO DE COBRANZA ════════════════════════════════════════════ -->
+    @if (activeTab() === 'workflow') {
+      @if (workflowConfig(); as cfg) {
+        <div class="settings-section">
+          <div class="section-header">
+            <h4 class="section-title">Flujo de Cobranza — versión {{ cfg.modelVersion }}</h4>
+            <button class="small-btn ok" (click)="saveWorkflow()" [disabled]="isSaving()">Guardar configuración</button>
+          </div>
+
+          <div class="workflow-grid">
+
+            <div class="workflow-card">
+              <h5 class="workflow-card-title">Umbrales de Decisión</h5>
+              <div class="workflow-fields">
+                <div class="workflow-field">
+                  <label class="panel-label">Días mora para escalación automática</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.escalateDaysPastDue" min="1" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Días mora mínimos para oferta de pago</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.paymentLinkMinDpd" min="0" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Risk score que dispara escalación (0–1)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.riskEscalationThreshold" min="0" max="1" step="0.01" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Risk score que habilita oferta de pago (0–1)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.riskPaymentThreshold" min="0" max="1" step="0.01" />
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-card">
+              <h5 class="workflow-card-title">Ventana de Contacto (Ley 2300)</h5>
+              <div class="workflow-fields">
+                <div class="workflow-field">
+                  <label class="panel-label">Hora de inicio (0–23)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.contactWindowStart" min="0" max="23" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Hora de fin (0–23)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.contactWindowEnd" min="0" max="23" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Máximo de contactos diarios por cliente</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.maxDailyContacts" min="1" max="10" />
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-card">
+              <h5 class="workflow-card-title">Fallback de Scoring (sin modelo ML)</h5>
+              <div class="workflow-fields">
+                <div class="workflow-field">
+                  <label class="panel-label">Credit score por defecto (0–100)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.fallbackCreditScore" min="0" max="100" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Risk score por defecto (0–1)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.fallbackRiskScore" min="0" max="1" step="0.01" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Probabilidad de cobro por defecto (0–1)</label>
+                  <input type="number" class="custom-input" [(ngModel)]="cfg.fallbackCollectionProbability" min="0" max="1" step="0.01" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      } @else {
+        <div class="loading-row">Cargando configuración de flujo...</div>
+      }
+    }
+
+    <!-- ══ TAB: ESTRUCTURA DE ARCHIVO ════════════════════════════════════════ -->
+    @if (activeTab() === 'file-structure') {
+      <div class="settings-section">
+        <h4 class="section-title">Especificación del Archivo Batch CSV</h4>
+        <div class="layout-previews">
+          <div class="layout-box"><span>Fila 1: fecha,consecutivo,cantidad,lote</span></div>
+          <div class="layout-box"><span>Fila 2: valores del encabezado</span></div>
+          <div class="layout-box"><span>Fila 3: nombres de columnas de detalle</span></div>
+          <div class="layout-box"><span>Filas 4+: registros de detalle</span></div>
+        </div>
+        <div class="table-container mt-2">
+          <table class="data-table">
+            <thead>
+              <tr><th>Posición</th><th>Campo</th><th>Tipo</th><th>Req.</th><th>Descripción</th></tr>
+            </thead>
+            <tbody>
+              @for (f of fields(); track f.name) {
+                <tr class="table-row">
+                  <td class="mono small">{{ f.pos }}</td>
+                  <td class="bold blue">{{ f.name }}</td>
+                  <td class="small">{{ f.type }}</td>
+                  <td><span class="badge-small green">{{ f.req }}</span></td>
+                  <td class="small gray">{{ f.desc }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ══ TAB: USUARIOS ══════════════════════════════════════════════════════ -->
     @if (activeTab() === 'users') {
       <div class="settings-section">
         <div class="section-header">
-          <h4 class="section-title">Gestión de Usuarios (Backend CRUD)</h4>
+          <h4 class="section-title">Gestión de Usuarios</h4>
           <button (click)="addUser()" class="accent-btn-small">
             <lucide-icon [img]="UserPlusIcon" class="mini-icon"></lucide-icon> Nuevo Usuario
           </button>
@@ -112,12 +307,7 @@
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Username</th>
-                <th>Rol</th>
-                <th class="text-right">Acciones</th>
-              </tr>
+              <tr><th>Usuario</th><th>Username</th><th>Rol</th><th class="text-right">Acciones</th></tr>
             </thead>
             <tbody>
               @for (user of realUsers(); track user.id) {
@@ -153,88 +343,5 @@
       </div>
     }
 
-    @if (activeTab() === 'rules') {
-      <div class="settings-section">
-        <h4 class="section-title">Reglas de Asignación Automática</h4>
-        <div class="assignment-grid">
-          @for (rule of store.assignmentRules(); track rule.id) {
-            <div class="assignment-card">
-              <div class="assignment-header">
-                <div class="icon-box-blue"><lucide-icon [img]="UsersIcon" class="mini-icon"></lucide-icon></div>
-                <h5 class="rule-name">{{ rule.name }}</h5>
-              </div>
-              <div class="rule-details">
-                @if (rule.minAmount) {
-                  <div class="rule-detail"><span>Monto Mínimo:</span> <strong>${{ rule.minAmount | number }}</strong></div>
-                }
-                @if (rule.riskLevels) {
-                  <div class="rule-detail"><span>Riesgos:</span> <div class="tags">@for (r of rule.riskLevels; track r) { <span class="tag">{{r}}</span> }</div></div>
-                }
-              </div>
-              <div class="rule-footer">
-                <span class="badge-small green">Activa</span>
-                <span class="priority">Prioridad: {{ rule.priority }}</span>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    @if (activeTab() === 'file-structure') {
-      <div class="settings-section">
-        <h4 class="section-title">Especificación de Archivo Batch</h4>
-        <div class="layout-previews">
-          <div class="layout-box"><span>H|FECHA|LOTE</span></div>
-          <div class="layout-box"><span>D|DETALLE...</span></div>
-          <div class="layout-box"><span>T|TOTALES</span></div>
-        </div>
-        <div class="table-container mt-2">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Posición</th>
-                <th>Campo</th>
-                <th>Tipo</th>
-                <th>Req.</th>
-                <th>Descripción</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (f of fields(); track f.name) {
-                <tr class="table-row">
-                  <td class="mono small">{{ f.pos }}</td>
-                  <td class="bold blue">{{ f.name }}</td>
-                  <td class="small">{{ f.type }}</td>
-                  <td><span class="badge-small green">{{ f.req }}</span></td>
-                  <td class="small gray">{{ f.desc }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-
-    @if (activeTab() === 'case-statuses') {
-      <div class="settings-section">
-        <h4 class="section-title">Catálogo de Estados de Casos</h4>
-        <div class="status-grid">
-          @for (st of store.caseStatuses(); track st.id) {
-            <div class="status-card-simple">
-              <div class="status-header">
-                <div class="status-dot-large" [style.backgroundColor]="st.color"></div>
-                <h5 class="st-name">{{ st.name }}</h5>
-              </div>
-              <p class="st-desc">{{ st.description }}</p>
-              <div class="st-badges">
-                @if (st.isInitial) { <span class="badge-pill blue">Inicial</span> }
-                @if (st.isFinal) { <span class="badge-pill gray">Final</span> }
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
   </div>
 </div>
