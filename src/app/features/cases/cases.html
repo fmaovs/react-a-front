@@ -62,7 +62,7 @@
             @for (caseItem of filteredCases(); track caseItem.id) {
 
               <!-- Fila principal -->
-              <tr class="table-row">
+              <tr [class]="'table-row' + (isFinal(caseItem) ? ' row-final' : '')">
                 <td>
                   <div class="assoc-col">
                     <p class="associate-name">{{ caseItem.caseNumber || ('CASE-' + caseItem.id) }}</p>
@@ -91,13 +91,15 @@
                     <span class="status-pill" [style.backgroundColor]="getStatusColor(caseItem.status)">
                       {{ caseItem.status }}
                     </span>
-                    <select class="compact-select"
-                            [ngModel]="caseItem.status"
-                            (ngModelChange)="changeStatus(caseItem.id, $event)">
-                      @for (status of statuses; track status) {
-                        <option [value]="status">{{ status }}</option>
-                      }
-                    </select>
+                    @if (!isFinal(caseItem)) {
+                      <select class="compact-select"
+                              [ngModel]="caseItem.status"
+                              (ngModelChange)="changeStatus(caseItem.id, $event)">
+                        @for (status of statuses; track status) {
+                          <option [value]="status">{{ status }}</option>
+                        }
+                      </select>
+                    }
                     @if (caseItem.escalatedAdvisorName) {
                       <p class="associate-doc">→ {{ caseItem.escalatedAdvisorName }}</p>
                     }
@@ -107,46 +109,63 @@
                   </div>
                 </td>
                 <td>
-                  <select class="compact-select" [ngModel]="caseItem.priority" (ngModelChange)="changePriority(caseItem.id, $event)">
-                    @for (priority of priorities; track priority) {
-                      <option [value]="priority">{{ priority }}</option>
-                    }
-                  </select>
+                  @if (isFinal(caseItem)) {
+                    <span class="priority-readonly">{{ caseItem.priority }}</span>
+                  } @else {
+                    <select class="compact-select" [ngModel]="caseItem.priority" (ngModelChange)="changePriority(caseItem.id, $event)">
+                      @for (priority of priorities; track priority) {
+                        <option [value]="priority">{{ priority }}</option>
+                      }
+                    </select>
+                  }
                 </td>
                 <td>
                   <div class="action-bar">
-                    <button class="action-btn neutral"
-                            [class.active]="isPanelOpen(caseItem.id, 'note')"
-                            (click)="openPanel(caseItem.id, 'note')"
-                            title="Nota">
-                      <lucide-icon [img]="FileTextIcon" class="action-icon"></lucide-icon>
-                      <span class="action-label">Nota</span>
-                    </button>
+                    @if (isFinal(caseItem)) {
+                      <!-- Caso cerrado: solo historial de notas -->
+                      <span class="locked-badge">
+                        <lucide-icon [img]="LockIcon" class="action-icon"></lucide-icon>
+                        {{ caseItem.status === 'RESOLVED' ? 'Resuelto' : 'Cerrado' }}
+                      </span>
+                      <button class="action-btn neutral"
+                              [class.active]="isPanelOpen(caseItem.id, 'notes')"
+                              (click)="openPanel(caseItem.id, 'notes')"
+                              title="Ver historial">
+                        <lucide-icon [img]="isPanelOpen(caseItem.id, 'notes') ? ChevronUpIcon : ChevronDownIcon" class="action-icon"></lucide-icon>
+                      </button>
+                    } @else {
+                      <!-- Caso activo: todas las acciones -->
+                      <button class="action-btn neutral"
+                              [class.active]="isPanelOpen(caseItem.id, 'note')"
+                              (click)="openPanel(caseItem.id, 'note')"
+                              title="Nota">
+                        <lucide-icon [img]="FileTextIcon" class="action-icon"></lucide-icon>
+                        <span class="action-label">Nota</span>
+                      </button>
 
-                    <button class="action-btn warn"
-                            [class.active]="isPanelOpen(caseItem.id, 'escalate')"
-                            [disabled]="caseItem.status === 'RESOLVED' || caseItem.status === 'CLOSED'"
-                            (click)="openPanel(caseItem.id, 'escalate')"
-                            title="Escalar">
-                      <lucide-icon [img]="AlertTriangleIcon" class="action-icon"></lucide-icon>
-                      <span class="action-label">Escalar</span>
-                    </button>
+                      <button class="action-btn warn"
+                              [class.active]="isPanelOpen(caseItem.id, 'escalate')"
+                              (click)="openPanel(caseItem.id, 'escalate')"
+                              title="Escalar">
+                        <lucide-icon [img]="AlertTriangleIcon" class="action-icon"></lucide-icon>
+                        <span class="action-label">Escalar</span>
+                      </button>
 
-                    <button class="action-btn ok"
-                            [class.active]="isPanelOpen(caseItem.id, 'resolve')"
-                            [disabled]="caseItem.status === 'RESOLVED' || caseItem.status === 'CLOSED'"
-                            (click)="openPanel(caseItem.id, 'resolve')"
-                            title="Resolver">
-                      <lucide-icon [img]="CheckCircle2Icon" class="action-icon"></lucide-icon>
-                      <span class="action-label">Resolver</span>
-                    </button>
+                      <button class="action-btn ok"
+                              [class.active]="isPanelOpen(caseItem.id, 'resolve')"
+                              (click)="openPanel(caseItem.id, 'resolve')"
+                              title="Resolver">
+                        <lucide-icon [img]="CheckCircle2Icon" class="action-icon"></lucide-icon>
+                        <span class="action-label">Resolver</span>
+                      </button>
 
-                    <button class="action-btn neutral"
-                            [class.active]="isPanelOpen(caseItem.id, 'notes')"
-                            (click)="openPanel(caseItem.id, 'notes')"
-                            title="Historial">
-                      <lucide-icon [img]="isPanelOpen(caseItem.id, 'notes') ? ChevronUpIcon : ChevronDownIcon" class="action-icon"></lucide-icon>
-                    </button>
+                      <button class="action-btn neutral"
+                              [class.active]="isPanelOpen(caseItem.id, 'notes')"
+                              (click)="openPanel(caseItem.id, 'notes')"
+                              title="Historial">
+                        <lucide-icon [img]="isPanelOpen(caseItem.id, 'notes') ? ChevronUpIcon : ChevronDownIcon" class="action-icon"></lucide-icon>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

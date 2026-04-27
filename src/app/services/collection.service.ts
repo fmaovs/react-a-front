@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PaymentAgreement, Installment, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse } from '../models/types';
+import { PaymentAgreement, Installment, Page, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse } from '../models/types';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,19 +12,21 @@ export class CollectionService {
   private apiUrl = `${environment.apiUrl}/collection`;
 
   getAgreements(): Observable<PaymentAgreement[]> {
-    return this.http.get<PaymentAgreement[]>(`${this.apiUrl}/agreements`);
+    return this.http.get<Page<PaymentAgreement>>(`${this.apiUrl}/agreements?size=100`).pipe(
+      map(page => page.content ?? [])
+    );
   }
 
   createAgreement(agreement: Partial<PaymentAgreement>): Observable<PaymentAgreement> {
     return this.http.post<PaymentAgreement>(`${this.apiUrl}/agreements`, agreement);
   }
 
-  getInstallments(): Observable<Installment[]> {
-    return this.http.get<Installment[]>(`${this.apiUrl}/installments`);
+  getInstallmentsByAgreement(agreementId: number): Observable<Installment[]> {
+    return this.http.get<Installment[]>(`${this.apiUrl}/agreements/${agreementId}/installments`);
   }
 
-  payInstallment(id: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/installments/${id}/pay`, {});
+  payInstallment(installmentId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/agreements/installments/${installmentId}/pay`, {});
   }
 
   getZolevToken(): Observable<ZolevTokenResponse> {

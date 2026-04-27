@@ -15,7 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   Bot,
-  User
+  User,
+  Lock
 } from 'lucide-angular';
 
 export type EscalationReason =
@@ -73,6 +74,7 @@ export class CasesComponent {
   readonly ChevronUpIcon = ChevronUp;
   readonly BotIcon = Bot;
   readonly UserIcon = User;
+  readonly LockIcon = Lock;
 
   readonly statuses: Case['status'][] = ['OPEN', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'];
   readonly priorities: Case['priority'][] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
@@ -253,6 +255,10 @@ export class CasesComponent {
       case 'CLOSED':      return '#6b7280';
       default:            return '#64748b';
     }
+  }
+
+  isFinal(caseItem: Case): boolean {
+    return caseItem.status === 'RESOLVED' || caseItem.status === 'CLOSED';
   }
 
   getEscalationLabel(reason: string): string {

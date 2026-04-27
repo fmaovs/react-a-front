@@ -1,82 +1,233 @@
 <div class="dashboard-grid">
-  <!-- Stats Grid -->
-  <div class="stats-grid">
-    @for (stat of stats(); track stat.label) {
-      <div class="stat-card">
-        <div class="stat-header">
-          <div [class]="'stat-icon-box ' + stat.color">
-            <lucide-icon [img]="stat.icon" class="stat-icon"></lucide-icon>
+
+  <!-- ── Recarga ── -->
+  <div class="dash-header">
+    <div>
+      <h3 class="dash-title">Dashboard</h3>
+      <p class="dash-sub">Vista en tiempo real de cartera y cobranzas</p>
+    </div>
+    <button class="outline-btn" (click)="load()" [disabled]="loading()">
+      <lucide-icon [img]="RefreshIcon" class="btn-icon-small"></lucide-icon>
+      Actualizar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-row">Cargando dashboard...</div>
+  }
+
+  <!-- ── Row 1: KPI Cards ── -->
+  @if (!loading()) {
+    <div class="stats-grid">
+      @for (card of kpiCards(); track card.label) {
+        <div class="stat-card">
+          <div class="stat-header">
+            <div [class]="'stat-icon-box ' + card.color">
+              <lucide-icon [img]="card.icon" class="stat-icon"></lucide-icon>
+            </div>
           </div>
-          @if (stat.change) {
-            <span [class]="'stat-change ' + (stat.change.startsWith('+') ? 'positive' : 'negative')">
-              {{ stat.change }}
-            </span>
+          <div class="stat-content">
+            <p class="stat-label">{{ card.label }}</p>
+            <h3 class="stat-value">{{ card.value }}</h3>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ── Row 2: Aging + Risk ── -->
+    <div class="info-grid">
+
+      <!-- Aging Analysis -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">Análisis de Aging</h3>
+          <div class="live-indicator">
+            <span class="pulse-dot"></span>
+            <span class="live-text">En vivo</span>
+          </div>
+        </div>
+        <div class="aging-list">
+          @for (b of agingBuckets(); track b.bucket) {
+            <div class="aging-item">
+              <div class="aging-label-row">
+                <span class="aging-bucket">{{ b.bucket }}</span>
+                <div class="aging-stats">
+                  <span class="aging-count">{{ b.obligationCount }} oblig.</span>
+                  <span class="aging-pct">{{ b.percentageOfPortfolio.toFixed(1) }}%</span>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="b.barWidth"></div>
+              </div>
+              <span class="aging-amount">{{ fmtCurrency(b.totalAmount) }}</span>
+            </div>
+          }
+          @if (agingBuckets().length === 0) {
+            <p class="empty-hint">Sin datos de aging disponibles.</p>
           }
         </div>
-        <div class="stat-content">
-          <p class="stat-label">{{ stat.label }}</p>
-          <h3 class="stat-value">{{ stat.value }}</h3>
-        </div>
-      </div>
-    }
-  </div>
-
-  <!-- Charts/Info Grid -->
-  <div class="info-grid">
-    <div class="chart-container">
-      <div class="chart-header">
-        <h3 class="chart-title">Carga de Trabajo por Agente</h3>
-        <div class="live-indicator">
-          <span class="pulse-dot"></span>
-          <span class="live-text">Monitoreo en Vivo</span>
-        </div>
       </div>
 
-      <div class="agent-list">
-        @for (agent of agentLoad(); track agent.name) {
-          <div class="agent-item">
-            <div class="agent-info">
-              <div class="agent-profile">
-                <div class="agent-avatar">{{ agent.initials }}</div>
-                <span class="agent-name">{{ agent.name }}</span>
+      <!-- Risk Distribution -->
+      <div class="chart-container">
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Distribución de Riesgo</h3>
+        <div class="risk-list">
+          @for (r of (summary()?.riskDistribution ?? []); track r.riskLevel) {
+            <div class="risk-item">
+              <div [class]="'risk-badge ' + riskClass(r.riskLevel)">
+                {{ r.label || r.riskLevel }}
               </div>
-              <div class="agent-stats">
-                <span class="agent-count">{{ agent.count }} casos</span>
-                <span class="agent-percentage">{{ agent.percentage | number:'1.1-1' }}% de la carga total</span>
+              <div class="risk-data">
+                <span class="risk-clients">{{ r.clientCount }} clientes</span>
+                <span class="risk-pct">{{ r.percentage.toFixed(1) }}%</span>
+              </div>
+              <div class="progress-bar">
+                <div [class]="'progress-fill ' + riskClass(r.riskLevel)"
+                     [style.width.%]="r.percentage"></div>
+              </div>
+              <span class="risk-debt">{{ fmtCurrency(r.totalDebt) }}</span>
+            </div>
+          }
+          @if ((summary()?.riskDistribution ?? []).length === 0) {
+            <p class="empty-hint">Sin datos de riesgo disponibles.</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 3: Advisors + Batches ── -->
+    <div class="info-grid">
+
+      <!-- Advisor workload -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">Carga por Asesor</h3>
+          <a routerLink="/settings" class="footer-link">Configurar</a>
+        </div>
+        <div class="agent-list">
+          @for (a of advisorLoad(); track a.advisorId) {
+            <div class="agent-item">
+              <div class="agent-info">
+                <div class="agent-profile">
+                  <div class="agent-avatar">{{ a.initials }}</div>
+                  <div>
+                    <span class="agent-name">{{ a.advisorName }}</span>
+                    <span class="agent-code">{{ a.advisorCode }}</span>
+                  </div>
+                </div>
+                <div class="agent-stats">
+                  <span class="agent-count">{{ a.totalAssigned }} casos</span>
+                  <span class="agent-percentage">{{ a.escalatedCases }} escalados</span>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="a.percentage"></div>
               </div>
             </div>
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="agent.percentage"></div>
+          }
+          @if (advisorLoad().length === 0) {
+            <p class="empty-hint">Sin asesores asignados aún.</p>
+          }
+        </div>
+        <div class="chart-footer">
+          <p class="footer-text">Asignación automática por menor carga activa.</p>
+        </div>
+      </div>
+
+      <!-- Recent batches -->
+      <div class="chart-container">
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Últimos Lotes CSV</h3>
+        <div class="batches-list">
+          @for (b of (summary()?.recentBatches ?? []); track b.batchId) {
+            <div class="batch-row">
+              <div class="batch-info">
+                <span class="batch-name">{{ b.fileName || b.batchNumber }}</span>
+                <span class="batch-date">{{ fmtDate(b.createdAt) }}</span>
+              </div>
+              <div class="batch-right">
+                <span class="batch-records">{{ b.successfulRecords }}/{{ b.totalRecords }}</span>
+                <span [class]="'batch-status ' + batchClass(b.status)">
+                  {{ b.status }}
+                </span>
+              </div>
             </div>
+          }
+          @if ((summary()?.recentBatches ?? []).length === 0) {
+            <p class="empty-hint">Sin lotes recientes.</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row 4: Portfolio by segment + Case status ── -->
+    <div class="info-grid three-col">
+
+      <!-- Portfolio by segment -->
+      <div class="chart-container">
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Cartera por Segmento</h3>
+        <div class="segment-list">
+          @for (s of (summary()?.portfolioBySegment ?? []); track s.segment) {
+            <div class="segment-row">
+              <span class="segment-name">{{ s.segment }}</span>
+              <div class="segment-bar-wrap">
+                <div class="progress-bar">
+                  <div class="progress-fill segment-fill" [style.width.%]="s.percentageOfPortfolio"></div>
+                </div>
+                <span class="segment-pct">{{ s.percentageOfPortfolio.toFixed(1) }}%</span>
+              </div>
+              <span class="segment-amount">{{ fmtCurrency(s.totalAmount) }}</span>
+            </div>
+          }
+          @if ((summary()?.portfolioBySegment ?? []).length === 0) {
+            <p class="empty-hint">Sin datos de segmentación.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Case status -->
+      <div class="chart-container">
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Estado de Casos</h3>
+        <div class="cases-status-list">
+          @for (s of (summary()?.casesByStatus ?? []); track s.status) {
+            <div class="case-status-row">
+              <span class="case-label">{{ s.label || s.status }}</span>
+              <div class="case-bar-wrap">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="s.percentage"></div>
+                </div>
+                <span class="case-count">{{ s.count }}</span>
+              </div>
+            </div>
+          }
+          @if ((summary()?.casesByStatus ?? []).length === 0) {
+            <p class="empty-hint">Sin datos de casos.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Compliance card -->
+      <div class="compliance-card gradient-brand">
+        <div class="compliance-header">
+          <h3 class="compliance-title">Cumplimiento Ley 2300</h3>
+          <p class="compliance-desc">
+            Estrategias de contacto bajo normativa vigente. Horarios y canales auditados automáticamente.
+          </p>
+        </div>
+        <div class="compliance-content">
+          <div class="schedule-info">
+            <span>Horario Habilitado</span>
+            <span class="font-bold">
+              {{ summary()?.kpis ? '' : '' }}
+              {{ summary()?.kpis?.activeAdvisors ?? 0 }} asesores activos
+            </span>
           </div>
-        }
-      </div>
-
-      <div class="chart-footer">
-        <p class="footer-text">
-          El nivelador de cargas distribuye automáticamente los casos críticos y de alto monto.
-        </p>
-        <a routerLink="/settings" class="footer-link">Configurar Reglas</a>
+          <div class="compliance-progress">
+            <div class="compliance-fill" style="width: 100%"></div>
+          </div>
+          <p class="compliance-note">* Auditoría inalterable activa en cada interacción.</p>
+        </div>
       </div>
     </div>
+  }
 
-    <div class="compliance-card gradient-brand">
-      <div class="compliance-header">
-        <h3 class="compliance-title">Cumplimiento Ley 2300</h3>
-        <p class="compliance-desc">
-          Todas las estrategias de contacto están parametrizadas bajo la normativa de "Dejen de fregar", respetando horarios y canales autorizados.
-        </p>
-      </div>
-      <div class="compliance-content">
-        <div class="schedule-info">
-          <span>Horarios Habilitados</span>
-          <span class="font-bold">L-V 7am - 7pm</span>
-        </div>
-        <div class="compliance-progress">
-          <div class="compliance-fill" style="width: 100%"></div>
-        </div>
-        <p class="compliance-note">* Auditoría inalterable activa para cada interacción.</p>
-      </div>
-    </div>
-  </div>
 </div>

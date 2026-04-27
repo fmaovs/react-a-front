@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuditLog } from '../models/types';
+import { AuditLog, Page } from '../models/types';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,10 @@ export class AdminService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  getAuditLogs(): Observable<AuditLog[]> {
-    return this.http.get<AuditLog[]>(`${this.apiUrl}/audit/log`);
+  getAuditLogs(size: number = 50): Observable<AuditLog[]> {
+    return this.http.get<Page<AuditLog>>(`${this.apiUrl}/audit/log?size=${size}`).pipe(
+      map(page => page.content ?? [])
+    );
   }
 
   getSlaConfig(): Observable<any> {

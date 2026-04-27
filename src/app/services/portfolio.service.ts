@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Client, Obligation, Page } from '../models/types';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -12,9 +13,10 @@ export class PortfolioService {
   private apiUrl = `${environment.apiUrl}/portfolio`;
 
   getClients(page: number = 0, size: number = 20, search: string = ''): Observable<Page<Client>> {
-    const params: any = { page, size };
-    if (search) params.search = search;
-    return this.http.get<Page<Client>>(`${this.apiUrl}/clients`, { params });
+    if (search) {
+      return this.http.get<Page<Client>>(`${this.apiUrl}/clients/search`, { params: { query: search, page, size } });
+    }
+    return this.http.get<Page<Client>>(`${this.apiUrl}/clients`, { params: { page, size } });
   }
 
   getClient(id: number): Observable<Client> {
@@ -22,9 +24,12 @@ export class PortfolioService {
   }
 
   getObligations(page: number = 0, size: number = 20, clientId?: number): Observable<Page<Obligation>> {
-    const params: any = { page, size };
-    if (clientId) params.clientId = clientId;
-    return this.http.get<Page<Obligation>>(`${this.apiUrl}/obligations`, { params });
+    if (clientId) {
+      return this.http.get<Obligation[]>(`${this.apiUrl}/obligations/client/${clientId}`).pipe(
+        map(items => ({ content: items, totalElements: items.length, totalPages: 1, size: items.length, number: 0 }))
+      );
+    }
+    return this.http.get<Page<Obligation>>(`${this.apiUrl}/obligations`, { params: { page, size } });
   }
 
   getObligation(id: number): Observable<Obligation> {

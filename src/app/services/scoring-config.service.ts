@@ -77,6 +77,18 @@ export class ScoringConfigService {
     return this.http.get<ScoringModelConfig>(`${this.baseUrl}/config/models/active`);
   }
 
+  updateModelWeights(model: ScoringModelConfig): Observable<ScoringModelConfig> {
+    return this.http.put<ScoringModelConfig>(`${this.baseUrl}/config/models/active/weights`, {
+      weightPaymentHistory: model.weightPaymentHistory,
+      weightDaysPastDue:    model.weightDaysPastDue,
+      weightDefaultFrequency: model.weightDefaultFrequency,
+      weightSeniority:      model.weightSeniority,
+      maxDaysPastDueRef:    model.maxDaysPastDueRef,
+      maxSeniorityDaysRef:  model.maxSeniorityDaysRef,
+      description:          model.description
+    });
+  }
+
   getThresholds(version: string): Observable<RiskThreshold[]> {
     return this.http.get<RiskThreshold[]>(`${this.baseUrl}/config/models/${version}/thresholds`);
   }

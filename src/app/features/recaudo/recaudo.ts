@@ -21,7 +21,7 @@ import {
 } from 'lucide-angular';
 import { CollectionService } from '../../services/collection.service';
 import { PortfolioService } from '../../services/portfolio.service';
-import { PaymentAgreement, Installment, Client, Obligation } from '../../models/types';
+import { PaymentAgreement, Client, Obligation } from '../../models/types';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -38,16 +38,15 @@ export class RecaudoComponent implements OnInit {
 
   isGenerating = signal(false);
   realAgreements = signal<PaymentAgreement[]>([]);
-  realInstallments = signal<Installment[]>([]);
 
   // Modal & Form State
   showModal = signal(false);
-  searchQuery = signal('');
+  searchQueryValue = '';
   clients = signal<Client[]>([]);
   selectedClient = signal<Client | null>(null);
   obligations = signal<Obligation[]>([]);
   selectedObligation = signal<Obligation | null>(null);
-  paymentAmount = signal<number>(0);
+  paymentAmountValue = 0;
   generatedLink = signal<string | null>(null);
   error = signal<string | null>(null);
 
@@ -78,7 +77,6 @@ export class RecaudoComponent implements OnInit {
 
   loadData() {
     this.collectionService.getAgreements().subscribe(data => this.realAgreements.set(data));
-    this.collectionService.getInstallments().subscribe(data => this.realInstallments.set(data));
   }
 
   handleGenerate() {
@@ -89,20 +87,20 @@ export class RecaudoComponent implements OnInit {
   resetForm() {
     this.selectedClient.set(null);
     this.selectedObligation.set(null);
-    this.paymentAmount.set(0);
+    this.paymentAmountValue = 0;
     this.generatedLink.set(null);
     this.error.set(null);
-    this.searchQuery.set('');
+    this.searchQueryValue = '';
     this.clients.set([]);
   }
 
   searchClients() {
-    if (this.searchQuery().length < 3) {
+    if (this.searchQueryValue.length < 3) {
       this.clients.set([]);
       return;
     }
 
-    this.portfolioService.getClients(0, 20, this.searchQuery()).subscribe(page => {
+    this.portfolioService.getClients(0, 20, this.searchQueryValue).subscribe(page => {
       this.clients.set(page.content);
     });
   }
@@ -116,13 +114,13 @@ export class RecaudoComponent implements OnInit {
 
   selectObligation(ob: Obligation) {
     this.selectedObligation.set(ob);
-    this.paymentAmount.set(ob.currentBalance);
+    this.paymentAmountValue = ob.currentBalance;
   }
 
   generateLink() {
     const client = this.selectedClient();
     const obligation = this.selectedObligation();
-    const amount = this.paymentAmount();
+    const amount = this.paymentAmountValue;
 
     if (!client || !obligation || amount <= 0) {
       this.error.set('Por favor completa todos los campos.');

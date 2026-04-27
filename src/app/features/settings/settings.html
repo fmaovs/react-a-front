@@ -10,12 +10,8 @@
     </button>
   </div>
 
-  @if (saveSuccess()) {
-    <div class="success-banner">{{ saveSuccess() }}</div>
-  }
-  @if (saveError()) {
-    <div class="error-banner">{{ saveError() }}</div>
-  }
+  @if (saveSuccess()) { <div class="success-banner">{{ saveSuccess() }}</div> }
+  @if (saveError())   { <div class="error-banner">{{ saveError() }}</div> }
 
   <div class="tab-switcher">
     @for (tab of tabs; track tab.id) {
@@ -35,12 +31,21 @@
 
           <!-- Pesos del modelo -->
           <div class="section-header">
-            <h4 class="section-title">Pesos del Modelo — versión {{ model.modelVersion }}</h4>
-            <span [class]="'badge-total ' + (weightsTotal() === 100 ? 'green' : 'red')">
-              Total: {{ weightsTotal() }}%
-            </span>
+            <div>
+              <h4 class="section-title">Pesos del Modelo</h4>
+              <p class="section-subtitle">Versión {{ model.modelVersion }} — deben sumar 100%</p>
+            </div>
+            <div class="header-actions">
+              <span [class]="'badge-total ' + (weightsTotal() === 100 ? 'green' : 'red')">
+                {{ weightsTotal() }}%
+              </span>
+              <button class="small-btn ok" (click)="saveWeights()" [disabled]="isSaving() || weightsTotal() !== 100">
+                Guardar pesos
+              </button>
+            </div>
           </div>
-          <div class="ai-sliders">
+
+          <div class="sliders-grid">
             <div class="slider-group">
               <div class="slider-header">
                 <span class="slider-label">Historial de Pago</span>
@@ -87,22 +92,28 @@
 
           <!-- Umbrales de riesgo -->
           <div class="section-header">
-            <h4 class="section-title">Umbrales de Riesgo (Puntaje → Nivel)</h4>
-            <button class="small-btn ok" (click)="saveThresholds()" [disabled]="isSaving()">Guardar umbrales</button>
-          </div>
-          <div class="param-table">
-            <div class="param-table-head">
-              <span>Nivel de Riesgo</span><span>Puntaje Mínimo</span><span>Puntaje Máximo</span>
+            <div>
+              <h4 class="section-title">Umbrales de Riesgo</h4>
+              <p class="section-subtitle">Rango de puntaje que define cada nivel</p>
             </div>
-            @for (t of thresholds(); track t.riskLevel; let i = $index) {
-              <div class="param-table-row">
-                <select class="custom-input compact" [(ngModel)]="t.riskLevel">
-                  @for (level of RISK_LEVELS; track level) {
-                    <option [value]="level">{{ level }}</option>
-                  }
-                </select>
-                <input type="number" class="custom-input compact" [(ngModel)]="t.minScore" min="0" max="100" />
-                <input type="number" class="custom-input compact" [(ngModel)]="t.maxScore" min="0" max="100" />
+            <button class="small-btn ok" (click)="saveThresholds()" [disabled]="isSaving()">Guardar</button>
+          </div>
+
+          <div class="threshold-list">
+            @for (t of thresholds(); track t.riskLevel) {
+              <div class="threshold-row">
+                <span [class]="'risk-badge risk-' + t.riskLevel.toLowerCase()">{{ t.riskLevel }}</span>
+                <div class="score-range-group">
+                  <div class="score-field">
+                    <label class="field-label">Mín.</label>
+                    <input type="number" class="field-number sm" [(ngModel)]="t.minScore" min="0" max="100" />
+                  </div>
+                  <span class="range-sep">—</span>
+                  <div class="score-field">
+                    <label class="field-label">Máx.</label>
+                    <input type="number" class="field-number sm" [(ngModel)]="t.maxScore" min="0" max="100" />
+                  </div>
+                </div>
               </div>
             }
           </div>
@@ -111,17 +122,18 @@
 
           <!-- Canales de contacto -->
           <div class="section-header">
-            <h4 class="section-title">Canal de Contacto por Nivel de Riesgo</h4>
-            <button class="small-btn ok" (click)="saveChannels()" [disabled]="isSaving()">Guardar canales</button>
-          </div>
-          <div class="param-table">
-            <div class="param-table-head">
-              <span>Nivel de Riesgo</span><span>Canal</span>
+            <div>
+              <h4 class="section-title">Canal de Contacto</h4>
+              <p class="section-subtitle">Canal asignado según nivel de riesgo</p>
             </div>
+            <button class="small-btn ok" (click)="saveChannels()" [disabled]="isSaving()">Guardar</button>
+          </div>
+
+          <div class="channel-list">
             @for (c of channels(); track c.riskLevel) {
-              <div class="param-table-row">
-                <span class="param-label">{{ c.riskLevel }}</span>
-                <select class="custom-input compact" [(ngModel)]="c.contactChannel">
+              <div class="channel-row">
+                <span [class]="'risk-badge risk-' + c.riskLevel.toLowerCase()">{{ c.riskLevel }}</span>
+                <select class="field-select" [(ngModel)]="c.contactChannel">
                   @for (ch of CHANNELS; track ch) {
                     <option [value]="ch">{{ ch }}</option>
                   }
@@ -129,6 +141,7 @@
               </div>
             }
           </div>
+
         </div>
       } @else {
         <div class="loading-row">Cargando configuración de scoring...</div>
@@ -139,52 +152,64 @@
     @if (activeTab() === 'segmentation') {
       <div class="settings-section">
 
-        <!-- Reglas de segmento -->
         <div class="section-header">
-          <h4 class="section-title">Segmentación por Días de Mora</h4>
-          <button class="small-btn ok" (click)="saveSegmentRules()" [disabled]="isSaving()">Guardar segmentación</button>
+          <div>
+            <h4 class="section-title">Segmentación por Días de Mora</h4>
+            <p class="section-subtitle">Define el segmento y prioridad según el rango de mora — Máx. vacío = sin límite (∞)</p>
+          </div>
+          <button class="small-btn ok" (click)="saveSegmentRules()" [disabled]="isSaving()">Guardar</button>
         </div>
-        <p class="panel-hint">Define qué segmento y prioridad de caso corresponde a cada rango de mora. maxDías vacío = sin límite (∞).</p>
+
         <div class="param-table">
-          <div class="param-table-head">
-            <span>Días Mín.</span><span>Días Máx.</span><span>Segmento</span><span>Prioridad Caso</span><span>Etiqueta</span>
+          <div class="param-table-head cols-segments">
+            <span>Desde</span>
+            <span>Hasta</span>
+            <span>Segmento</span>
+            <span>Prioridad</span>
+            <span>Etiqueta</span>
           </div>
           @for (r of segmentRules(); track r.id ?? $index) {
-            <div class="param-table-row">
-              <input type="number" class="custom-input compact" [(ngModel)]="r.minDays" min="0" />
-              <input type="number" class="custom-input compact" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
-              <select class="custom-input compact" [(ngModel)]="r.segment">
+            <div class="param-table-row cols-segments">
+              <input type="number" class="field-number" [(ngModel)]="r.minDays" min="0" placeholder="0" />
+              <input type="number" class="field-number" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
+              <select class="field-select" [(ngModel)]="r.segment">
                 @for (s of SEGMENTS; track s) { <option [value]="s">{{ s }}</option> }
               </select>
-              <select class="custom-input compact" [(ngModel)]="r.casePriority">
+              <select class="field-select" [(ngModel)]="r.casePriority">
                 @for (p of PRIORITIES; track p) { <option [value]="p">{{ p }}</option> }
               </select>
-              <input type="text" class="custom-input compact" [(ngModel)]="r.label" placeholder="Ej. 31 – 90 días" />
+              <input type="text" class="field-text" [(ngModel)]="r.label" placeholder="Ej. 31 – 90 días" />
             </div>
           }
         </div>
 
         <div class="divider"></div>
 
-        <!-- Reglas de cuotas -->
         <div class="section-header">
-          <h4 class="section-title">Cuotas de Acuerdo de Pago por Mora</h4>
-          <button class="small-btn ok" (click)="saveInstallmentRules()" [disabled]="isSaving()">Guardar cuotas</button>
+          <div>
+            <h4 class="section-title">Cuotas de Acuerdo de Pago</h4>
+            <p class="section-subtitle">Número de cuotas ofrecidas según los días de mora del cliente</p>
+          </div>
+          <button class="small-btn ok" (click)="saveInstallmentRules()" [disabled]="isSaving()">Guardar</button>
         </div>
-        <p class="panel-hint">Define cuántas cuotas se ofrecen según los días de mora del cliente.</p>
+
         <div class="param-table">
-          <div class="param-table-head">
-            <span>Días Mín.</span><span>Días Máx.</span><span>Cuotas</span><span>Etiqueta</span>
+          <div class="param-table-head cols-installments">
+            <span>Desde</span>
+            <span>Hasta</span>
+            <span>Cuotas</span>
+            <span>Etiqueta</span>
           </div>
           @for (r of installmentRules(); track r.id ?? $index) {
-            <div class="param-table-row">
-              <input type="number" class="custom-input compact" [(ngModel)]="r.minDays" min="0" />
-              <input type="number" class="custom-input compact" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
-              <input type="number" class="custom-input compact" [(ngModel)]="r.installments" min="1" max="36" />
-              <input type="text" class="custom-input compact" [(ngModel)]="r.label" placeholder="Ej. 90 – 179 días" />
+            <div class="param-table-row cols-installments">
+              <input type="number" class="field-number" [(ngModel)]="r.minDays" min="0" placeholder="0" />
+              <input type="number" class="field-number" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
+              <input type="number" class="field-number" [(ngModel)]="r.installments" min="1" max="36" />
+              <input type="text" class="field-text" [(ngModel)]="r.label" placeholder="Ej. 90 – 179 días" />
             </div>
           }
         </div>
+
       </div>
     }
 
@@ -193,8 +218,11 @@
       @if (workflowConfig(); as cfg) {
         <div class="settings-section">
           <div class="section-header">
-            <h4 class="section-title">Flujo de Cobranza — versión {{ cfg.modelVersion }}</h4>
-            <button class="small-btn ok" (click)="saveWorkflow()" [disabled]="isSaving()">Guardar configuración</button>
+            <div>
+              <h4 class="section-title">Flujo de Cobranza</h4>
+              <p class="section-subtitle">Versión {{ cfg.modelVersion }}</p>
+            </div>
+            <button class="small-btn ok" (click)="saveWorkflow()" [disabled]="isSaving()">Guardar</button>
           </div>
 
           <div class="workflow-grid">
@@ -204,55 +232,55 @@
               <div class="workflow-fields">
                 <div class="workflow-field">
                   <label class="panel-label">Días mora para escalación automática</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.escalateDaysPastDue" min="1" />
+                  <input type="number" class="field-input" [(ngModel)]="cfg.escalateDaysPastDue" min="1" />
                 </div>
                 <div class="workflow-field">
                   <label class="panel-label">Días mora mínimos para oferta de pago</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.paymentLinkMinDpd" min="0" />
+                  <input type="number" class="field-input" [(ngModel)]="cfg.paymentLinkMinDpd" min="0" />
                 </div>
                 <div class="workflow-field">
-                  <label class="panel-label">Risk score que dispara escalación (0–1)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.riskEscalationThreshold" min="0" max="1" step="0.01" />
+                  <label class="panel-label">Risk score para escalación (0 – 1)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.riskEscalationThreshold" min="0" max="1" step="0.01" />
                 </div>
                 <div class="workflow-field">
-                  <label class="panel-label">Risk score que habilita oferta de pago (0–1)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.riskPaymentThreshold" min="0" max="1" step="0.01" />
-                </div>
-              </div>
-            </div>
-
-            <div class="workflow-card">
-              <h5 class="workflow-card-title">Ventana de Contacto (Ley 2300)</h5>
-              <div class="workflow-fields">
-                <div class="workflow-field">
-                  <label class="panel-label">Hora de inicio (0–23)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.contactWindowStart" min="0" max="23" />
-                </div>
-                <div class="workflow-field">
-                  <label class="panel-label">Hora de fin (0–23)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.contactWindowEnd" min="0" max="23" />
-                </div>
-                <div class="workflow-field">
-                  <label class="panel-label">Máximo de contactos diarios por cliente</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.maxDailyContacts" min="1" max="10" />
+                  <label class="panel-label">Risk score para oferta de pago (0 – 1)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.riskPaymentThreshold" min="0" max="1" step="0.01" />
                 </div>
               </div>
             </div>
 
             <div class="workflow-card">
-              <h5 class="workflow-card-title">Fallback de Scoring (sin modelo ML)</h5>
+              <h5 class="workflow-card-title">Ventana de Contacto <span class="card-tag">Ley 2300</span></h5>
               <div class="workflow-fields">
                 <div class="workflow-field">
-                  <label class="panel-label">Credit score por defecto (0–100)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.fallbackCreditScore" min="0" max="100" />
+                  <label class="panel-label">Hora de inicio (0 – 23)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.contactWindowStart" min="0" max="23" />
                 </div>
                 <div class="workflow-field">
-                  <label class="panel-label">Risk score por defecto (0–1)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.fallbackRiskScore" min="0" max="1" step="0.01" />
+                  <label class="panel-label">Hora de fin (0 – 23)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.contactWindowEnd" min="0" max="23" />
                 </div>
                 <div class="workflow-field">
-                  <label class="panel-label">Probabilidad de cobro por defecto (0–1)</label>
-                  <input type="number" class="custom-input" [(ngModel)]="cfg.fallbackCollectionProbability" min="0" max="1" step="0.01" />
+                  <label class="panel-label">Máx. contactos diarios por cliente</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.maxDailyContacts" min="1" max="10" />
+                </div>
+              </div>
+            </div>
+
+            <div class="workflow-card">
+              <h5 class="workflow-card-title">Fallback de Scoring <span class="card-tag">sin ML</span></h5>
+              <div class="workflow-fields">
+                <div class="workflow-field">
+                  <label class="panel-label">Credit score por defecto (0 – 100)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.fallbackCreditScore" min="0" max="100" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Risk score por defecto (0 – 1)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.fallbackRiskScore" min="0" max="1" step="0.01" />
+                </div>
+                <div class="workflow-field">
+                  <label class="panel-label">Prob. de cobro por defecto (0 – 1)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.fallbackCollectionProbability" min="0" max="1" step="0.01" />
                 </div>
               </div>
             </div>
@@ -267,9 +295,14 @@
     <!-- ══ TAB: ESTRUCTURA DE ARCHIVO ════════════════════════════════════════ -->
     @if (activeTab() === 'file-structure') {
       <div class="settings-section">
-        <h4 class="section-title">Especificación del Archivo Batch CSV</h4>
+        <div class="section-header">
+          <div>
+            <h4 class="section-title">Especificación del Archivo Batch CSV</h4>
+            <p class="section-subtitle">Formato requerido para la carga masiva de datos</p>
+          </div>
+        </div>
         <div class="layout-previews">
-          <div class="layout-box"><span>Fila 1: fecha,consecutivo,cantidad,lote</span></div>
+          <div class="layout-box"><span>Fila 1: fecha, consecutivo, cantidad, lote</span></div>
           <div class="layout-box"><span>Fila 2: valores del encabezado</span></div>
           <div class="layout-box"><span>Fila 3: nombres de columnas de detalle</span></div>
           <div class="layout-box"><span>Filas 4+: registros de detalle</span></div>
@@ -299,7 +332,10 @@
     @if (activeTab() === 'users') {
       <div class="settings-section">
         <div class="section-header">
-          <h4 class="section-title">Gestión de Usuarios</h4>
+          <div>
+            <h4 class="section-title">Gestión de Usuarios</h4>
+            <p class="section-subtitle">Administra accesos y roles del sistema</p>
+          </div>
           <button (click)="addUser()" class="accent-btn-small">
             <lucide-icon [img]="UserPlusIcon" class="mini-icon"></lucide-icon> Nuevo Usuario
           </button>

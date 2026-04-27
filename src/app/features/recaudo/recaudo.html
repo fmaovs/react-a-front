@@ -33,8 +33,8 @@
           <tbody>
             @for (agreement of realAgreements(); track agreement.id) {
               <tr class="table-row">
-                <td class="font-bold">Caso #{{ agreement.caseId }}</td>
-                <td class="font-mono text-sm">{{ agreement.totalAmount | currency }}</td>
+                <td class="font-bold">{{ agreement.agreementNumber }}</td>
+                <td class="font-mono text-sm">{{ agreement.finalAmount | currency }}</td>
                 <td class="text-xs gray-text">{{ agreement.createdAt | date:'shortDate' }}</td>
                 <td>
                   <span [class]="'status-badge ' + agreement.status.toLowerCase()">
@@ -104,7 +104,7 @@
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
             <input
               type="text"
-              [(ngModel)]="searchQuery"
+              [(ngModel)]="searchQueryValue"
               (input)="searchClients()"
               placeholder="Escribe al menos 3 caracteres..."
               class="form-input"
@@ -159,7 +159,7 @@
               <span class="currency-symbol">$</span>
               <input
                 type="number"
-                [(ngModel)]="paymentAmount"
+                [(ngModel)]="paymentAmountValue"
                 class="form-input amount-input"
               >
             </div>
@@ -171,7 +171,7 @@
 
           <button
             (click)="generateLink()"
-            [disabled]="isGenerating() || !selectedObligation() || paymentAmount() <= 0"
+            [disabled]="isGenerating() || !selectedObligation() || paymentAmountValue <= 0"
             class="primary-btn w-full mt-6"
           >
             <lucide-icon [img]="isGenerating() ? LoaderIcon : LinkIcon" [class.spin]="isGenerating()" class="btn-icon"></lucide-icon>

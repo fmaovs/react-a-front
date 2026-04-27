@@ -42,6 +42,90 @@ export interface Page<T> {
   number: number;
 }
 
+export interface KpiSummary {
+  totalPortfolioValue: number;
+  totalObligations: number;
+  activeObligations: number;
+  clientsInDefault: number;
+  totalClients: number;
+  openCases: number;
+  inProgressCases: number;
+  escalatedCases: number;
+  resolvedCases: number;
+  totalCases: number;
+  activeAdvisors: number;
+  activePaymentAgreements: number;
+  batchesThisMonth: number;
+  totalRecordsThisMonth: number;
+}
+
+export interface AgingBucket {
+  bucket: string;
+  daysFrom: number;
+  daysTo: number;
+  obligationCount: number;
+  totalAmount: number;
+  percentageOfPortfolio: number;
+}
+
+export interface SegmentBreakdown {
+  segment: string;
+  obligationCount: number;
+  totalAmount: number;
+  percentageOfPortfolio: number;
+}
+
+export interface CaseStatusBreakdown {
+  status: string;
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AdvisorMetrics {
+  advisorId: number;
+  advisorCode: string;
+  advisorName: string;
+  totalAssigned: number;
+  openCases: number;
+  inProgressCases: number;
+  escalatedCases: number;
+  resolvedCases: number;
+  closedCases: number;
+}
+
+export interface RiskDistribution {
+  riskLevel: string;
+  label: string;
+  clientCount: number;
+  totalDebt: number;
+  percentage: number;
+}
+
+export interface RecentBatch {
+  batchId: number;
+  batchNumber: string;
+  lote: string;
+  fileName: string;
+  status: string;
+  totalRecords: number;
+  successfulRecords: number;
+  failedRecords: number;
+  createdAt: string;
+  processedAt: string;
+}
+
+export interface DashboardSummary {
+  kpis: KpiSummary;
+  portfolioBySegment: SegmentBreakdown[];
+  agingAnalysis: AgingBucket[];
+  casesByStatus: CaseStatusBreakdown[];
+  advisorMetrics: AdvisorMetrics[];
+  riskDistribution: RiskDistribution[];
+  recentBatches: RecentBatch[];
+  generatedAt: string;
+}
+
 export interface DashboardMetrics {
   totalPortfolioValue: number;
   activeCases: number;
@@ -49,35 +133,6 @@ export interface DashboardMetrics {
   dailyCollections: number;
   riskDistribution: { [key: string]: number };
   monthlyRecovery: { [key: string]: number };
-  openCases?: number;
-  inProgressCases?: number;
-  escalatedCases?: number;
-  resolvedCases?: number;
-  totalCases?: number;
-  activeAdvisors?: number;
-}
-
-export interface DashboardSummary {
-  kpis: {
-    totalPortfolioValue: number;
-    openCases: number;
-    inProgressCases: number;
-    escalatedCases: number;
-    resolvedCases: number;
-    totalCases: number;
-    activeAdvisors: number;
-  };
-  advisorMetrics?: Array<{
-    advisorId: number;
-    advisorCode: string;
-    advisorName: string;
-    totalAssigned: number;
-    openCases: number;
-    inProgressCases: number;
-    escalatedCases: number;
-    resolvedCases: number;
-    closedCases: number;
-  }>;
 }
 
 export interface Client {
@@ -160,11 +215,20 @@ export interface CaseNote {
 
 export interface PaymentAgreement {
   id: number;
-  caseId: number;
+  agreementNumber: string;
   totalAmount: number;
-  installmentsCount: number;
-  status: string;
+  finalAmount: number;
+  discountAmount?: number;
+  numberOfInstallments: number;
+  installmentAmount: number;
+  paymentGateway?: string;
+  status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'DEFAULTED' | 'CANCELLED';
+  startDate: string;
+  endDate: string;
+  paidAmount?: number;
+  paidInstallments?: number;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Installment {

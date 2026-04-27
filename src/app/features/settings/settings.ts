@@ -139,6 +139,16 @@ export class SettingsComponent implements OnInit {
 
   // ── Guardar scoring ───────────────────────────────────────────────────────
 
+  saveWeights() {
+    const model = this.activeModel();
+    if (!model) return;
+    this.setSaving();
+    this.scoringConfigService.updateModelWeights(model).subscribe({
+      next: m => { this.activeModel.set(m); this.setSuccess('Pesos del modelo guardados'); },
+      error: () => this.setError('Error al guardar pesos — verifique que sumen 100%')
+    });
+  }
+
   saveThresholds() {
     const model = this.activeModel();
     if (!model) return;
