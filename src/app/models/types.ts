@@ -1,28 +1,101 @@
 export interface User {
   id?: number;
   username: string;
-  name: string;
+  fullName: string;
   email: string;
-  role: 'ADMIN' | 'SUPERVISOR' | 'AGENT' | 'AUDITOR';
+  roleName?: string;
+  status: string;
+  createdAt?: string;
+  lastLogin?: string;
   token?: string;
+  // Compatibility fields
+  name?: string;
+  role?: any;
+}
+
+export interface UserCreateRequest {
+  username: string;
+  email: string;
+  password?: string;
+  fullName: string;
+  roleId: number;
+}
+
+export interface UserUpdateRequest {
+  email: string;
+  fullName: string;
+  roleId?: number;
+  status: string;
+}
+
+export interface RoleOption {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+export interface DashboardMetrics {
+  totalPortfolioValue: number;
+  activeCases: number;
+  recoveryRate: number;
+  dailyCollections: number;
+  riskDistribution: { [key: string]: number };
+  monthlyRecovery: { [key: string]: number };
+  openCases?: number;
+  inProgressCases?: number;
+  escalatedCases?: number;
+  resolvedCases?: number;
+  totalCases?: number;
+  activeAdvisors?: number;
+}
+
+export interface DashboardSummary {
+  kpis: {
+    totalPortfolioValue: number;
+    openCases: number;
+    inProgressCases: number;
+    escalatedCases: number;
+    resolvedCases: number;
+    totalCases: number;
+    activeAdvisors: number;
+  };
+  advisorMetrics?: Array<{
+    advisorId: number;
+    advisorCode: string;
+    advisorName: string;
+    totalAssigned: number;
+    openCases: number;
+    inProgressCases: number;
+    escalatedCases: number;
+    resolvedCases: number;
+    closedCases: number;
+  }>;
 }
 
 export interface Client {
   id: number;
   documentNumber: string;
   documentType: string;
-  name: string;
+  fullName: string; // Updated from name to match ClientDTO
   email: string;
   phone: string;
   segment: string;
   riskLevel: string;
-  score: number;
+  creditScore: number; // Updated from score to match ClientDTO
 }
 
 export interface Obligation {
   id: number;
   clientId: number;
-  productType: string;
+  obligationNumber: string;
   principalAmount: number;
   currentBalance: number;
   daysPastDue: number;
@@ -31,27 +104,53 @@ export interface Obligation {
 
 export interface Batch {
   id: number;
-  filename: string;
-  uploadDate: string;
-  status: 'PENDING' | 'VALIDATED' | 'PROMOTED' | 'FAILED';
-  recordCount: number;
+  fileName: string; // Updated from filename to match Batch schema
+  uploadDate?: string;
+  uploadedAt?: string;
+  createdAt?: string;
+  status: 'STAGING' | 'UPLOADED' | 'VALIDATING' | 'VALIDATED' | 'PROCESSING' | 'PROMOTED' | 'COMPLETED' | 'FAILED';
+  totalRecords: number; // Updated from recordCount
 }
 
 export interface Case {
   id: number;
-  clientId: number;
-  status: string;
-  priority: string;
-  assignedTo?: string;
+  caseNumber?: string;
+  client?: {
+    id?: number;
+    fullName?: string;
+    documentNumber?: string;
+  };
+  obligation?: {
+    id?: number;
+    client?: {
+      id?: number;
+      fullName?: string;
+      documentNumber?: string;
+    };
+    obligationNumber?: string;
+    currentBalance?: number;
+    totalBalance?: number;
+    daysPastDue?: number;
+  };
+  advisorId?: number;
+  batchId?: number;
+  assignedTo?: number | string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'ESCALATED' | 'RESOLVED' | 'CLOSED';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  contactAttempts?: number;
+  aiEscalationCount?: number;
+  resolutionType?: string;
   createdAt: string;
   updatedAt: string;
+  resolvedAt?: string;
 }
 
 export interface CaseNote {
   id: number;
-  caseId: number;
+  caseEntity?: { id: number };
+  noteType?: 'INTERNAL' | 'CUSTOMER_VISIBLE';
   content: string;
-  author: string;
+  createdBy?: number;
   createdAt: string;
 }
 
@@ -70,7 +169,7 @@ export interface Installment {
   installmentNumber: number;
   dueDate: string;
   amount: number;
-  status: 'PENDING' | 'PAID' | 'OVERDUE';
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
 }
 
 export interface AuditLog {
@@ -89,6 +188,7 @@ export interface Associate extends Client {
   daysOverdue: number;
   lastAction?: string;
   propensity: 'Alta' | 'Media' | 'Baja';
+  name: string; // Keep for UI
 }
 
 export interface Policy {
@@ -125,4 +225,27 @@ export interface AssignmentRule {
   maxFailedAttempts?: number;
   priority: number;
   isActive: boolean;
+}
+
+export interface ZolevTokenResponse {
+  respuesta: {
+    codigo: number;
+    mensaje: string;
+  };
+  salida: {
+    token: string;
+  };
+}
+
+export interface PaymentLinkRequest {
+  clientId: number;
+  obligationId: number;
+  amount: number;
+  zolevToken: string;
+}
+
+export interface PaymentLinkResponse {
+  paymentUrl: string;
+  paymentId: string;
+  status: string;
 }

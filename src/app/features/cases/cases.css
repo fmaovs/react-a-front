@@ -438,3 +438,134 @@
 .log-time { font-size: 0.625rem; color: #9ca3af; }
 
 .opacity-0 { opacity: 0; }
+
+.create-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 900px) {
+  .create-grid {
+    grid-template-columns: 180px 1fr 120px;
+  }
+}
+
+.custom-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.primary-action-btn {
+  border: none;
+  border-radius: 0.6rem;
+  background-color: var(--brand-primary);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.filter-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-select {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.error-banner {
+  margin: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.loading-row {
+  padding: 1.2rem 1.5rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.assoc-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.status-pill {
+  width: fit-content;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.compact-select {
+  border: 1px solid #d1d5db;
+  border-radius: 0.45rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+  max-width: 130px;
+}
+
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.small-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 0.45rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid transparent;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.small-btn.neutral {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.small-btn.warn {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.small-btn.ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.empty-row {
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

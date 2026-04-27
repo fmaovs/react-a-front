@@ -1,5 +1,6 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DashboardService } from '../../services/dashboard.service';
 import { StoreService } from '../../services/store.service';
 import {
   LucideAngularModule,
@@ -16,7 +17,8 @@ import {
   templateUrl: './analytics.html',
   styleUrl: './analytics.css'
 })
-export class AnalyticsComponent {
+export class AnalyticsComponent implements OnInit {
+  private dashboardService = inject(DashboardService);
   store = inject(StoreService);
 
   readonly BrainIcon = Brain;
@@ -24,25 +26,43 @@ export class AnalyticsComponent {
   readonly ShieldAlertIcon = ShieldAlert;
   readonly TargetIcon = Target;
 
-  riskData = computed(() => {
-    const associates = this.store.associates();
-    const counts = associates.reduce((acc, a) => {
-      acc[a.risk] = (acc[a.risk] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+  metrics = signal<any>(null);
+  dailyCollections = signal<any[]>([]);
 
-    return [
-      { name: 'Bajo', value: counts['Bajo'] || 0, color: '#10989B' },
-      { name: 'Medio', value: counts['Medio'] || 0, color: '#055177' },
-      { name: 'Alto', value: counts['Alto'] || 0, color: '#0A3B4E' },
-      { name: 'Crítico', value: counts['Crítico'] || 0, color: '#001822' },
-    ];
+  ngOnInit() {
+    this.dashboardService.getMetrics().subscribe(m => this.metrics.set(m));
+    this.dashboardService.getDailyCollections().subscribe(data => this.dailyCollections.set(data));
+  }
+
+  riskData = computed(() => {
+    const m = this.metrics();
+    if (!m || !m.riskDistribution) return [];
+
+    return Object.entries(m.riskDistribution).map(([name, value]) => ({
+      name,
+      value: Number(value),
+      color: this.getRiskColor(name)
+    }));
   });
 
-  recoveryTrend = [
-    { month: 'Ene', recovery: 65, goal: 70 },
-    { month: 'Feb', recovery: 72, goal: 70 },
-    { month: 'Mar', recovery: 78, goal: 75 },
-    { month: 'Abr', recovery: 85, goal: 80 },
-  ];
+  recoveryTrend = computed(() => {
+    const m = this.metrics();
+    if (!m || !m.monthlyRecovery) return [];
+
+    return Object.entries(m.monthlyRecovery).map(([month, recovery]) => ({
+      month,
+      recovery: Number(recovery),
+      goal: 80 // Hardcoded goal for UI reference only
+    }));
+  });
+
+  private getRiskColor(risk: string): string {
+    switch(risk.toLowerCase()) {
+      case 'bajo': return '#10989B';
+      case 'medio': return '#055177';
+      case 'alto': return '#0A3B4E';
+      case 'crítico': return '#001822';
+      default: return '#cbd5e1';
+    }
+  }
 }

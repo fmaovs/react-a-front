@@ -6,11 +6,10 @@
     </div>
     <button
       (click)="handleGenerate()"
-      [disabled]="isGenerating()"
       class="primary-btn shadow-lg"
     >
       <lucide-icon [img]="PlusIcon" class="btn-icon"></lucide-icon>
-      {{ isGenerating() ? 'Generando...' : 'Nuevo Link de Pago' }}
+      Nuevo Link de Pago
     </button>
   </div>
 
@@ -82,6 +81,128 @@
         <div class="compliance-footer">
           <span>Última Conciliación</span>
           <span class="font-bold">Hace 4 minutos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Generar Link de Pago -->
+  <div class="modal-overlay" *ngIf="showModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Generar Nuevo Link de Pago</h3>
+        <button (click)="closeModal()" class="close-btn">
+          <lucide-icon [img]="XIcon"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Paso 1: Seleccionar Cliente -->
+        <div class="form-step" *ngIf="!selectedClient()">
+          <label class="form-label">Buscar Cliente (Nombre o Documento)</label>
+          <div class="search-input-wrapper">
+            <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (input)="searchClients()"
+              placeholder="Escribe al menos 3 caracteres..."
+              class="form-input"
+            >
+          </div>
+          <div class="client-results" *ngIf="clients().length > 0">
+            <div
+              *ngFor="let client of clients()"
+              (click)="selectClient(client)"
+              class="result-item"
+            >
+              <div class="result-info">
+                <span class="result-name">{{ client.fullName }}</span>
+                <span class="result-doc">{{ client.documentType }} {{ client.documentNumber }}</span>
+              </div>
+              <lucide-icon [img]="ArrowRightIcon" class="mini-icon"></lucide-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 2: Seleccionar Obligación y Monto -->
+        <div class="form-step" *ngIf="selectedClient() && !generatedLink()">
+          <div class="selected-context">
+            <div class="context-item">
+              <span class="context-label">Cliente:</span>
+              <span class="context-value">{{ selectedClient()?.fullName }}</span>
+              <button (click)="selectedClient.set(null)" class="text-btn">Cambiar</button>
+            </div>
+          </div>
+
+          <label class="form-label mt-4">Seleccionar Obligación</label>
+          <div class="obligation-list">
+            <div
+              *ngFor="let ob of obligations()"
+              (click)="selectObligation(ob)"
+              [class.selected]="selectedObligation()?.id === ob.id"
+              class="obligation-item"
+            >
+              <div class="ob-info">
+                <span class="ob-number">#{{ ob.obligationNumber }}</span>
+                <span class="ob-balance">{{ ob.currentBalance | currency }}</span>
+              </div>
+              <div class="ob-status badge" [class.overdue]="ob.daysPastDue > 0">
+                {{ ob.daysPastDue > 0 ? ob.daysPastDue + ' días mora' : 'Al día' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mt-4" *ngIf="selectedObligation()">
+            <label class="form-label">Monto a Cobrar</label>
+            <div class="amount-input-wrapper">
+              <span class="currency-symbol">$</span>
+              <input
+                type="number"
+                [(ngModel)]="paymentAmount"
+                class="form-input amount-input"
+              >
+            </div>
+          </div>
+
+          <div *ngIf="error()" class="error-message">
+            {{ error() }}
+          </div>
+
+          <button
+            (click)="generateLink()"
+            [disabled]="isGenerating() || !selectedObligation() || paymentAmount() <= 0"
+            class="primary-btn w-full mt-6"
+          >
+            <lucide-icon [img]="isGenerating() ? LoaderIcon : LinkIcon" [class.spin]="isGenerating()" class="btn-icon"></lucide-icon>
+            {{ isGenerating() ? 'Generando Link...' : 'Generar Link de Pago' }}
+          </button>
+        </div>
+
+        <!-- Paso 3: Link Generado -->
+        <div class="success-step" *ngIf="generatedLink()">
+          <div class="success-icon-wrapper">
+            <lucide-icon [img]="CheckCircle2Icon" class="success-icon"></lucide-icon>
+          </div>
+          <h4 class="success-title">¡Link Generado con Éxito!</h4>
+          <p class="success-desc">El link de pago ya está listo para ser enviado al cliente.</p>
+
+          <div class="link-display">
+            <input type="text" [value]="generatedLink()" readonly class="link-input">
+            <button (click)="copyToClipboard()" class="icon-btn" title="Copiar">
+              <lucide-icon [img]="CopyIcon"></lucide-icon>
+            </button>
+          </div>
+
+          <div class="action-buttons mt-6">
+            <a [href]="generatedLink()" target="_blank" class="secondary-btn flex-1">
+              <lucide-icon [img]="ExternalLinkIcon" class="btn-icon"></lucide-icon>
+              Probar Link
+            </a>
+            <button (click)="closeModal()" class="primary-btn flex-1">
+              Finalizar
+            </button>
+          </div>
         </div>
       </div>
     </div>

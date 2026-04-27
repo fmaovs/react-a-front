@@ -41,6 +41,12 @@
     </div>
   }
 
+  @if (uploadError()) {
+    <div class="upload-progress-card">
+      <span class="error-text">{{ uploadError() }}</span>
+    </div>
+  }
+
   <div class="content-grid">
     <div class="card">
       <h4 class="card-title">
@@ -86,16 +92,16 @@
         @for (batch of realBatches(); track batch.id) {
           <div class="batch-item">
             <div class="batch-header">
-              <span class="batch-name">{{ batch.filename }}</span>
+              <span class="batch-name">{{ batch.fileName }}</span>
               <span [class]="'status-badge-small ' + batch.status.toLowerCase()">
                 {{ batch.status }}
               </span>
             </div>
             <div class="batch-footer">
               <div class="batch-meta">
-                <span>Registros: {{ batch.recordCount | number }}</span>
+                <span>Registros: {{ batch.totalRecords | number }}</span>
               </div>
-              <span class="date-text">{{ batch.uploadDate | date:'shortDate' }}</span>
+              <span class="date-text">{{ (batch.uploadedAt || batch.createdAt) | date:'shortDate' }}</span>
             </div>
             @if (batch.status === 'VALIDATED') {
               <button mat-button color="primary" (click)="promoteBatch(batch.id)">

@@ -42,7 +42,7 @@
             points="40,120 100,100 160,130 220,80 280,60 340,150"
           />
           <line x1="40" y1="180" x2="380" y2="180" stroke="#f0f0f0" />
-          @for (d of dailyRecovery; track d.day; let i = $index) {
+          @for (d of dailyRecoveryData(); track d.day; let i = $index) {
             <text [attr.x]="40 + (i * 60)" y="195" class="chart-label">{{ d.day }}</text>
           }
         </svg>

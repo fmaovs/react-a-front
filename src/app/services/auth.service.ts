@@ -2,7 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/types';
 import { environment } from '../../environments/environment';
-import { tap, catchError, of, map, Observable } from 'rxjs';
+import { tap, catchError, map, Observable, throwError, of } from 'rxjs';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -35,13 +35,7 @@ export class AuthService {
       map(() => true),
       catchError(err => {
         console.error('Login failed', err);
-        // Fallback for demo purposes if backend is not reachable
-        if (username === 'admin' && password === 'admin123') {
-           const mockUser: User = { username: 'admin', name: 'Administrador', email: 'admin@bankvision.com', role: 'ADMIN' };
-           this.userSignal.set(mockUser);
-           return of(true);
-        }
-        return of(false);
+        return throwError(() => err);
       })
     );
   }

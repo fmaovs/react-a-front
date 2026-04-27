@@ -1,7 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { StoreService } from '../../services/store.service';
+import { UserService } from '../../services/user.service';
+import { User, UserCreateRequest, UserUpdateRequest } from '../../models/types';
+import { UserModalComponent } from '../../shared/components/user-modal/user-modal';
 import {
   LucideAngularModule,
   Settings2,
@@ -33,12 +37,15 @@ interface Tab {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, MatDialogModule],
   templateUrl: './settings.html',
   styleUrl: './settings.css'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   store = inject(StoreService);
+  private userService = inject(UserService);
+  private dialog = inject(MatDialog);
+
   activeTab = signal<TabId>('policies');
   isSaving = signal(false);
 
@@ -91,11 +98,17 @@ export class SettingsComponent {
   ]);
 
   // Users sub-state
-  users = signal([
-    { id: '1', name: 'Admin Principal', email: 'admin@fintra.co', role: 'Administrador', status: 'Activo', lastLogin: '2024-03-15 10:30' },
-    { id: '2', name: 'Coordinador Cobranza', email: 'coord@fintra.co', role: 'Supervisor', status: 'Activo', lastLogin: '2024-03-15 09:15' },
-    { id: '3', name: 'Agente Externo 01', email: 'agente01@externo.com', role: 'Agente', status: 'Bloqueado', lastLogin: '2024-03-10 16:45' },
-  ]);
+  realUsers = signal<User[]>([]);
+
+  ngOnInit() {
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.userService.getUsers().subscribe(users => {
+      this.realUsers.set(users);
+    });
+  }
 
   handleSave() {
     this.isSaving.set(true);
@@ -108,11 +121,48 @@ export class SettingsComponent {
     this.riskLevels.update(prev => prev.filter((_, i) => i !== index));
   }
 
-  removeUser(id: string) {
-    this.users.update(prev => prev.filter(u => u.id !== id));
+  removeUser(id: number) {
+    if (confirm('¿Está seguro de eliminar este usuario?')) {
+      this.userService.deleteUser(id).subscribe(() => this.loadUsers());
+    }
   }
 
-  toggleUserStatus(id: string) {
-    this.users.update(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'Activo' ? 'Bloqueado' : 'Activo' } : u));
+  addUser() {
+    const dialogRef = this.dialog.open(UserModalComponent, {
+      width: '500px',
+      data: {}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const request: UserCreateRequest = {
+          username: result.username,
+          email: result.email,
+          fullName: result.fullName,
+          password: result.password,
+          roleId: result.roleId
+        };
+        this.userService.createUser(request).subscribe(() => this.loadUsers());
+      }
+    });
+  }
+
+  editUser(user: User) {
+    const dialogRef = this.dialog.open(UserModalComponent, {
+      width: '500px',
+      data: { user }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && user.id) {
+        const request: UserUpdateRequest = {
+          email: result.email,
+          fullName: result.fullName,
+          roleId: result.roleId,
+          status: result.status
+        };
+        this.userService.updateUser(user.id, request).subscribe(() => this.loadUsers());
+      }
+    });
   }
 }

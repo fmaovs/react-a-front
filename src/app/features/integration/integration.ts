@@ -1,5 +1,6 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import {
   LucideAngularModule,
   Database,
@@ -10,19 +11,22 @@ import {
 } from 'lucide-angular';
 import { IntegrationService } from '../../services/integration.service';
 import { Batch } from '../../models/types';
+import { StoreService } from '../../services/store.service';
 
 @Component({
   selector: 'app-integration',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, MatButtonModule],
   templateUrl: './integration.html',
   styleUrl: './integration.css'
 })
 export class IntegrationComponent implements OnInit {
   private integrationService = inject(IntegrationService);
+  private store = inject(StoreService);
 
   isUploading = signal(false);
   progress = signal(0);
+  uploadError = signal('');
   realBatches = signal<Batch[]>([]);
 
   readonly DatabaseIcon = Database;
@@ -42,8 +46,16 @@ export class IntegrationComponent implements OnInit {
   }
 
   loadBatches() {
-    this.integrationService.getBatches().subscribe(batches => {
-      this.realBatches.set(batches);
+    this.integrationService.getBatches().subscribe({
+      next: response => {
+        // API returns a Page object or Array
+        const batches = response.content || response;
+        this.realBatches.set(batches);
+      },
+      error: err => {
+        this.realBatches.set([]);
+        this.uploadError.set(err?.error?.message || 'No fue posible consultar los lotes');
+      }
     });
   }
 
@@ -55,19 +67,33 @@ export class IntegrationComponent implements OnInit {
   }
 
   uploadFile(file: File) {
+    this.uploadError.set('');
     this.isUploading.set(true);
     this.progress.set(30);
     this.integrationService.uploadBatch(file).subscribe({
-      next: () => {
+      next: (response) => {
+        if (response?.status === 'FAILED' || response?.status === 'ERROR') {
+          this.isUploading.set(false);
+          this.progress.set(0);
+          this.uploadError.set(response?.message || 'No fue posible procesar el lote');
+          this.loadBatches();
+          return;
+        }
+
         this.progress.set(100);
         setTimeout(() => {
           this.isUploading.set(false);
           this.loadBatches();
         }, 1000);
       },
-      error: () => {
+      error: (err) => {
         this.isUploading.set(false);
         this.progress.set(0);
+        this.uploadError.set(
+          err?.error?.message ||
+          'Error procesando lote. Verifique que exista al menos un asesor activo.'
+        );
+        this.loadBatches();
       }
     });
   }
@@ -75,6 +101,8 @@ export class IntegrationComponent implements OnInit {
   promoteBatch(id: number) {
     this.integrationService.promoteBatch(id).subscribe(() => {
       this.loadBatches();
+      // After promotion, new clients/obligations/cases should appear
+      this.store.refreshData();
     });
   }
 }

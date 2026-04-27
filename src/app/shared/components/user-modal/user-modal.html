@@ -1,0 +1,121 @@
+<div class="modal-container">
+  <div class="modal-header">
+    <div class="header-left">
+      <div class="icon-box">
+        <lucide-icon [img]="UserIcon" class="header-icon"></lucide-icon>
+      </div>
+      <div class="header-text">
+        <h2 mat-dialog-title>{{ isEditMode ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+        <p class="subtitle">{{ isEditMode ? 'Actualice la información del perfil' : 'Complete los datos para crear un nuevo perfil' }}</p>
+      </div>
+    </div>
+    <button (click)="onCancel()" class="close-btn">
+      <lucide-icon [img]="XIcon" class="mini-icon"></lucide-icon>
+    </button>
+  </div>
+
+  <form #userForm="ngForm" (submit)="onSubmit()" class="modal-form">
+    <mat-dialog-content>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre Completo</label>
+          <div class="input-relative">
+            <lucide-icon [img]="UserIcon" class="input-icon"></lucide-icon>
+            <input
+              type="text"
+              name="fullName"
+              [(ngModel)]="userData.fullName"
+              required
+              placeholder="Ej: Camilo Cantor"
+              class="custom-input"
+            />
+          </div>
+        </div>
+
+        @if (!isEditMode) {
+          <div class="form-group">
+            <label>Nombre de Usuario</label>
+            <div class="input-relative">
+              <lucide-icon [img]="UserIcon" class="input-icon"></lucide-icon>
+              <input
+                type="text"
+                name="username"
+                [(ngModel)]="userData.username"
+                required
+                placeholder="usuario123"
+                class="custom-input"
+              />
+            </div>
+          </div>
+        }
+
+        <div class="form-group" [class.full-width]="isEditMode">
+          <label>Email Corporativo</label>
+          <div class="input-relative">
+            <lucide-icon [img]="MailIcon" class="input-icon"></lucide-icon>
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="userData.email"
+              required
+              placeholder="correo@bankvision.com"
+              class="custom-input"
+            />
+          </div>
+        </div>
+
+        @if (!isEditMode) {
+          <div class="form-group full-width">
+            <label>Contraseña Inicial</label>
+            <div class="input-relative">
+              <lucide-icon [img]="ShieldIcon" class="input-icon"></lucide-icon>
+              <input
+                type="password"
+                name="password"
+                [(ngModel)]="userData.password"
+                required
+                placeholder="••••••••"
+                class="custom-input"
+              />
+            </div>
+          </div>
+        }
+
+        <div class="form-group">
+          <label>Rol de Acceso</label>
+          <mat-form-field appearance="outline" class="custom-select">
+            <mat-select name="roleId" [(ngModel)]="userData.roleId">
+              @for (role of roles(); track role.id) {
+                <mat-option [value]="role.id">{{ role.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <label>Estado</label>
+          <mat-form-field appearance="outline" class="custom-select">
+            <mat-select name="status" [(ngModel)]="userData.status">
+              @for (st of statuses; track st.id) {
+                <mat-option [value]="st.id">{{ st.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="modal-footer">
+      <button type="button" mat-button (click)="onCancel()" class="cancel-btn">Cancelar</button>
+      <button
+        type="submit"
+        [disabled]="!userForm.form.valid"
+        mat-raised-button color="primary"
+        class="save-btn"
+      >
+        <lucide-icon [img]="SaveIcon" class="btn-icon"></lucide-icon>
+        {{ isEditMode ? 'Guardar Cambios' : 'Crear Usuario' }}
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>
