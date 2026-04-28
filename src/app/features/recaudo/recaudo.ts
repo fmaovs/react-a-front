@@ -19,8 +19,8 @@ import {
   ExternalLink,
   Loader2
 } from 'lucide-angular';
-import { CollectionService } from '../../services/collection.service';
-import { PortfolioService } from '../../services/portfolio.service';
+import { CollectionService } from './collection.service';
+import { PortfolioService } from '../../shared/services/portfolio.service';
 import { PaymentAgreement, Client, Obligation } from '../../models/types';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';

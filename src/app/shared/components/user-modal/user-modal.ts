@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { User, RoleOption } from '../../../models/types';
-import { UserService } from '../../../services/user.service';
+import { UserService } from '../../../features/settings/user.service';
 import { LucideAngularModule, User as UserIcon, Mail, Shield, Save, X } from 'lucide-angular';
 
 @Component({

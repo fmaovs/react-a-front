@@ -1,7 +1,7 @@
 import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { DashboardService } from '../../services/dashboard.service';
+import { DashboardService } from './dashboard.service';
 import { DashboardSummary } from '../../models/types';
 import {
   LucideAngularModule,

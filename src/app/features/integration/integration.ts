@@ -9,9 +9,9 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-angular';
-import { IntegrationService, BatchProcessSummary } from '../../services/integration.service';
+import { IntegrationService, BatchProcessSummary } from './integration.service';
 import { Batch } from '../../models/types';
-import { StoreService } from '../../services/store.service';
+import { StoreService } from '../../core/store/app-store.service';
 
 @Component({
   selector: 'app-integration',

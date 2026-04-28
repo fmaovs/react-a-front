@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Case, CaseNote, Page } from '../models/types';
-import { environment } from '../../environments/environment';
+import { Case, CaseNote, EscalationReason, ResolutionType, Page } from '../../models/types';
+import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
-import { EscalationReason, ResolutionType } from '../features/cases/cases';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +33,6 @@ export class CaseService {
     });
   }
 
-  /** Agrega una nota de trazabilidad. source=HUMAN para el asesor. */
   addNote(caseId: number, content: string,
           noteType: 'INTERNAL' | 'CUSTOMER_VISIBLE' = 'INTERNAL',
           source: 'HUMAN' | 'AI' = 'HUMAN'): Observable<CaseNote> {
@@ -47,12 +45,10 @@ export class CaseService {
     return this.http.get<CaseNote[]>(`${this.apiUrl}/${caseId}/notes`);
   }
 
-  /** Escala el caso a un asesor humano real (menor carga). */
   escalateCase(caseId: number, reason: EscalationReason): Observable<Case> {
     return this.http.post<Case>(`${this.apiUrl}/${caseId}/escalate`, null, { params: { reason } });
   }
 
-  /** Resuelve el caso con tipo estructurado y actualiza la obligación. */
   resolveCase(caseId: number, resolutionType: ResolutionType, details?: string): Observable<Case> {
     const params: Record<string, string> = { resolutionType };
     if (details?.trim()) params['details'] = details.trim();

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PaymentAgreement, Installment, Page, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse, PaymentLinkUiResult } from '../models/types';
-import { environment } from '../../environments/environment';
+import { PaymentAgreement, Installment, Page, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse, PaymentLinkUiResult } from '../../models/types';
+import { environment } from '../../../environments/environment';
 import { Observable, catchError, map, throwError } from 'rxjs';
 
 @Injectable({
@@ -61,7 +61,6 @@ export class CollectionService {
 
     return this.http.post<PaymentLinkResponse>(`${this.paymentsUrl}/generate-link`, payload).pipe(
       catchError(err => {
-        // Fallback defensivo para ambientes donde el controlador quedo con /api/v1 dentro del context-path /api.
         if (err?.status === 404) {
           return this.http.post<PaymentLinkResponse>(`${this.paymentsLegacyUrl}/generate-link`, payload);
         }

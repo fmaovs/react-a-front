@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 export interface ScoringModelConfig {
   id?: number;
@@ -71,8 +71,6 @@ export class ScoringConfigService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/scoring`;
 
-  // ── Modelo de scoring ─────────────────────────────────────────────────────
-
   getActiveModel(): Observable<ScoringModelConfig> {
     return this.http.get<ScoringModelConfig>(`${this.baseUrl}/config/models/active`);
   }
@@ -105,8 +103,6 @@ export class ScoringConfigService {
     return this.http.put<ChannelRule[]>(`${this.baseUrl}/config/models/${version}/channels`, channels);
   }
 
-  // ── Flujo de cobranza ─────────────────────────────────────────────────────
-
   getActiveWorkflowConfig(): Observable<WorkflowConfig> {
     return this.http.get<WorkflowConfig>(`${this.baseUrl}/workflow-config`);
   }
@@ -115,8 +111,6 @@ export class ScoringConfigService {
     return this.http.put<WorkflowConfig>(`${this.baseUrl}/workflow-config`, cfg);
   }
 
-  // ── Segmentación ──────────────────────────────────────────────────────────
-
   getActiveSegmentRules(): Observable<SegmentRule[]> {
     return this.http.get<SegmentRule[]>(`${this.baseUrl}/workflow-config/segment-rules`);
   }
@@ -124,8 +118,6 @@ export class ScoringConfigService {
   updateSegmentRules(version: string, rules: SegmentRule[]): Observable<SegmentRule[]> {
     return this.http.put<SegmentRule[]>(`${this.baseUrl}/workflow-config/segment-rules/${version}`, rules);
   }
-
-  // ── Cuotas ────────────────────────────────────────────────────────────────
 
   getActiveInstallmentRules(): Observable<InstallmentRule[]> {
     return this.http.get<InstallmentRule[]>(`${this.baseUrl}/workflow-config/installment-rules`);

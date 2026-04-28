@@ -1,7 +1,7 @@
 import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DashboardService } from '../../services/dashboard.service';
-import { StoreService } from '../../services/store.service';
+import { DashboardService } from '../dashboard/dashboard.service';
+import { StoreService } from '../../core/store/app-store.service';
 import {
   LucideAngularModule,
   Brain,

@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { StoreService } from '../../services/store.service';
-import { CaseService } from '../../services/case.service';
-import { Case, CaseNote } from '../../models/types';
+import { StoreService } from '../../core/store/app-store.service';
+import { CaseService } from './case.service';
+import { Case, CaseNote, EscalationReason, ResolutionType } from '../../models/types';
 import {
   LucideAngularModule,
   RefreshCw,
@@ -18,20 +18,6 @@ import {
   User,
   Lock
 } from 'lucide-angular';
-
-export type EscalationReason =
-  | 'MAX_CONTACT_ATTEMPTS'
-  | 'PAYMENT_REFUSED'
-  | 'HIGH_RISK_SCORE'
-  | 'LEGAL_REQUIRED'
-  | 'COMPLEX_SITUATION';
-
-export type ResolutionType =
-  | 'PAYMENT_COMPLETE'
-  | 'PAYMENT_AGREEMENT'
-  | 'WRITE_OFF'
-  | 'UNABLE_TO_COLLECT'
-  | 'DISPUTE_RESOLVED';
 
 interface ActionPanel {
   caseId: number;

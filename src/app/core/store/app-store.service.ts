@@ -1,7 +1,7 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { Client, Case, Policy, Campaign, CaseStatus, AssignmentRule, Associate, CaseNote } from '../models/types';
-import { PortfolioService } from './portfolio.service';
-import { CaseService } from './case.service';
+import { Injectable, signal, inject } from '@angular/core';
+import { Client, Case, Policy, Campaign, CaseStatus, AssignmentRule, Associate, CaseNote } from '../../models/types';
+import { PortfolioService } from '../../shared/services/portfolio.service';
+import { CaseService } from '../../features/cases/case.service';
 import { forkJoin } from 'rxjs';
 
 @Injectable({
@@ -28,7 +28,6 @@ export class StoreService {
   }
 
   private loadInitialData() {
-    // We use forkJoin to wait for both clients and obligations to have a consistent view
     forkJoin({
       clientsPage: this.portfolioService.getClients(),
       obligationsPage: this.portfolioService.getObligations()

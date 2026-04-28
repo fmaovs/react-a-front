@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth.service';
-import { StoreService } from '../../services/store.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { StoreService } from '../../core/store/app-store.service';
 import {
   LucideAngularModule,
   Search,

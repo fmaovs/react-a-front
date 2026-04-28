@@ -9,8 +9,8 @@ import {
   History,
   ShieldCheck
 } from 'lucide-angular';
-import { AdminService } from '../../services/admin.service';
-import { DashboardService } from '../../services/dashboard.service';
+import { AdminService } from '../../shared/services/admin.service';
+import { DashboardService } from '../dashboard/dashboard.service';
 import { AuditLog } from '../../models/types';
 
 @Component({

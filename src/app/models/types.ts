@@ -334,3 +334,17 @@ export interface PaymentLinkUiResult {
   status: string;
   paymentUrl: string;
 }
+
+export type EscalationReason =
+  | 'MAX_CONTACT_ATTEMPTS'
+  | 'PAYMENT_REFUSED'
+  | 'HIGH_RISK_SCORE'
+  | 'LEGAL_REQUIRED'
+  | 'COMPLEX_SITUATION';
+
+export type ResolutionType =
+  | 'PAYMENT_COMPLETE'
+  | 'PAYMENT_AGREEMENT'
+  | 'WRITE_OFF'
+  | 'UNABLE_TO_COLLECT'
+  | 'DISPUTE_RESOLVED';

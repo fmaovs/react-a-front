@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { AuthService } from './services/auth.service';
+import { AuthService } from './core/auth/auth.service';
 import { LoginComponent } from './features/login/login';
 import { SidebarComponent } from './layout/sidebar/sidebar';
 import { HeaderComponent } from './layout/header/header';

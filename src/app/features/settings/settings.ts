@@ -2,9 +2,9 @@ import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { StoreService } from '../../services/store.service';
-import { UserService } from '../../services/user.service';
-import { ScoringConfigService, ScoringModelConfig, RiskThreshold, ChannelRule, SegmentRule, InstallmentRule, WorkflowConfig } from '../../services/scoring-config.service';
+import { StoreService } from '../../core/store/app-store.service';
+import { UserService } from './user.service';
+import { ScoringConfigService, ScoringModelConfig, RiskThreshold, ChannelRule, SegmentRule, InstallmentRule, WorkflowConfig } from './scoring-config.service';
 import { User, UserCreateRequest, UserUpdateRequest } from '../../models/types';
 import { UserModalComponent } from '../../shared/components/user-modal/user-modal';
 import {

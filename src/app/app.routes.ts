@@ -1,23 +1,41 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './features/dashboard/dashboard';
-import { IntegrationComponent } from './features/integration/integration';
-import { AnalyticsComponent } from './features/analytics/analytics';
-import { PoliciesComponent } from './features/policies/policies';
-import { OrchestrationComponent } from './features/orchestration/orchestration';
-import { CasesComponent } from './features/cases/cases';
-import { RecaudoComponent } from './features/recaudo/recaudo';
-import { ReportingComponent } from './features/reporting/reporting';
-import { SettingsComponent } from './features/settings/settings';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'integration', component: IntegrationComponent },
-  { path: 'analytics', component: AnalyticsComponent },
-  { path: 'policies', component: PoliciesComponent },
-  { path: 'orchestration', component: OrchestrationComponent },
-  { path: 'cases', component: CasesComponent },
-  { path: 'recaudo', component: RecaudoComponent },
-  { path: 'reporting', component: ReportingComponent },
-  { path: 'settings', component: SettingsComponent },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent)
+  },
+  {
+    path: 'integration',
+    loadComponent: () => import('./features/integration/integration').then(m => m.IntegrationComponent)
+  },
+  {
+    path: 'analytics',
+    loadComponent: () => import('./features/analytics/analytics').then(m => m.AnalyticsComponent)
+  },
+  {
+    path: 'policies',
+    loadComponent: () => import('./features/policies/policies').then(m => m.PoliciesComponent)
+  },
+  {
+    path: 'orchestration',
+    loadComponent: () => import('./features/orchestration/orchestration').then(m => m.OrchestrationComponent)
+  },
+  {
+    path: 'cases',
+    loadComponent: () => import('./features/cases/cases').then(m => m.CasesComponent)
+  },
+  {
+    path: 'recaudo',
+    loadComponent: () => import('./features/recaudo/recaudo').then(m => m.RecaudoComponent)
+  },
+  {
+    path: 'reporting',
+    loadComponent: () => import('./features/reporting/reporting').then(m => m.ReportingComponent)
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./features/settings/settings').then(m => m.SettingsComponent)
+  },
 ];

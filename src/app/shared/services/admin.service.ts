@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuditLog, Page } from '../models/types';
-import { environment } from '../../environments/environment';
+import { AuditLog, Page } from '../../models/types';
+import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 

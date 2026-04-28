@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User, LoginResponse } from '../models/types';
-import { environment } from '../../environments/environment';
+import { User, LoginResponse } from '../../models/types';
+import { environment } from '../../../environments/environment';
 import { tap, catchError, map, Observable, throwError } from 'rxjs';
 
 @Injectable({
@@ -42,8 +42,6 @@ export class AuthService {
   }
 
   logout() {
-    // Limpiar signal → app.ts detecta user() === null y muestra LoginComponent.
-    // No se necesita router.navigate porque el login es condicional en el template raíz.
     this.userSignal.set(null);
     localStorage.removeItem('bv_user');
   }
