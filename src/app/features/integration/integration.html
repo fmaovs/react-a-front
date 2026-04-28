@@ -47,6 +47,25 @@
     </div>
   }
 
+  @if (processError()) {
+    <div class="upload-progress-card">
+      <span class="error-text">{{ processError() }}</span>
+    </div>
+  }
+
+  @if (processResult(); as result) {
+    <div class="process-result-card">
+      <p class="result-title">Lote procesado — {{ result.batchNumber }}</p>
+      <div class="result-grid">
+        <div class="result-stat"><span class="stat-label">Clientes</span><span class="stat-value">{{ result.clientsProcessed }}</span></div>
+        <div class="result-stat"><span class="stat-label">Scores</span><span class="stat-value">{{ result.scoresGenerated }}</span></div>
+        <div class="result-stat"><span class="stat-label">Casos</span><span class="stat-value">{{ result.casesCreated }}</span></div>
+        <div class="result-stat"><span class="stat-label">Links de pago</span><span class="stat-value">{{ result.paymentLinksCreated }}</span></div>
+        <div class="result-stat"><span class="stat-label">Fallidos</span><span class="stat-value">{{ result.failedRecords }}</span></div>
+      </div>
+    </div>
+  }
+
   <div class="content-grid">
     <div class="card">
       <h4 class="card-title">
@@ -106,6 +125,14 @@
             @if (batch.status === 'VALIDATED') {
               <button mat-button color="primary" (click)="promoteBatch(batch.id)">
                 Promover a Maestro <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
+              </button>
+            }
+            @if (batch.status === 'STAGING') {
+              <button mat-button color="accent"
+                [disabled]="isProcessing() === batch.id"
+                (click)="processBatch(batch.id)">
+                {{ isProcessing() === batch.id ? 'Procesando...' : 'Procesar (Score + Flujo)' }}
+                <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
               </button>
             }
           </div>

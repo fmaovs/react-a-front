@@ -26,4 +26,21 @@ export class IntegrationService {
   promoteBatch(id: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/batches/${id}/promote`, {});
   }
+
+  processBatch(id: number): Observable<BatchProcessSummary> {
+    return this.http.post<BatchProcessSummary>(`${this.apiUrl}/batches/${id}/process`, {});
+  }
+}
+
+export interface BatchProcessSummary {
+  batchId: number;
+  batchNumber: string;
+  status: string;
+  totalRecords: number;
+  validRecords: number;
+  failedRecords: number;
+  clientsProcessed: number;
+  scoresGenerated: number;
+  casesCreated: number;
+  paymentLinksCreated: number;
 }

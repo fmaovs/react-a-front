@@ -3,20 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { User, LoginResponse } from '../models/types';
 import { environment } from '../../environments/environment';
 import { tap, catchError, map, Observable, throwError } from 'rxjs';
-import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private router = inject(Router);
   private userSignal = signal<User | null>(null);
 
   user = this.userSignal.asReadonly();
 
   constructor() {
-    // La sesión es efímera: no se restaura desde almacenamiento persistente.
+    // Sesión efímera: se limpia al recargar la página.
     localStorage.removeItem('bv_user');
   }
 
@@ -44,8 +42,9 @@ export class AuthService {
   }
 
   logout() {
+    // Limpiar signal → app.ts detecta user() === null y muestra LoginComponent.
+    // No se necesita router.navigate porque el login es condicional en el template raíz.
     this.userSignal.set(null);
-    this.router.navigate(['/login']);
     localStorage.removeItem('bv_user');
   }
 }

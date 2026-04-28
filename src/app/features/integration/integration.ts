@@ -9,7 +9,7 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-angular';
-import { IntegrationService } from '../../services/integration.service';
+import { IntegrationService, BatchProcessSummary } from '../../services/integration.service';
 import { Batch } from '../../models/types';
 import { StoreService } from '../../services/store.service';
 
@@ -25,8 +25,11 @@ export class IntegrationComponent implements OnInit {
   private store = inject(StoreService);
 
   isUploading = signal(false);
+  isProcessing = signal<number | null>(null);
   progress = signal(0);
   uploadError = signal('');
+  processResult = signal<BatchProcessSummary | null>(null);
+  processError = signal('');
   realBatches = signal<Batch[]>([]);
 
   readonly DatabaseIcon = Database;
@@ -101,8 +104,26 @@ export class IntegrationComponent implements OnInit {
   promoteBatch(id: number) {
     this.integrationService.promoteBatch(id).subscribe(() => {
       this.loadBatches();
-      // After promotion, new clients/obligations/cases should appear
       this.store.refreshData();
+    });
+  }
+
+  processBatch(id: number) {
+    this.processResult.set(null);
+    this.processError.set('');
+    this.isProcessing.set(id);
+    this.integrationService.processBatch(id).subscribe({
+      next: result => {
+        this.isProcessing.set(null);
+        this.processResult.set(result);
+        this.loadBatches();
+        this.store.refreshData();
+      },
+      error: err => {
+        this.isProcessing.set(null);
+        this.processError.set(err?.error?.message || 'Error al procesar el lote end-to-end.');
+        this.loadBatches();
+      }
     });
   }
 }
