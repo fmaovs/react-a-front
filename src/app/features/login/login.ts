@@ -31,9 +31,10 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.error.set('');
 
-    this.authService.login(this.email, this.password).subscribe(success => {
-      this.isLoading.set(false);
-      if (!success) {
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => this.isLoading.set(false),
+      error: () => {
+        this.isLoading.set(false);
         this.error.set('Credenciales incorrectas. Verifique su usuario y contraseña.');
       }
     });

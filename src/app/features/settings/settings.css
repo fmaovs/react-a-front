@@ -382,6 +382,30 @@ input[type="number"].field-number::-webkit-outer-spin-button {
 .risk-badge.risk-alto    { background: #fff7ed; color: #ea580c; }
 .risk-badge.risk-critico { background: #fef2f2; color: #dc2626; }
 
+/* ── Scoring pair grid (umbrales + canales en paralelo) ─────────────────── */
+
+.scoring-pair-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 960px) {
+  .scoring-pair-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.pair-card {
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pair-card .section-header { margin-bottom: 0; }
+
 /* ── Workflow cards ──────────────────────────────────────────────────────── */
 
 .workflow-grid {
