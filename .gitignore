@@ -10,6 +10,7 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+*.log
 
 # IDEs and editors
 .idea/
@@ -19,6 +20,8 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
+*.swp
+*.swo
 
 # Visual Studio Code
 .vscode/*
@@ -38,6 +41,11 @@ yarn-error.log
 testem.log
 /typings
 __screenshots__/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
 
 # System files
 .DS_Store
