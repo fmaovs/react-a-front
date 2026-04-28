@@ -469,6 +469,41 @@
   margin-top: 1rem;
 }
 
+.loading-step {
+  text-align: center;
+  padding: 1.25rem 0.5rem;
+}
+
+.loader-ring {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.loading-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.loading-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.loading-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
 .success-step {
   text-align: center;
   padding: 1rem 0;
@@ -504,6 +539,17 @@
   margin-bottom: 2rem;
 }
 
+.status-chip {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .link-display {
   display: flex;
   gap: 0.5rem;
@@ -536,6 +582,13 @@
 .icon-btn:hover {
   background: #f3f4f6;
   color: #111827;
+}
+
+.copy-feedback {
+  margin: 0.5rem 0 0;
+  color: #059669;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .action-buttons {

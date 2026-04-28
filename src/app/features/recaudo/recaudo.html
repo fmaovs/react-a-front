@@ -126,7 +126,7 @@
         </div>
 
         <!-- Paso 2: Seleccionar Obligación y Monto -->
-        <div class="form-step" *ngIf="selectedClient() && !generatedLink()">
+        <div class="form-step" *ngIf="selectedClient() && !generatedLink() && !showGenerationAnimation()">
           <div class="selected-context">
             <div class="context-item">
               <span class="context-label">Cliente:</span>
@@ -179,6 +179,15 @@
           </button>
         </div>
 
+        <!-- Paso intermedio: animacion mientras se genera -->
+        <div class="loading-step" *ngIf="showGenerationAnimation()">
+          <div class="loader-ring">
+            <lucide-icon [img]="LoaderIcon" class="loading-icon spin"></lucide-icon>
+          </div>
+          <h4 class="loading-title">Estamos preparando tu link de pago</h4>
+          <p class="loading-desc">Validando datos de cliente y creando sesion de pago segura...</p>
+        </div>
+
         <!-- Paso 3: Link Generado -->
         <div class="success-step" *ngIf="generatedLink()">
           <div class="success-icon-wrapper">
@@ -186,6 +195,7 @@
           </div>
           <h4 class="success-title">¡Link Generado con Éxito!</h4>
           <p class="success-desc">El link de pago ya está listo para ser enviado al cliente.</p>
+          <p class="status-chip" *ngIf="generatedStatus()">Estado: {{ generatedStatus() }}</p>
 
           <div class="link-display">
             <input type="text" [value]="generatedLink()" readonly class="link-input">
@@ -193,6 +203,7 @@
               <lucide-icon [img]="CopyIcon"></lucide-icon>
             </button>
           </div>
+          <p class="copy-feedback" *ngIf="copied()">Enlace copiado.</p>
 
           <div class="action-buttons mt-6">
             <a [href]="generatedLink()" target="_blank" class="secondary-btn flex-1">

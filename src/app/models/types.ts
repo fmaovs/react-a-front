@@ -306,14 +306,22 @@ export interface ZolevTokenResponse {
 }
 
 export interface PaymentLinkRequest {
-  clientId: number;
-  obligationId: number;
-  amount: number;
-  zolevToken: string;
+  IdCliente: number;
+  IdTransaccion: number;
+  Referencia1: string;
+  Valor: number;
+  Url: string;
 }
 
 export interface PaymentLinkResponse {
-  paymentUrl: string;
+  paymentId: string;
+  nombreEstado: string;
+  estado: number;
+  urlLink: string;
+}
+
+export interface PaymentLinkUiResult {
   paymentId: string;
   status: string;
+  paymentUrl: string;
 }

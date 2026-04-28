@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PaymentAgreement, Installment, Page, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse } from '../models/types';
+import { PaymentAgreement, Installment, Page, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse, PaymentLinkUiResult } from '../models/types';
 import { environment } from '../../environments/environment';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +10,8 @@ import { Observable, map } from 'rxjs';
 export class CollectionService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/collection`;
+  private paymentsUrl = `${environment.apiUrl}/v1/payments`;
+  private paymentsLegacyUrl = `${environment.apiUrl}/api/v1/payments`;
 
   getAgreements(): Observable<PaymentAgreement[]> {
     return this.http.get<Page<PaymentAgreement>>(`${this.apiUrl}/agreements?size=100`).pipe(
@@ -40,7 +42,20 @@ export class CollectionService {
     return this.http.post<ZolevTokenResponse>(`${environment.zolev.urlToken}/api/token/obtener`, {}, { headers });
   }
 
-  generatePaymentLink(request: PaymentLinkRequest): Observable<PaymentLinkResponse> {
-    return this.http.post<PaymentLinkResponse>(`${this.apiUrl}/generate-link`, request);
+  generatePaymentLink(request: PaymentLinkRequest): Observable<PaymentLinkUiResult> {
+    return this.http.post<PaymentLinkResponse>(`${this.paymentsUrl}/generate-link`, request).pipe(
+      catchError(err => {
+        // Fallback defensivo para ambientes donde el controlador quedo con /api/v1 dentro del context-path /api.
+        if (err?.status === 404) {
+          return this.http.post<PaymentLinkResponse>(`${this.paymentsLegacyUrl}/generate-link`, request);
+        }
+        return throwError(() => err);
+      }),
+      map(res => ({
+        paymentId: res.paymentId,
+        status: res.nombreEstado,
+        paymentUrl: res.urlLink
+      }))
+    );
   }
 }

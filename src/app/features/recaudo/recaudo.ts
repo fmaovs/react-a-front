@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, computed } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,7 +22,7 @@ import {
 import { CollectionService } from '../../services/collection.service';
 import { PortfolioService } from '../../services/portfolio.service';
 import { PaymentAgreement, Client, Obligation } from '../../models/types';
-import { catchError, finalize, switchMap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
@@ -48,6 +48,9 @@ export class RecaudoComponent implements OnInit {
   selectedObligation = signal<Obligation | null>(null);
   paymentAmountValue = 0;
   generatedLink = signal<string | null>(null);
+  generatedStatus = signal<string | null>(null);
+  copied = signal(false);
+  showGenerationAnimation = signal(false);
   error = signal<string | null>(null);
 
   readonly DollarSignIcon = DollarSign;
@@ -89,9 +92,14 @@ export class RecaudoComponent implements OnInit {
     this.selectedObligation.set(null);
     this.paymentAmountValue = 0;
     this.generatedLink.set(null);
+    this.generatedStatus.set(null);
+    this.copied.set(false);
+    this.showGenerationAnimation.set(false);
+    this.isGenerating.set(false);
     this.error.set(null);
     this.searchQueryValue = '';
     this.clients.set([]);
+    this.obligations.set([]);
   }
 
   searchClients() {
@@ -127,47 +135,77 @@ export class RecaudoComponent implements OnInit {
       return;
     }
 
-    this.isGenerating.set(true);
-    this.error.set(null);
+    const request = {
+      IdCliente: client.id,
+      IdTransaccion: this.buildTransactionId(obligation.id),
+      Referencia1: this.buildReference(client.id, obligation.id),
+      Valor: amount,
+      Url: this.buildReturnUrl()
+    };
 
-    this.collectionService.getZolevToken().pipe(
-      switchMap(tokenRes => {
-        if (tokenRes.respuesta.codigo !== 0) {
-          throw new Error('Error obteniendo token de Zolev');
-        }
-        return this.collectionService.generatePaymentLink({
-          clientId: client.id,
-          obligationId: obligation.id,
-          amount: amount,
-          zolevToken: tokenRes.salida.token
-        });
-      }),
-      finalize(() => this.isGenerating.set(false)),
-      catchError(err => {
-        this.error.set('Error al generar el link de pago. Intenta de nuevo.');
+    this.isGenerating.set(true);
+    this.showGenerationAnimation.set(true);
+    this.error.set(null);
+    this.copied.set(false);
+
+    this.collectionService.generatePaymentLink(request).pipe(
+      catchError(() => {
+        this.showGenerationAnimation.set(false);
+        this.isGenerating.set(false);
+        this.error.set('No fue posible generar el link de pago. Verifica los datos e intenta de nuevo.');
         return of(null);
       })
     ).subscribe(res => {
-      if (res) {
-        this.generatedLink.set(res.paymentUrl);
-        this.loadData(); // Refresh list
+      if (!res?.paymentUrl) {
+        this.showGenerationAnimation.set(false);
+        this.isGenerating.set(false);
+        this.error.set('El backend no retorno una URL de pago valida.');
+        return;
       }
+
+      // Mantiene una transición corta para dar feedback visual antes de mostrar el link final.
+      window.setTimeout(() => {
+        this.generatedLink.set(res.paymentUrl);
+        this.generatedStatus.set(res.status || 'GENERADO');
+        this.showGenerationAnimation.set(false);
+        this.isGenerating.set(false);
+        this.loadData();
+      }, 900);
     });
   }
 
-  copyToClipboard() {
+  async copyToClipboard() {
     const link = this.generatedLink();
     if (link) {
-      navigator.clipboard.writeText(link);
-      // Optional: show a toast
+      try {
+        await navigator.clipboard.writeText(link);
+        this.copied.set(true);
+        window.setTimeout(() => this.copied.set(false), 1800);
+      } catch {
+        this.error.set('No se pudo copiar el enlace al portapapeles.');
+      }
     }
   }
 
   closeModal() {
     this.showModal.set(false);
+    this.resetForm();
   }
 
   payInstallment(id: number) {
     this.collectionService.payInstallment(id).subscribe(() => this.loadData());
+  }
+
+  private buildReference(clientId: number, obligationId: number): string {
+    return `CL-${clientId}-OB-${obligationId}`;
+  }
+
+  private buildTransactionId(obligationId: number): number {
+    const shortTimestamp = Date.now() % 1_000_000;
+    return (obligationId % 1000) * 1_000_000 + shortTimestamp;
+  }
+
+  private buildReturnUrl(): string {
+    return `${window.location.origin}/recaudo`;
   }
 }
