@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { User } from '../models/types';
+import { User, LoginResponse } from '../models/types';
 import { environment } from '../../environments/environment';
 import { tap, catchError, map, Observable, throwError } from 'rxjs';
 import { Router } from '@angular/router';
@@ -21,8 +21,18 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<boolean> {
-    return this.http.post<User>(`${environment.apiUrl}/auth/login`, { username, password }).pipe(
-      tap(user => {
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, { username, password }).pipe(
+      tap(res => {
+        const user: User = {
+          id: res.userId,
+          username: res.username,
+          email: res.email,
+          fullName: res.username,
+          roleName: res.role,
+          role: res.role,
+          status: 'ACTIVE',
+          token: res.token
+        };
         this.userSignal.set(user);
       }),
       map(() => true),
@@ -36,5 +46,6 @@ export class AuthService {
   logout() {
     this.userSignal.set(null);
     this.router.navigate(['/login']);
+    localStorage.removeItem('bv_user');
   }
 }

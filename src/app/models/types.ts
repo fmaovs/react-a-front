@@ -13,6 +13,15 @@ export interface User {
   role?: any;
 }
 
+export interface LoginResponse {
+  token: string;
+  refreshToken?: string;
+  userId: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
 export interface UserCreateRequest {
   username: string;
   email: string;
