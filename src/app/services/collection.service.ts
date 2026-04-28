@@ -13,6 +13,20 @@ export class CollectionService {
   private paymentsUrl = `${environment.apiUrl}/v1/payments`;
   private paymentsLegacyUrl = `${environment.apiUrl}/api/v1/payments`;
 
+  private buildPaymentLinkRequest(request: PaymentLinkRequest): PaymentLinkRequest {
+    const testConfig = environment.paymentLinkTest;
+
+    if (!testConfig?.enabled) {
+      return request;
+    }
+
+    return {
+      ...request,
+      IdCliente: testConfig.clientId,
+      IdTransaccion: testConfig.transactionId
+    };
+  }
+
   getAgreements(): Observable<PaymentAgreement[]> {
     return this.http.get<Page<PaymentAgreement>>(`${this.apiUrl}/agreements?size=100`).pipe(
       map(page => page.content ?? [])
@@ -43,18 +57,20 @@ export class CollectionService {
   }
 
   generatePaymentLink(request: PaymentLinkRequest): Observable<PaymentLinkUiResult> {
-    return this.http.post<PaymentLinkResponse>(`${this.paymentsUrl}/generate-link`, request).pipe(
+    const payload = this.buildPaymentLinkRequest(request);
+
+    return this.http.post<PaymentLinkResponse>(`${this.paymentsUrl}/generate-link`, payload).pipe(
       catchError(err => {
         // Fallback defensivo para ambientes donde el controlador quedo con /api/v1 dentro del context-path /api.
         if (err?.status === 404) {
-          return this.http.post<PaymentLinkResponse>(`${this.paymentsLegacyUrl}/generate-link`, request);
+          return this.http.post<PaymentLinkResponse>(`${this.paymentsLegacyUrl}/generate-link`, payload);
         }
         return throwError(() => err);
       }),
       map(res => ({
-        paymentId: res.paymentId,
-        status: res.nombreEstado,
-        paymentUrl: res.urlLink
+        paymentId: res?.paymentId ?? '',
+        status: res?.nombreEstado ?? (res?.estado !== undefined ? `Estado ${res.estado}` : 'GENERADO'),
+        paymentUrl: res?.urlLink ?? ''
       }))
     );
   }

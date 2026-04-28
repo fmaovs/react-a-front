@@ -1,5 +1,7 @@
+import { inject } from '@angular/core';
 import { HttpInterceptorFn } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const apiUrl = environment.apiUrl.replace(/\/$/, '');
@@ -10,28 +12,22 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const savedUser = localStorage.getItem('bv_user');
-  if (!savedUser) {
+  const authService = inject(AuthService);
+  const currentUser = authService.user();
+  if (!currentUser) {
     return next(req);
   }
 
-  try {
-    const parsed = JSON.parse(savedUser) as { token?: string };
-    const token = parsed?.token;
+  const token = currentUser.token;
+  if (!token) {
+    return next(req);
+  }
 
-    if (!token) {
-      return next(req);
+  const authReq = req.clone({
+    setHeaders: {
+      Authorization: `Bearer ${token}`
     }
+  });
 
-    const authReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    return next(authReq);
-  } catch {
-    localStorage.removeItem('bv_user');
-    return next(req);
-  }
+  return next(authReq);
 };

@@ -142,6 +142,7 @@ export class RecaudoComponent implements OnInit {
       Valor: amount,
       Url: this.buildReturnUrl()
     };
+    console.log("La request", request);
 
     this.isGenerating.set(true);
     this.showGenerationAnimation.set(true);
@@ -150,12 +151,14 @@ export class RecaudoComponent implements OnInit {
 
     this.collectionService.generatePaymentLink(request).pipe(
       catchError(() => {
+        console.log('Error detallado de la consulta');
         this.showGenerationAnimation.set(false);
         this.isGenerating.set(false);
         this.error.set('No fue posible generar el link de pago. Verifica los datos e intenta de nuevo.');
         return of(null);
       })
     ).subscribe(res => {
+      console.log('Respuesta del servidor:', res);
       if (!res?.paymentUrl) {
         this.showGenerationAnimation.set(false);
         this.isGenerating.set(false);
