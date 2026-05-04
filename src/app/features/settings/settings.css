@@ -316,8 +316,14 @@
 /* Umbrales: [nivel 150px] [min 90px] [max 90px] */
 .cols-thresholds { grid-template-columns: 160px 90px 90px; }
 
-/* Canales: [nivel 160px] [canal 160px] */
-.cols-channels   { grid-template-columns: 160px 160px; }
+/* Intensidad: [nivel 120px] [intensidad 120px] [sms 80px] [email 90px] [calls 90px] [wa 110px] */
+.cols-intensity { grid-template-columns: 120px 120px 80px 90px 90px 110px; }
+
+/* Variables: [key 180px] [label auto] [peso 100px] [activa 70px] */
+.cols-variables { grid-template-columns: 180px 1fr 100px 70px; }
+
+/* Rangos: [min 90px] [max 90px] [base 110px] [accion 90px] */
+.cols-ranges { grid-template-columns: 90px 90px 110px 90px; }
 
 /* Segmentación: [min 70px] [max 70px] [segmento 140px] [prioridad 100px] [label auto] */
 .cols-segments   { grid-template-columns: 70px 70px 140px 100px 1fr; }
@@ -382,7 +388,7 @@ input[type="number"].field-number::-webkit-outer-spin-button {
 .risk-badge.risk-alto    { background: #fff7ed; color: #ea580c; }
 .risk-badge.risk-critico { background: #fef2f2; color: #dc2626; }
 
-/* ── Scoring pair grid (umbrales + canales en paralelo) ─────────────────── */
+/* ── Scoring pair grid (umbrales + intensidad en paralelo) ──────────────── */
 
 .scoring-pair-grid {
   display: grid;

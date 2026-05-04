@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { StoreService } from '../../core/store/app-store.service';
 import { UserService } from './user.service';
-import { ScoringConfigService, ScoringModelConfig, RiskThreshold, ChannelRule, SegmentRule, InstallmentRule, WorkflowConfig } from './scoring-config.service';
+import { ScoringConfigService, ScoringModelConfig, RiskThreshold, IntensityPolicy, SegmentRule, WorkflowConfig, ScoringVariable, VariableRange } from './scoring-config.service';
 import { User, UserCreateRequest, UserUpdateRequest } from '../../models/types';
 import { UserModalComponent } from '../../shared/components/user-modal/user-modal';
 import {
@@ -58,7 +58,7 @@ export class SettingsComponent implements OnInit {
 
   tabs: Tab[] = [
     { id: 'scoring',       label: 'Scoring IA',         icon: this.ShieldAlertIcon },
-    { id: 'segmentation',  label: 'Segmentación & Cuotas', icon: this.GitBranchIcon },
+    { id: 'segmentation',  label: 'Segmentación', icon: this.GitBranchIcon },
     { id: 'workflow',      label: 'Flujo de Cobranza',   icon: this.SlidersIcon },
     { id: 'file-structure',label: 'Estructura de Archivo', icon: this.FileCodeIcon },
     { id: 'users',         label: 'Usuarios',            icon: this.UsersIcon },
@@ -67,7 +67,10 @@ export class SettingsComponent implements OnInit {
   // ── Scoring model state ───────────────────────────────────────────────────
   activeModel = signal<ScoringModelConfig | null>(null);
   thresholds = signal<RiskThreshold[]>([]);
-  channels = signal<ChannelRule[]>([]);
+  intensityPolicies = signal<IntensityPolicy[]>([]);
+  variables = signal<ScoringVariable[]>([]);
+  selectedVariableKey = signal('');
+  variableRanges = signal<VariableRange[]>([]);
 
   weightsTotal = computed(() => {
     const m = this.activeModel();
@@ -76,13 +79,20 @@ export class SettingsComponent implements OnInit {
               m.weightDefaultFrequency + m.weightSeniority) * 100).toFixed(1);
   });
 
+  variableWeightsTotal = computed(() => {
+    const vars = this.variables();
+    const activeTotal = vars
+      .filter(v => v.active)
+      .reduce((acc, v) => acc + v.weight, 0);
+
+    return +(activeTotal * 100).toFixed(1);
+  });
+
   // ── Segmentation state ────────────────────────────────────────────────────
   segmentRules = signal<SegmentRule[]>([]);
-  installmentRules = signal<InstallmentRule[]>([]);
 
   readonly SEGMENTS = ['PREVENTIVA', 'ADMINISTRATIVA', 'PREJUDICIAL', 'JURIDICA'];
   readonly PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
-  readonly CHANNELS = ['EMAIL', 'WHATSAPP', 'SMS', 'VOZ'];
   readonly RISK_LEVELS = ['BAJO', 'MEDIO', 'ALTO', 'CRITICO'];
 
   // ── Workflow config state ─────────────────────────────────────────────────
@@ -119,14 +129,25 @@ export class SettingsComponent implements OnInit {
       next: model => {
         this.activeModel.set(model);
         this.scoringConfigService.getThresholds(model.modelVersion).subscribe(t => this.thresholds.set(t));
-        this.scoringConfigService.getChannels(model.modelVersion).subscribe(c => this.channels.set(c));
+        this.scoringConfigService.getIntensityPolicies(model.modelVersion).subscribe(p => this.intensityPolicies.set(p));
+        this.scoringConfigService.getVariables(model.modelVersion).subscribe(vars => {
+          this.variables.set(vars);
+          const current = this.selectedVariableKey();
+          const selected = vars.find(v => v.variableKey === current)?.variableKey ?? vars[0]?.variableKey ?? '';
+          this.selectedVariableKey.set(selected);
+
+          if (selected) {
+            this.loadVariableRanges(model.modelVersion, selected);
+          } else {
+            this.variableRanges.set([]);
+          }
+        });
       }
     });
   }
 
   loadSegmentation() {
     this.scoringConfigService.getActiveSegmentRules().subscribe(r => this.segmentRules.set(r));
-    this.scoringConfigService.getActiveInstallmentRules().subscribe(r => this.installmentRules.set(r));
   }
 
   loadWorkflow() {
@@ -159,14 +180,70 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  saveChannels() {
+  saveIntensityPolicies() {
     const model = this.activeModel();
     if (!model) return;
     this.setSaving();
-    this.scoringConfigService.updateChannels(model.modelVersion, this.channels()).subscribe({
-      next: c => { this.channels.set(c); this.setSuccess('Canales de contacto guardados'); },
-      error: () => this.setError('Error al guardar canales')
+    this.scoringConfigService.updateIntensityPolicies(model.modelVersion, this.intensityPolicies()).subscribe({
+      next: p => { this.intensityPolicies.set(p); this.setSuccess('Políticas de intensidad guardadas'); },
+      error: () => this.setError('Error al guardar políticas de intensidad')
     });
+  }
+
+  saveVariables() {
+    const model = this.activeModel();
+    if (!model) return;
+
+    if (this.variableWeightsTotal() !== 100) {
+      this.setError('La suma de pesos de variables activas debe ser 100%');
+      return;
+    }
+
+    this.setSaving();
+    this.scoringConfigService.updateVariables(model.modelVersion, this.variables()).subscribe({
+      next: vars => { this.variables.set(vars); this.setSuccess('Variables de scoring guardadas'); },
+      error: () => this.setError('Error al guardar variables de scoring')
+    });
+  }
+
+  onVariableKeyChange(key: string) {
+    this.selectedVariableKey.set(key);
+    const model = this.activeModel();
+    if (!model || !key) {
+      this.variableRanges.set([]);
+      return;
+    }
+
+    this.loadVariableRanges(model.modelVersion, key);
+  }
+
+  saveVariableRanges() {
+    const model = this.activeModel();
+    const key = this.selectedVariableKey();
+    if (!model || !key) return;
+
+    const validationError = this.validateRanges(this.variableRanges());
+    if (validationError) {
+      this.setError(validationError);
+      return;
+    }
+
+    this.setSaving();
+    this.scoringConfigService.updateVariableRanges(model.modelVersion, key, this.variableRanges()).subscribe({
+      next: ranges => { this.variableRanges.set(ranges); this.setSuccess(`Rangos de ${key} guardados`); },
+      error: () => this.setError('Error al guardar rangos de variable')
+    });
+  }
+
+  addVariableRange() {
+    this.variableRanges.update(ranges => [
+      ...ranges,
+      { minValue: 0, maxValue: null, baseScore: 500 }
+    ]);
+  }
+
+  removeVariableRange(index: number) {
+    this.variableRanges.update(ranges => ranges.filter((_, i) => i !== index));
   }
 
   // ── Guardar segmentación ──────────────────────────────────────────────────
@@ -181,15 +258,6 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  saveInstallmentRules() {
-    const model = this.activeModel();
-    if (!model) return;
-    this.setSaving();
-    this.scoringConfigService.updateInstallmentRules(model.modelVersion, this.installmentRules()).subscribe({
-      next: r => { this.installmentRules.set(r); this.setSuccess('Reglas de cuotas guardadas'); },
-      error: () => this.setError('Error al guardar cuotas')
-    });
-  }
 
   // ── Guardar workflow ──────────────────────────────────────────────────────
 
@@ -243,9 +311,53 @@ export class SettingsComponent implements OnInit {
     this.activeModel.update(m => m ? { ...m, [field]: value / 100 } : m);
   }
 
+  updateVariableWeight(index: number, value: number) {
+    const normalized = Math.max(0, Math.min(100, value));
+    this.variables.update(vars => vars.map((v, i) => i === index ? { ...v, weight: normalized / 100 } : v));
+  }
+
+  getVariableWeight(index: number): number {
+    return Math.round((this.variables()[index]?.weight ?? 0) * 100);
+  }
+
   getWeight(field: keyof ScoringModelConfig): number {
     const m = this.activeModel();
     return m ? Math.round((m[field] as number) * 100) : 0;
+  }
+
+  private loadVariableRanges(version: string, key: string) {
+    this.scoringConfigService.getVariableRanges(version, key).subscribe(ranges => {
+      const sorted = [...ranges].sort((a, b) => a.minValue - b.minValue);
+      this.variableRanges.set(sorted);
+    });
+  }
+
+  private validateRanges(ranges: VariableRange[]): string | null {
+    if (!ranges.length) {
+      return 'Debe definir al menos un rango para la variable seleccionada';
+    }
+
+    const sorted = [...ranges].sort((a, b) => a.minValue - b.minValue);
+
+    for (let i = 0; i < sorted.length; i++) {
+      const current = sorted[i];
+      if (current.maxValue !== null && current.maxValue < current.minValue) {
+        return 'Cada rango debe tener maxValue mayor o igual a minValue';
+      }
+
+      if (current.maxValue === null && i !== sorted.length - 1) {
+        return 'Solo el último rango puede tener maxValue vacío';
+      }
+
+      const next = sorted[i + 1];
+      if (!next) continue;
+      const currentMax = current.maxValue ?? Number.POSITIVE_INFINITY;
+      if (currentMax >= next.minValue) {
+        return 'Los rangos no deben superponerse';
+      }
+    }
+
+    return null;
   }
 
   private setSaving() { this.isSaving.set(true); this.saveSuccess.set(''); this.saveError.set(''); }

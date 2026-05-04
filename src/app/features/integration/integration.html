@@ -57,10 +57,13 @@
     <div class="process-result-card">
       <p class="result-title">Lote procesado — {{ result.batchNumber }}</p>
       <div class="result-grid">
-        <div class="result-stat"><span class="stat-label">Clientes</span><span class="stat-value">{{ result.clientsProcessed }}</span></div>
+        <div class="result-stat"><span class="stat-label">Staging</span><span class="stat-value">{{ result.stagedRecords ?? result.totalRecords }}</span></div>
+        <div class="result-stat"><span class="stat-label">Válidos</span><span class="stat-value">{{ result.validRecords }}</span></div>
+        <div class="result-stat"><span class="stat-label">Clientes upsert</span><span class="stat-value">{{ result.clientsUpserted ?? '-' }}</span></div>
+        <div class="result-stat"><span class="stat-label">Obligaciones upsert</span><span class="stat-value">{{ result.obligationsUpserted ?? '-' }}</span></div>
         <div class="result-stat"><span class="stat-label">Scores</span><span class="stat-value">{{ result.scoresGenerated }}</span></div>
         <div class="result-stat"><span class="stat-label">Casos</span><span class="stat-value">{{ result.casesCreated }}</span></div>
-        <div class="result-stat"><span class="stat-label">Links de pago</span><span class="stat-value">{{ result.paymentLinksCreated }}</span></div>
+        <div class="result-stat"><span class="stat-label">Scores fallidos</span><span class="stat-value">{{ result.scoresFailed ?? 0 }}</span></div>
         <div class="result-stat"><span class="stat-label">Fallidos</span><span class="stat-value">{{ result.failedRecords }}</span></div>
       </div>
     </div>
@@ -127,11 +130,11 @@
                 Promover a Maestro <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
               </button>
             }
-            @if (batch.status === 'STAGING') {
+            @if (batch.status === 'COMPLETED') {
               <button mat-button color="accent"
                 [disabled]="isProcessing() === batch.id"
                 (click)="processBatch(batch.id)">
-                {{ isProcessing() === batch.id ? 'Procesando...' : 'Procesar (Score + Flujo)' }}
+                {{ isProcessing() === batch.id ? 'Procesando...' : 'Recalcular scoring' }}
                 <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
               </button>
             }

@@ -90,7 +90,7 @@
 
           <div class="divider"></div>
 
-          <!-- Umbrales de riesgo + Canal de contacto en paralelo -->
+          <!-- Umbrales de riesgo + Políticas de intensidad en paralelo -->
           <div class="scoring-pair-grid">
 
             <div class="pair-card">
@@ -118,28 +118,107 @@
             <div class="pair-card">
               <div class="section-header">
                 <div>
-                  <h4 class="section-title">Canal de Contacto</h4>
-                  <p class="section-subtitle">Canal asignado por nivel de riesgo</p>
+                  <h4 class="section-title">Políticas de Intensidad</h4>
+                  <p class="section-subtitle">Acciones por nivel de riesgo y frecuencia</p>
                 </div>
-                <button class="small-btn ok" (click)="saveChannels()" [disabled]="isSaving()">Guardar</button>
+                <button class="small-btn ok" (click)="saveIntensityPolicies()" [disabled]="isSaving()">Guardar</button>
               </div>
               <div class="param-table">
-                <div class="param-table-head cols-channels">
-                  <span>Nivel</span><span>Canal</span>
+                <div class="param-table-head cols-intensity">
+                  <span>Nivel</span><span>Intensidad</span><span>SMS/sem</span><span>Email c/días</span><span>Llamadas/sem</span><span>WhatsApp/sem</span>
                 </div>
-                @for (c of channels(); track c.riskLevel) {
-                  <div class="param-table-row cols-channels">
-                    <span [class]="'risk-badge risk-' + c.riskLevel.toLowerCase()">{{ c.riskLevel }}</span>
-                    <select class="field-select" [(ngModel)]="c.contactChannel">
-                      @for (ch of CHANNELS; track ch) {
-                        <option [value]="ch">{{ ch }}</option>
-                      }
-                    </select>
+                @for (p of intensityPolicies(); track p.riskLevel) {
+                  <div class="param-table-row cols-intensity">
+                    <span [class]="'risk-badge risk-' + p.riskLevel.toLowerCase()">{{ p.riskLevel }}</span>
+                    <input type="text" class="field-text" [(ngModel)]="p.intensityLabel" />
+                    <input type="number" class="field-number" [(ngModel)]="p.smsPerWeek" min="0" max="14" />
+                    <input type="number" class="field-number" [(ngModel)]="p.emailEveryDays" min="1" max="60" />
+                    <input type="number" class="field-number" [(ngModel)]="p.callsPerWeek" min="0" max="14" />
+                    <input type="number" class="field-number" [(ngModel)]="p.whatsappPerWeek" min="0" max="14" />
                   </div>
                 }
               </div>
             </div>
 
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="scoring-pair-grid">
+            <div class="pair-card">
+              <div class="section-header">
+                <div>
+                  <h4 class="section-title">Variables de Scoring</h4>
+                  <p class="section-subtitle">La suma de variables activas debe ser 100%</p>
+                </div>
+                <div class="header-actions">
+                  <span [class]="'badge-total ' + (variableWeightsTotal() === 100 ? 'green' : 'red')">
+                    {{ variableWeightsTotal() }}%
+                  </span>
+                  <button class="small-btn ok" (click)="saveVariables()" [disabled]="isSaving() || variableWeightsTotal() !== 100">
+                    Guardar
+                  </button>
+                </div>
+              </div>
+
+              <div class="param-table">
+                <div class="param-table-head cols-variables">
+                  <span>Variable</span><span>Etiqueta</span><span>Peso (%)</span><span>Activa</span>
+                </div>
+                @for (v of variables(); track v.variableKey; let i = $index) {
+                  <div class="param-table-row cols-variables">
+                    <span class="mono small">{{ v.variableKey }}</span>
+                    <input type="text" class="field-text" [(ngModel)]="v.label" />
+                    <input
+                      type="number"
+                      class="field-number"
+                      [value]="getVariableWeight(i)"
+                      (input)="updateVariableWeight(i, +$any($event.target).value)"
+                      min="0"
+                      max="100"
+                    />
+                    <input type="checkbox" [(ngModel)]="v.active" />
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="pair-card">
+              <div class="section-header">
+                <div>
+                  <h4 class="section-title">Rangos por Variable</h4>
+                  <p class="section-subtitle">Configura min, max y base score por variable</p>
+                </div>
+                <div class="header-actions">
+                  <button class="small-btn neutral" (click)="addVariableRange()" [disabled]="!selectedVariableKey()">Agregar rango</button>
+                  <button class="small-btn ok" (click)="saveVariableRanges()" [disabled]="isSaving() || !selectedVariableKey()">Guardar</button>
+                </div>
+              </div>
+
+              <div class="workflow-field">
+                <label class="panel-label">Variable</label>
+                <select class="field-select" [ngModel]="selectedVariableKey()" (ngModelChange)="onVariableKeyChange($event)">
+                  <option value="">Seleccione una variable</option>
+                  @for (v of variables(); track v.variableKey) {
+                    <option [value]="v.variableKey">{{ v.label }} ({{ v.variableKey }})</option>
+                  }
+                </select>
+              </div>
+
+              <div class="param-table">
+                <div class="param-table-head cols-ranges">
+                  <span>Min</span><span>Max</span><span>Base score</span><span>Acción</span>
+                </div>
+                @for (r of variableRanges(); track r.id ?? $index; let i = $index) {
+                  <div class="param-table-row cols-ranges">
+                    <input type="number" class="field-number" [(ngModel)]="r.minValue" min="0" />
+                    <input type="number" class="field-number" [(ngModel)]="r.maxValue" min="0" placeholder="∞" />
+                    <input type="number" class="field-number" [(ngModel)]="r.baseScore" min="0" max="1000" />
+                    <button class="small-btn warn" (click)="removeVariableRange(i)">Quitar</button>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
 
         </div>
@@ -151,61 +230,32 @@
     <!-- ══ TAB: SEGMENTACIÓN & CUOTAS ════════════════════════════════════════ -->
     @if (activeTab() === 'segmentation') {
       <div class="settings-section">
-        <div class="scoring-pair-grid">
-
-          <!-- Segmentación por días de mora -->
-          <div class="pair-card">
-            <div class="section-header">
-              <div>
-                <h4 class="section-title">Segmentación por Días de Mora</h4>
-                <p class="section-subtitle">Segmento y prioridad por rango — Máx. vacío = ∞</p>
-              </div>
-              <button class="small-btn ok" (click)="saveSegmentRules()" [disabled]="isSaving()">Guardar</button>
+        <div class="pair-card">
+          <div class="section-header">
+            <div>
+              <h4 class="section-title">Segmentación por Días de Mora</h4>
+              <p class="section-subtitle">Segmento y prioridad por rango — Máx. vacío = ∞</p>
             </div>
-            <div class="param-table">
-              <div class="param-table-head cols-segments">
-                <span>Desde</span><span>Hasta</span><span>Segmento</span><span>Prioridad</span><span>Etiqueta</span>
-              </div>
-              @for (r of segmentRules(); track r.id ?? $index) {
-                <div class="param-table-row cols-segments">
-                  <input type="number" class="field-number" [(ngModel)]="r.minDays" min="0" placeholder="0" />
-                  <input type="number" class="field-number" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
-                  <select class="field-select" [(ngModel)]="r.segment">
-                    @for (s of SEGMENTS; track s) { <option [value]="s">{{ s }}</option> }
-                  </select>
-                  <select class="field-select" [(ngModel)]="r.casePriority">
-                    @for (p of PRIORITIES; track p) { <option [value]="p">{{ p }}</option> }
-                  </select>
-                  <input type="text" class="field-text" [(ngModel)]="r.label" placeholder="Ej. 31 – 90 días" />
-                </div>
-              }
-            </div>
+            <button class="small-btn ok" (click)="saveSegmentRules()" [disabled]="isSaving()">Guardar</button>
           </div>
-
-          <!-- Cuotas de acuerdo de pago -->
-          <div class="pair-card">
-            <div class="section-header">
-              <div>
-                <h4 class="section-title">Cuotas de Acuerdo de Pago</h4>
-                <p class="section-subtitle">Cuotas ofrecidas según los días de mora</p>
-              </div>
-              <button class="small-btn ok" (click)="saveInstallmentRules()" [disabled]="isSaving()">Guardar</button>
+          <div class="param-table">
+            <div class="param-table-head cols-segments">
+              <span>Desde</span><span>Hasta</span><span>Segmento</span><span>Prioridad</span><span>Etiqueta</span>
             </div>
-            <div class="param-table">
-              <div class="param-table-head cols-installments">
-                <span>Desde</span><span>Hasta</span><span>Cuotas</span><span>Etiqueta</span>
+            @for (r of segmentRules(); track r.id ?? $index) {
+              <div class="param-table-row cols-segments">
+                <input type="number" class="field-number" [(ngModel)]="r.minDays" min="0" placeholder="0" />
+                <input type="number" class="field-number" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
+                <select class="field-select" [(ngModel)]="r.segment">
+                  @for (s of SEGMENTS; track s) { <option [value]="s">{{ s }}</option> }
+                </select>
+                <select class="field-select" [(ngModel)]="r.casePriority">
+                  @for (p of PRIORITIES; track p) { <option [value]="p">{{ p }}</option> }
+                </select>
+                <input type="text" class="field-text" [(ngModel)]="r.label" placeholder="Ej. 31 – 90 días" />
               </div>
-              @for (r of installmentRules(); track r.id ?? $index) {
-                <div class="param-table-row cols-installments">
-                  <input type="number" class="field-number" [(ngModel)]="r.minDays" min="0" placeholder="0" />
-                  <input type="number" class="field-number" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
-                  <input type="number" class="field-number" [(ngModel)]="r.installments" min="1" max="36" />
-                  <input type="text" class="field-text" [(ngModel)]="r.label" placeholder="Ej. 90 – 179 días" />
-                </div>
-              }
-            </div>
+            }
           </div>
-
         </div>
       </div>
     }
@@ -268,8 +318,8 @@
               <h5 class="workflow-card-title">Fallback de Scoring <span class="card-tag">sin ML</span></h5>
               <div class="workflow-fields">
                 <div class="workflow-field">
-                  <label class="panel-label">Credit score por defecto (0 – 100)</label>
-                  <input type="number" class="field-input" [(ngModel)]="cfg.fallbackCreditScore" min="0" max="100" />
+                  <label class="panel-label">Credit score por defecto (0 – 1000)</label>
+                  <input type="number" class="field-input" [(ngModel)]="cfg.fallbackCreditScore" min="0" max="1000" />
                 </div>
                 <div class="workflow-field">
                   <label class="panel-label">Risk score por defecto (0 – 1)</label>

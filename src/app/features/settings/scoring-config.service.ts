@@ -13,6 +13,7 @@ export interface ScoringModelConfig {
   weightSeniority: number;
   maxDaysPastDueRef: number;
   maxSeniorityDaysRef: number;
+  neutralBaseScore: number;
   isActive: boolean;
 }
 
@@ -24,11 +25,36 @@ export interface RiskThreshold {
   maxScore: number;
 }
 
-export interface ChannelRule {
+export interface ScoringVariable {
+  id?: number;
+  modelVersion?: string;
+  variableKey: string;
+  label: string;
+  weight: number;
+  active: boolean;
+}
+
+export interface VariableRange {
+  id?: number;
+  modelVersion?: string;
+  variableKey?: string;
+  minValue: number;
+  maxValue: number | null;
+  baseScore: number;
+}
+
+export interface IntensityPolicy {
   id?: number;
   modelVersion?: string;
   riskLevel: string;
-  contactChannel: string;
+  intensityLabel: string;
+  smsPerWeek: number;
+  emailEveryDays: number;
+  callsPerWeek: number;
+  whatsappPerWeek: number;
+  physicalNotice: boolean;
+  contactReferences: boolean;
+  notes?: string;
 }
 
 export interface SegmentRule {
@@ -66,6 +92,13 @@ export interface WorkflowConfig {
   fallbackCollectionProbability: number;
 }
 
+export interface ScoreResult {
+  score: number;
+  riskLevel?: string;
+  collectionProbability?: number;
+  calculationDetail?: Record<string, unknown>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ScoringConfigService {
   private http = inject(HttpClient);
@@ -83,8 +116,25 @@ export class ScoringConfigService {
       weightSeniority:      model.weightSeniority,
       maxDaysPastDueRef:    model.maxDaysPastDueRef,
       maxSeniorityDaysRef:  model.maxSeniorityDaysRef,
+      neutralBaseScore:     model.neutralBaseScore,
       description:          model.description
     });
+  }
+
+  getVariables(version: string): Observable<ScoringVariable[]> {
+    return this.http.get<ScoringVariable[]>(`${this.baseUrl}/config/models/${version}/variables`);
+  }
+
+  updateVariables(version: string, variables: ScoringVariable[]): Observable<ScoringVariable[]> {
+    return this.http.put<ScoringVariable[]>(`${this.baseUrl}/config/models/${version}/variables`, variables);
+  }
+
+  getVariableRanges(version: string, key: string): Observable<VariableRange[]> {
+    return this.http.get<VariableRange[]>(`${this.baseUrl}/config/models/${version}/variables/${key}/ranges`);
+  }
+
+  updateVariableRanges(version: string, key: string, ranges: VariableRange[]): Observable<VariableRange[]> {
+    return this.http.put<VariableRange[]>(`${this.baseUrl}/config/models/${version}/variables/${key}/ranges`, ranges);
   }
 
   getThresholds(version: string): Observable<RiskThreshold[]> {
@@ -95,12 +145,12 @@ export class ScoringConfigService {
     return this.http.put<RiskThreshold[]>(`${this.baseUrl}/config/models/${version}/thresholds`, thresholds);
   }
 
-  getChannels(version: string): Observable<ChannelRule[]> {
-    return this.http.get<ChannelRule[]>(`${this.baseUrl}/config/models/${version}/channels`);
+  getIntensityPolicies(version: string): Observable<IntensityPolicy[]> {
+    return this.http.get<IntensityPolicy[]>(`${this.baseUrl}/config/models/${version}/intensity-policies`);
   }
 
-  updateChannels(version: string, channels: ChannelRule[]): Observable<ChannelRule[]> {
-    return this.http.put<ChannelRule[]>(`${this.baseUrl}/config/models/${version}/channels`, channels);
+  updateIntensityPolicies(version: string, policies: IntensityPolicy[]): Observable<IntensityPolicy[]> {
+    return this.http.put<IntensityPolicy[]>(`${this.baseUrl}/config/models/${version}/intensity-policies`, policies);
   }
 
   getActiveWorkflowConfig(): Observable<WorkflowConfig> {
@@ -111,19 +161,27 @@ export class ScoringConfigService {
     return this.http.put<WorkflowConfig>(`${this.baseUrl}/workflow-config`, cfg);
   }
 
+  calculateClientScore(clientId: number): Observable<ScoreResult> {
+    return this.http.post<ScoreResult>(`${this.baseUrl}/${clientId}/calculate`, {});
+  }
+
+  getCurrentClientScore(clientId: number): Observable<ScoreResult> {
+    return this.http.get<ScoreResult>(`${this.baseUrl}/${clientId}`);
+  }
+
+  getClientScoreHistory(clientId: number): Observable<ScoreResult[]> {
+    return this.http.get<ScoreResult[]>(`${this.baseUrl}/${clientId}/history`);
+  }
+
+  calculateBatchScore(batchId: number): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/batch/${batchId}/calculate`, {});
+  }
+
   getActiveSegmentRules(): Observable<SegmentRule[]> {
     return this.http.get<SegmentRule[]>(`${this.baseUrl}/workflow-config/segment-rules`);
   }
 
   updateSegmentRules(version: string, rules: SegmentRule[]): Observable<SegmentRule[]> {
     return this.http.put<SegmentRule[]>(`${this.baseUrl}/workflow-config/segment-rules/${version}`, rules);
-  }
-
-  getActiveInstallmentRules(): Observable<InstallmentRule[]> {
-    return this.http.get<InstallmentRule[]>(`${this.baseUrl}/workflow-config/installment-rules`);
-  }
-
-  updateInstallmentRules(version: string, rules: InstallmentRule[]): Observable<InstallmentRule[]> {
-    return this.http.put<InstallmentRule[]>(`${this.baseUrl}/workflow-config/installment-rules/${version}`, rules);
   }
 }

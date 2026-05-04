@@ -9,7 +9,7 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-angular';
-import { IntegrationService, BatchProcessSummary } from './integration.service';
+import { IntegrationService, BatchScoreSummary } from './integration.service';
 import { Batch } from '../../models/types';
 import { StoreService } from '../../core/store/app-store.service';
 
@@ -28,7 +28,7 @@ export class IntegrationComponent implements OnInit {
   isProcessing = signal<number | null>(null);
   progress = signal(0);
   uploadError = signal('');
-  processResult = signal<BatchProcessSummary | null>(null);
+  processResult = signal<BatchScoreSummary | null>(null);
   processError = signal('');
   realBatches = signal<Batch[]>([]);
 
@@ -39,9 +39,9 @@ export class IntegrationComponent implements OnInit {
   readonly ArrowRightIcon = ArrowRight;
 
   endpoints = [
-    { path: '/api/integration/batches', method: 'POST', status: 200, time: 'Activo' },
-    { path: '/api/portfolio/clients', method: 'GET', status: 200, time: 'Activo' },
-    { path: '/api/management/cases', method: 'GET', status: 200, time: 'Activo' },
+    { path: '/api/integration/batches/csv/upload', method: 'POST', status: 200, time: 'Activo' },
+    { path: '/api/scoring/config/models/active', method: 'GET', status: 200, time: 'Activo' },
+    { path: '/api/scoring/batch/{batchId}/calculate', method: 'POST', status: 200, time: 'Activo' },
   ];
 
   ngOnInit() {
@@ -75,6 +75,8 @@ export class IntegrationComponent implements OnInit {
     this.progress.set(30);
     this.integrationService.uploadBatch(file).subscribe({
       next: (response) => {
+        this.processResult.set(response);
+
         if (response?.status === 'FAILED' || response?.status === 'ERROR') {
           this.isUploading.set(false);
           this.progress.set(0);
