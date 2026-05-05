@@ -91,7 +91,12 @@ export class SettingsComponent implements OnInit {
   // ── Segmentation state ────────────────────────────────────────────────────
   segmentRules = signal<SegmentRule[]>([]);
 
-  readonly SEGMENTS = ['PREVENTIVA', 'ADMINISTRATIVA', 'PREJUDICIAL', 'JURIDICA'];
+  readonly SEGMENTS = [
+    { value: 'PREVENTIVA', label: 'Preventiva' },
+    { value: 'ADMINISTRATIVA', label: 'Administrativa' },
+    { value: 'PREJUDICIAL', label: 'Avanzada' },
+    { value: 'ESPECIALIZADA', label: 'Especializada' },
+  ];
   readonly PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
   readonly RISK_LEVELS = ['BAJO', 'MEDIO', 'ALTO', 'CRITICO'];
 

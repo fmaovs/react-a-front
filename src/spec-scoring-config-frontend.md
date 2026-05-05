@@ -61,7 +61,7 @@ GET /scoring/config/models/active
 Respuesta 200
 {
   "modelVersion": "v1.0",
-  "description": "Modelo base de scoring prejuridico",
+  "description": "Modelo base de scoring de cobranza",
   "weightPaymentHistory": 0.35,
   "weightDaysPastDue": 0.30,
   "weightDefaultFrequency": 0.20,
@@ -94,12 +94,13 @@ GET /scoring/config/models/active/variables
 
 Respuesta 200 (ejemplo)
 [
-  { "variableKey": "DAYS_PAST_DUE", "label": "Dias de mora", "weight": 0.40, "active": true },
-  { "variableKey": "AMOUNT_DUE", "label": "Monto exigible", "weight": 0.20, "active": true },
-  { "variableKey": "SENIORITY_MONTHS", "label": "Antiguedad", "weight": 0.10, "active": true },
-  { "variableKey": "DEFAULT_FREQUENCY", "label": "Frecuencia mora", "weight": 0.10, "active": true },
+  { "variableKey": "PAYMENT_HISTORY", "label": "Historial de pago", "weight": 0.25, "active": true },
+  { "variableKey": "DAYS_PAST_DUE", "label": "Dias de mora", "weight": 0.30, "active": true },
+  { "variableKey": "DEFAULT_FREQUENCY", "label": "Frecuencia de incumplimiento", "weight": 0.15, "active": true },
+  { "variableKey": "SENIORITY_MONTHS", "label": "Antiguedad del cliente", "weight": 0.10, "active": true },
+  { "variableKey": "AMOUNT_DUE", "label": "Monto exigible", "weight": 0.10, "active": true },
   { "variableKey": "CONTACTABILITY", "label": "Ubicabilidad", "weight": 0.10, "active": true },
-  { "variableKey": "BROKEN_PROMISES", "label": "Promesas incumplidas", "weight": 0.10, "active": true }
+  { "variableKey": "BROKEN_PROMISES", "label": "Promesas incumplidas", "weight": 0.05, "active": true }
 ]
 
 ### 3.2 Actualizar variables
@@ -107,10 +108,11 @@ PUT /scoring/config/models/{version}/variables
 
 Payload (ejemplo)
 [
-  { "variableKey": "DAYS_PAST_DUE", "label": "Dias de mora", "weight": 0.45, "active": true },
-  { "variableKey": "AMOUNT_DUE", "label": "Monto exigible", "weight": 0.20, "active": true },
-  { "variableKey": "SENIORITY_MONTHS", "label": "Antiguedad", "weight": 0.10, "active": true },
-  { "variableKey": "DEFAULT_FREQUENCY", "label": "Frecuencia mora", "weight": 0.10, "active": true },
+  { "variableKey": "PAYMENT_HISTORY", "label": "Historial de pago", "weight": 0.25, "active": true },
+  { "variableKey": "DAYS_PAST_DUE", "label": "Dias de mora", "weight": 0.30, "active": true },
+  { "variableKey": "DEFAULT_FREQUENCY", "label": "Frecuencia de incumplimiento", "weight": 0.15, "active": true },
+  { "variableKey": "SENIORITY_MONTHS", "label": "Antiguedad del cliente", "weight": 0.10, "active": true },
+  { "variableKey": "AMOUNT_DUE", "label": "Monto exigible", "weight": 0.10, "active": true },
   { "variableKey": "CONTACTABILITY", "label": "Ubicabilidad", "weight": 0.10, "active": true },
   { "variableKey": "BROKEN_PROMISES", "label": "Promesas incumplidas", "weight": 0.05, "active": true }
 ]
@@ -174,7 +176,7 @@ Payload (ejemplo)
   { "minDays": 0, "maxDays": 30, "segment": "PREVENTIVA", "casePriority": "LOW", "label": "Al dia" },
   { "minDays": 31, "maxDays": 90, "segment": "ADMINISTRATIVA", "casePriority": "MEDIUM", "label": "Mora temprana" },
   { "minDays": 91, "maxDays": 180, "segment": "PREJUDICIAL", "casePriority": "HIGH", "label": "Mora avanzada" },
-  { "minDays": 181, "maxDays": null, "segment": "JURIDICA", "casePriority": "URGENT", "label": "Cartera castigada" }
+  { "minDays": 181, "maxDays": null, "segment": "ESPECIALIZADA", "casePriority": "URGENT", "label": "Gestion especializada" }
 ]
 
 ## 8) Configuracion de workflow (umbrales de decision)

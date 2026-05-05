@@ -89,6 +89,20 @@
           </div>
 
           <div class="divider"></div>
+          <div class="pair-card">
+            <div class="section-header">
+              <div>
+                <h4 class="section-title">Como se calcula</h4>
+                <p class="section-subtitle">Estas reglas quedan parametrizadas por el cliente sin tocar codigo.</p>
+              </div>
+            </div>
+            <ul class="info-list">
+              <li>Score final = suma de base score por variable y peso efectivo, normalizado a 0-1000.</li>
+              <li>Riesgo = 1 - score normalizado, con umbrales editables desde este modulo.</li>
+              <li>Probabilidad de recuperacion = score, historial de pago, ubicabilidad y promesas incumplidas.</li>
+              <li>Segmento recomendado = resultado del nivel de riesgo y las reglas de workflow activas.</li>
+            </ul>
+          </div>
 
           <!-- Umbrales de riesgo + Políticas de intensidad en paralelo -->
           <div class="scoring-pair-grid">
@@ -247,7 +261,7 @@
                 <input type="number" class="field-number" [(ngModel)]="r.minDays" min="0" placeholder="0" />
                 <input type="number" class="field-number" [(ngModel)]="r.maxDays" min="0" placeholder="∞" />
                 <select class="field-select" [(ngModel)]="r.segment">
-                  @for (s of SEGMENTS; track s) { <option [value]="s">{{ s }}</option> }
+                  @for (s of SEGMENTS; track s.value) { <option [value]="s.value">{{ s.label }}</option> }
                 </select>
                 <select class="field-select" [(ngModel)]="r.casePriority">
                   @for (p of PRIORITIES; track p) { <option [value]="p">{{ p }}</option> }

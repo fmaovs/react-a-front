@@ -29,17 +29,17 @@ export class PoliciesComponent {
   readonly AlertTriangleIcon = AlertTriangle;
 
   segments = signal([
-    { name: 'Preventiva', criteria: 'Mora < 0 días', intensity: 'Baja', color: 'bg-emerald-500' },
-    { name: 'Administrativa', criteria: 'Mora 1 - 30 días', intensity: 'Media', color: 'bg-blue-500' },
-    { name: 'Temprana', criteria: 'Mora 31 - 60 días', intensity: 'Alta', color: 'bg-amber-500' },
-    { name: 'Prejurídica', criteria: 'Mora > 90 días', intensity: 'Crítica', color: 'bg-red-500' },
+    { name: 'Preventiva', criteria: 'Mora < 0 dias', intensity: 'Baja', color: 'bg-emerald-500' },
+    { name: 'Administrativa', criteria: 'Mora 1 - 30 dias', intensity: 'Media', color: 'bg-blue-500' },
+    { name: 'Temprana', criteria: 'Mora 31 - 60 dias', intensity: 'Alta', color: 'bg-amber-500' },
+    { name: 'Especializada', criteria: 'Mora > 90 dias', intensity: 'Critica', color: 'bg-red-500' },
   ]);
 
   rules = signal([
     { rule: 'Ventana de Contacto L-V', value: '07:00 - 19:00', status: 'Activo', icon: this.ClockIcon },
-    { rule: 'Ventana de Contacto Sábados', value: '08:00 - 15:00', status: 'Activo', icon: this.ClockIcon },
-    { rule: 'Frecuencia Máxima Semanal', value: '2 contactos / canal', status: 'Activo', icon: this.AlertTriangleIcon },
-    { rule: 'Exclusión Festivos', value: 'Habilitado', status: 'Activo', icon: this.ShieldCheckIcon },
+    { rule: 'Ventana de Contacto Sabados', value: '08:00 - 15:00', status: 'Activo', icon: this.ClockIcon },
+    { rule: 'Frecuencia Maxima Semanal', value: '2 contactos / canal', status: 'Activo', icon: this.AlertTriangleIcon },
+    { rule: 'Exclusion Festivos', value: 'Habilitado', status: 'Activo', icon: this.ShieldCheckIcon },
   ]);
 
   newSegment = { name: '', criteria: '', intensity: 'Baja', color: 'bg-brand-accent' };
