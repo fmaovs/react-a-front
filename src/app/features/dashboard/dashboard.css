@@ -382,3 +382,71 @@
 
 .compliance-fill { height: 100%; background-color: var(--brand-accent); }
 .compliance-note { font-size: 0.7rem; color: rgba(255,255,255,.5); font-style: italic; margin: 0; }
+
+/* ── Charts Grid ──────────────────────────────────────────────────── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.charts-grid.two-col {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .charts-grid.two-col { grid-template-columns: 1fr 1fr; }
+}
+
+.chart-wrapper {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+}
+
+.chart-wrapper.chart-donut {
+  height: 320px;
+  min-height: 320px;
+}
+
+.chart-wrapper.chart-bar {
+  height: 340px;
+  min-height: 340px;
+}
+
+.chart-wrapper.chart-line {
+   height: 240px;
+   min-height: 240px;
+   margin-bottom: 1rem;
+ }
+
+ .chart-wrapper.chart-bar-horizontal {
+   height: 360px;
+   min-height: 360px;
+ }
+
+ .chart-wrapper-tall {
+  width: 100%;
+  height: 400px;
+  min-height: 400px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-grid.full-width {
+  grid-template-columns: 1fr;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────── */
+ @media (max-width: 767px) {
+   .stats-grid { grid-template-columns: repeat(2, 1fr); }
+   .info-grid { grid-template-columns: 1fr; }
+   .chart-container { padding: 1rem; }
+   .charts-grid { grid-template-columns: 1fr; }
+   .chart-wrapper.chart-donut,
+   .chart-wrapper.chart-bar { height: 290px; min-height: 290px; }
+   .chart-wrapper.chart-bar-horizontal { height: 320px; min-height: 320px; }
+   .chart-wrapper.chart-line { height: 220px; min-height: 220px; }
+ }

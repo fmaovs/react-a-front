@@ -32,7 +32,7 @@ export class PoliciesComponent {
     { name: 'Preventiva', criteria: 'Mora < 0 días', intensity: 'Baja', color: 'bg-emerald-500' },
     { name: 'Administrativa', criteria: 'Mora 1 - 30 días', intensity: 'Media', color: 'bg-blue-500' },
     { name: 'Temprana', criteria: 'Mora 31 - 60 días', intensity: 'Alta', color: 'bg-amber-500' },
-    { name: 'Prejurídica', criteria: 'Mora > 90 días', intensity: 'Crítica', color: 'bg-red-500' },
+    { name: 'Prejuridica', criteria: 'Mora > 90 días', intensity: 'Crítica', color: 'bg-red-500' },
   ]);
 
   rules = signal([

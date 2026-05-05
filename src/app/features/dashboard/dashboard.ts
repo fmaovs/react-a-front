@@ -2,17 +2,31 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DashboardService } from './dashboard.service';
-import { DashboardSummary } from '../../models/types';
+import {
+  DashboardSummary,
+  SegmentBreakdown,
+  AgingBucket,
+  RiskDistribution,
+} from '../../models/types';
 import {
   LucideAngularModule,
   Database, BarChart3, Briefcase, Users, FileText, CreditCard,
-  AlertTriangle, Clock, RefreshCw
+  RefreshCw
 } from 'lucide-angular';
+import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
+import { EChartsCoreOption } from 'echarts/core';
+import * as echarts from 'echarts/core';
+import { PieChart, BarChart, LineChart } from 'echarts/charts';
+import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([PieChart, BarChart, LineChart, TooltipComponent, LegendComponent, GridComponent, CanvasRenderer]);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, NgxEchartsDirective],
+  providers: [provideEchartsCore({ echarts })],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -25,12 +39,189 @@ export class DashboardComponent implements OnInit {
   readonly UsersIcon = Users;
   readonly FileTextIcon = FileText;
   readonly CreditCardIcon = CreditCard;
-  readonly AlertIcon = AlertTriangle;
-  readonly ClockIcon = Clock;
   readonly RefreshIcon = RefreshCw;
 
   summary = signal<DashboardSummary | null>(null);
   loading = signal(true);
+
+  segmentChartOptions = computed<EChartsCoreOption>(() => {
+    const data = (this.summary()?.portfolioBySegment ?? []).map((s: SegmentBreakdown) => ({
+      name: this.normalizeSegmentLabel(s.segment),
+      value: Number(s.totalAmount)
+    }));
+
+    return {
+      color: ['#2563eb', '#06b6d4', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444'],
+      tooltip: { trigger: 'item', formatter: (p: any) => `${p.name}<br/>${this.fmtCurrency(p.value)} (${p.percent}%)` },
+      legend: { bottom: 0, icon: 'circle', textStyle: { color: '#64748b', fontSize: 11 } },
+      series: [
+        {
+          name: 'Segmentos',
+          type: 'pie',
+          radius: ['48%', '72%'],
+          center: ['50%', '44%'],
+          label: { formatter: '{d}%', color: '#334155', fontSize: 11 },
+          data
+        }
+      ]
+    };
+  });
+
+  riskChartOptions = computed<EChartsCoreOption>(() => {
+    const data = (this.summary()?.riskDistribution ?? []).map((r: RiskDistribution) => ({
+      name: r.label || r.riskLevel,
+      value: Number(r.clientCount)
+    }));
+
+    return {
+      color: ['#10b981', '#f59e0b', '#f97316', '#ef4444'],
+      tooltip: { trigger: 'item', formatter: (p: any) => `${p.name}<br/>${p.value} clientes (${p.percent}%)` },
+      legend: { bottom: 0, icon: 'circle', textStyle: { color: '#64748b', fontSize: 11 } },
+      series: [
+        {
+          name: 'Riesgo',
+          type: 'pie',
+          radius: ['42%', '68%'],
+          center: ['50%', '44%'],
+          label: { show: true, formatter: '{b}: {d}%', fontSize: 10 },
+          data
+        }
+      ]
+    };
+  });
+
+  agingChartOptions = computed<EChartsCoreOption>(() => {
+    const data = this.summary()?.agingAnalysis ?? [];
+    return {
+      color: ['#2563eb'],
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: (items: any[]) => {
+          const item = items?.[0];
+          const row = data[item?.dataIndex ?? -1];
+          if (!row) return '';
+          return `${row.bucket}<br/>Monto: ${this.fmtCurrency(Number(row.totalAmount))}<br/>Obligaciones: ${row.obligationCount}`;
+        }
+      },
+      grid: { left: 40, right: 10, top: 20, bottom: 55 },
+      xAxis: {
+        type: 'category',
+        data: data.map((b: AgingBucket) => b.bucket),
+        axisLabel: { color: '#64748b', interval: 0 }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          color: '#64748b',
+          formatter: (v: number) => this.fmtCompact(v)
+        },
+        splitLine: { lineStyle: { color: '#e5e7eb' } }
+      },
+      series: [
+        {
+          type: 'bar',
+          barWidth: '46%',
+          data: data.map((b: AgingBucket) => Number(b.totalAmount)),
+          itemStyle: { borderRadius: [8, 8, 0, 0] }
+        }
+      ]
+    };
+  });
+
+   advisorChartOptions = computed<EChartsCoreOption>(() => {
+     const advisors = this.summary()?.advisorMetrics ?? [];
+     
+     // Ordenar por total asignado descendente y tomar top 8
+     const topAdvisors = [...advisors]
+       .sort((a, b) => b.totalAssigned - a.totalAssigned)
+       .slice(0, 8);
+
+     const colors = ['#3b82f6', '#1d4ed8', '#1e40af', '#1e3a8a'];
+     
+     return {
+       tooltip: {
+         trigger: 'item',
+         formatter: (p: any) => {
+           const advisor = topAdvisors.find(a => a.advisorName === p.name);
+           if (!advisor) return '';
+           const escalationRate = advisor.totalAssigned > 0 
+             ? Math.round((advisor.escalatedCases / advisor.totalAssigned) * 100) 
+             : 0;
+           return `<b>${advisor.advisorName}</b><br/>Casos: ${advisor.totalAssigned}<br/>Escalados: ${advisor.escalatedCases} (${escalationRate}%)`;
+         }
+       },
+       grid: { left: 120, right: 20, top: 20, bottom: 20 },
+       xAxis: {
+         type: 'value',
+         axisLabel: { color: '#64748b', fontSize: 11 },
+         splitLine: { lineStyle: { color: '#e5e7eb' } }
+       },
+       yAxis: {
+         type: 'category',
+         data: topAdvisors.map(a => a.advisorName),
+         axisLabel: { color: '#475569', fontSize: 12, fontWeight: 'bold' }
+       },
+       series: [
+         {
+           type: 'bar',
+           name: 'Casos Asignados',
+           data: topAdvisors.map(a => a.totalAssigned),
+           itemStyle: {
+             borderRadius: [0, 8, 8, 0],
+             color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+               { offset: 0, color: '#3b82f6' },
+               { offset: 1, color: '#1d4ed8' }
+             ])
+           },
+           label: {
+             show: true,
+             position: 'right',
+             color: '#1e293b',
+             fontSize: 11,
+             fontWeight: 'bold'
+           }
+         }
+       ]
+     };
+   });
+
+   batchesLineChartOptions = computed<EChartsCoreOption>(() => {
+     const data = (this.summary()?.recentBatches ?? []).slice().reverse();
+     return {
+       color: ['#7c3aed'],
+       tooltip: {
+         trigger: 'axis',
+         formatter: (items: any[]) => {
+           const item = items?.[0];
+           const row = data[item?.dataIndex ?? -1];
+           if (!row) return '';
+           return `${row.batchNumber}<br/>Exitosos: ${row.successfulRecords}/${row.totalRecords}<br/>Fecha: ${this.fmtDate(row.createdAt)}`;
+         }
+       },
+       grid: { left: 35, right: 10, top: 15, bottom: 45 },
+       xAxis: {
+         type: 'category',
+         data: data.map(b => this.fmtShortDate(b.createdAt)),
+         axisLabel: { color: '#64748b', fontSize: 10 }
+       },
+       yAxis: {
+         type: 'value',
+         axisLabel: { color: '#64748b' },
+         splitLine: { lineStyle: { color: '#e5e7eb' } }
+       },
+       series: [
+         {
+           type: 'line',
+           smooth: true,
+           symbol: 'circle',
+           symbolSize: 7,
+           areaStyle: { opacity: 0.12 },
+           data: data.map(b => b.successfulRecords)
+         }
+       ]
+     };
+   });
 
   ngOnInit() {
     this.load();
@@ -82,13 +273,6 @@ export class DashboardComponent implements OnInit {
     return buckets.map(b => ({ ...b, barWidth: (b.percentageOfPortfolio / max) * 100 }));
   });
 
-  private riskColors: Record<string, string> = {
-    BAJO: 'risk-low',
-    MEDIO: 'risk-medium',
-    ALTO: 'risk-high',
-    CRITICO: 'risk-critical'
-  };
-
   private batchStatusColors: Record<string, string> = {
     COMPLETED: 'status-ok',
     PROMOTED: 'status-ok',
@@ -99,23 +283,50 @@ export class DashboardComponent implements OnInit {
     STAGING: 'status-pending'
   };
 
-  riskClass(level: string): string {
-    return this.riskColors[level] ?? '';
-  }
-
   batchClass(status: string): string {
     return this.batchStatusColors[status] ?? '';
   }
 
-  fmtCurrency(v: number): string {
+  formatCurrency(v: number): string {
     if (!v) return '$0';
     if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
     return `$${v.toLocaleString()}`;
   }
 
+  fmtCurrency(v: number): string {
+    return this.formatCurrency(v);
+  }
+
   fmtDate(d: string): string {
     if (!d) return '-';
     return new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  private fmtShortDate(d: string): string {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit' });
+  }
+
+  private fmtCompact(v: number): string {
+    if (v >= 1_000_000_000) return `${(v / 1_000_000_000).toFixed(1)}B`;
+    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+    if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+    return `${v}`;
+  }
+
+  private normalizeSegmentLabel(segment: string): string {
+    if (!segment) return 'Prejuridica';
+
+    const normalized = segment.toUpperCase();
+    if (normalized === 'JURIDICA' || normalized === 'JUDICIAL' || normalized === 'JURIDICO') {
+      return 'Prejuridica';
+    }
+
+    if (normalized === 'PREJUDICIAL') {
+      return 'Prejuridica';
+    }
+
+    return segment;
   }
 }

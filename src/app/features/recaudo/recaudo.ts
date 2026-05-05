@@ -55,6 +55,8 @@ export class RecaudoComponent implements OnInit {
   error = signal<string | null>(null);
   paymentIdQuery = '';
   paymentStatus = signal<string | null>(null);
+  paymentStatusId = signal<string | null>(null);
+  paymentStatusUrl = signal<string | null>(null);
   paymentStatusLoading = signal(false);
   paymentStatusError = signal<string | null>(null);
 
@@ -108,6 +110,8 @@ export class RecaudoComponent implements OnInit {
     this.obligations.set([]);
     this.paymentIdQuery = '';
     this.paymentStatus.set(null);
+    this.paymentStatusId.set(null);
+    this.paymentStatusUrl.set(null);
     this.paymentStatusLoading.set(false);
     this.paymentStatusError.set(null);
   }
@@ -195,10 +199,15 @@ export class RecaudoComponent implements OnInit {
 
     this.paymentStatusLoading.set(true);
     this.paymentStatusError.set(null);
+    this.paymentStatus.set(null);
+    this.paymentStatusId.set(null);
+    this.paymentStatusUrl.set(null);
 
     this.collectionService.consultPaymentStatus(paymentId).subscribe({
       next: res => {
         this.paymentStatus.set(res.status);
+        this.paymentStatusId.set(res.paymentId || paymentId);
+        this.paymentStatusUrl.set(res.paymentUrl || null);
         this.paymentIdQuery = res.paymentId || paymentId;
         this.paymentStatusLoading.set(false);
       },

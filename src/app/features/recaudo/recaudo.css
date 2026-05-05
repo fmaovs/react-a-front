@@ -469,6 +469,39 @@
   margin-top: 1rem;
 }
 
+.payment-status-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px solid #bae6fd;
+  border-radius: 0.75rem;
+  background: #f0f9ff;
+  color: #0f172a;
+}
+
+.status-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #0284c7;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
+.mono-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.8rem;
+  color: #334155;
+}
+
+.status-link {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0369a1;
+  text-decoration: none;
+}
+
 .loading-step {
   text-align: center;
   padding: 1.25rem 0.5rem;

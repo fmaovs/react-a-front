@@ -69,9 +69,17 @@ export class CasesComponent {
     { value: 'MAX_CONTACT_ATTEMPTS', label: 'Máximos intentos de contacto agotados' },
     { value: 'PAYMENT_REFUSED',      label: 'Cliente se negó a pagar' },
     { value: 'HIGH_RISK_SCORE',      label: 'Puntaje de riesgo alto' },
-    { value: 'LEGAL_REQUIRED',       label: 'Requiere gestión legal' },
     { value: 'COMPLEX_SITUATION',    label: 'Situación compleja' },
   ];
+
+  private readonly escalationReasonLabels: Record<string, string> = {
+    MAX_CONTACT_ATTEMPTS: 'Máximos intentos de contacto agotados',
+    PAYMENT_REFUSED: 'Cliente se negó a pagar',
+    HIGH_RISK_SCORE: 'Puntaje de riesgo alto',
+    COMPLEX_SITUATION: 'Situación compleja',
+    // Compatibilidad con datos legacy.
+    LEGAL_REQUIRED: 'Escalamiento por complejidad operativa'
+  };
 
   readonly resolutionTypes: { value: ResolutionType; label: string; obligationEffect: string }[] = [
     { value: 'PAYMENT_COMPLETE',   label: 'Pago total recibido',         obligationEffect: '→ Obligación: PAGADA' },
@@ -248,7 +256,7 @@ export class CasesComponent {
   }
 
   getEscalationLabel(reason: string): string {
-    return this.escalationReasons.find(r => r.value === reason)?.label ?? reason;
+    return this.escalationReasonLabels[reason] ?? reason;
   }
 
   getResolutionLabel(type: string): string {

@@ -71,6 +71,10 @@ export class SettingsComponent implements OnInit {
   variables = signal<ScoringVariable[]>([]);
   selectedVariableKey = signal('');
   variableRanges = signal<VariableRange[]>([]);
+  scoringClientId = signal<number | null>(null);
+  scoringPreview = signal<any | null>(null);
+  scoringPreviewLoading = signal(false);
+  scoringPreviewError = signal('');
 
   weightsTotal = computed(() => {
     const m = this.activeModel();
@@ -91,7 +95,7 @@ export class SettingsComponent implements OnInit {
   // ── Segmentation state ────────────────────────────────────────────────────
   segmentRules = signal<SegmentRule[]>([]);
 
-  readonly SEGMENTS = ['PREVENTIVA', 'ADMINISTRATIVA', 'PREJUDICIAL', 'JURIDICA'];
+  readonly SEGMENTS = ['PREVENTIVA', 'ADMINISTRATIVA', 'PREJUDICIAL'];
   readonly PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
   readonly RISK_LEVELS = ['BAJO', 'MEDIO', 'ALTO', 'CRITICO'];
 
@@ -161,7 +165,14 @@ export class SettingsComponent implements OnInit {
 
   loadSegmentation() {
     this.scoringConfigService.getActiveSegmentRules().subscribe({
-      next: r => this.segmentRules.set(r),
+      next: r => {
+        // Normaliza configuraciones antiguas para mantener el flujo solo prejuridico.
+        const normalized = (r ?? []).map(rule => ({
+          ...rule,
+          segment: ['JURIDICA', 'JUDICIAL'].includes(rule.segment) ? 'PREJUDICIAL' : rule.segment
+        }));
+        this.segmentRules.set(normalized);
+      },
       error: () => this.segmentRules.set([])
     });
   }
@@ -255,6 +266,43 @@ export class SettingsComponent implements OnInit {
       next: ranges => { this.variableRanges.set(ranges); this.setSuccess(`Rangos de ${key} guardados`); },
       error: () => this.setError('Error al guardar rangos de variable')
     });
+  }
+
+  calculatePreviewScore() {
+    const clientId = this.scoringClientId();
+    if (!clientId || clientId <= 0) {
+      this.scoringPreviewError.set('Ingresa un ID de cliente válido.');
+      return;
+    }
+
+    this.scoringPreviewLoading.set(true);
+    this.scoringPreviewError.set('');
+    this.scoringConfigService.calculateClientScore(clientId).subscribe({
+      next: score => {
+        this.scoringPreview.set(score);
+        this.scoringPreviewLoading.set(false);
+      },
+      error: err => {
+        this.scoringPreview.set(null);
+        this.scoringPreviewLoading.set(false);
+        this.scoringPreviewError.set(err?.error?.message || 'No fue posible calcular el scoring del cliente.');
+      }
+    });
+  }
+
+  updateScoringClientId(value: number | string | null) {
+    const parsed = Number(value);
+    this.scoringClientId.set(Number.isFinite(parsed) && parsed > 0 ? parsed : null);
+  }
+
+  getPreviewCreditScore(): number {
+    const preview = this.scoringPreview();
+    return preview?.creditScore ?? preview?.score ?? 0;
+  }
+
+  getPreviewRiskScore(): number {
+    const risk = this.scoringPreview()?.riskScore;
+    return typeof risk === 'number' ? Math.round(risk * 100) : 0;
   }
 
   addVariableRange() {

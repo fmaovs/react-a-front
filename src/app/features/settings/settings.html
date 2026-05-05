@@ -221,6 +221,56 @@
             </div>
           </div>
 
+          <div class="divider"></div>
+
+          <div class="preview-panel">
+            <div class="section-header">
+              <div>
+                <h4 class="section-title">Prueba End to End de Scoring</h4>
+                <p class="section-subtitle">Calcula un cliente real con la configuración activa y persiste el resultado</p>
+              </div>
+            </div>
+            <div class="preview-actions">
+              <div class="workflow-field">
+                <label class="panel-label">ID de cliente</label>
+                <input
+                  type="number"
+                  class="field-input"
+                  [ngModel]="scoringClientId()"
+                  (ngModelChange)="updateScoringClientId($event)"
+                  min="1"
+                  placeholder="Ej. 12"
+                />
+              </div>
+              <button class="small-btn ok preview-button" (click)="calculatePreviewScore()" [disabled]="scoringPreviewLoading()">
+                {{ scoringPreviewLoading() ? 'Calculando...' : 'Calcular scoring' }}
+              </button>
+            </div>
+            @if (scoringPreviewError()) {
+              <div class="error-banner compact">{{ scoringPreviewError() }}</div>
+            }
+            @if (scoringPreview()) {
+              <div class="preview-metrics">
+                <div class="preview-metric">
+                  <span class="metric-label">Score</span>
+                  <strong>{{ getPreviewCreditScore() }}</strong>
+                </div>
+                <div class="preview-metric">
+                  <span class="metric-label">Riesgo</span>
+                  <strong>{{ scoringPreview()?.riskLevel || '-' }}</strong>
+                </div>
+                <div class="preview-metric">
+                  <span class="metric-label">Risk score</span>
+                  <strong>{{ getPreviewRiskScore() }}%</strong>
+                </div>
+                <div class="preview-metric">
+                  <span class="metric-label">Segmento</span>
+                  <strong>{{ scoringPreview()?.recommendedSegment || '-' }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+
         </div>
       } @else {
         <div class="loading-row">Cargando configuración de scoring...</div>
@@ -297,7 +347,7 @@
             </div>
 
             <div class="workflow-card">
-              <h5 class="workflow-card-title">Ventana de Contacto <span class="card-tag">Ley 2300</span></h5>
+              <h5 class="workflow-card-title">Ventana de Contacto <span class="card-tag">Prejuridico</span></h5>
               <div class="workflow-fields">
                 <div class="workflow-field">
                   <label class="panel-label">Hora de inicio (0 – 23)</label>

@@ -93,10 +93,16 @@ export interface WorkflowConfig {
 }
 
 export interface ScoreResult {
-  score: number;
+  id?: number;
+  creditScore?: number;
+  score?: number;
+  riskScore?: number;
   riskLevel?: string;
   collectionProbability?: number;
-  calculationDetail?: Record<string, unknown>;
+  recommendedSegment?: string;
+  modelVersion?: string;
+  calculatedAt?: string;
+  calculationDetail?: string | Record<string, unknown>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -162,7 +168,7 @@ export class ScoringConfigService {
   }
 
   calculateClientScore(clientId: number): Observable<ScoreResult> {
-    return this.http.post<ScoreResult>(`${this.baseUrl}/${clientId}/calculate`, {});
+    return this.http.post<ScoreResult>(`${this.baseUrl}/calculate/${clientId}`, {});
   }
 
   getCurrentClientScore(clientId: number): Observable<ScoreResult> {
@@ -174,7 +180,7 @@ export class ScoringConfigService {
   }
 
   calculateBatchScore(batchId: number): Observable<unknown> {
-    return this.http.post(`${this.baseUrl}/batch/${batchId}/calculate`, {});
+    return this.http.post(`${this.baseUrl}/calculate/batch/${batchId}`, {});
   }
 
   getActiveSegmentRules(): Observable<SegmentRule[]> {

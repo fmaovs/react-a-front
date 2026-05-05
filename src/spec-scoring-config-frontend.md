@@ -174,7 +174,7 @@ Payload (ejemplo)
   { "minDays": 0, "maxDays": 30, "segment": "PREVENTIVA", "casePriority": "LOW", "label": "Al dia" },
   { "minDays": 31, "maxDays": 90, "segment": "ADMINISTRATIVA", "casePriority": "MEDIUM", "label": "Mora temprana" },
   { "minDays": 91, "maxDays": 180, "segment": "PREJUDICIAL", "casePriority": "HIGH", "label": "Mora avanzada" },
-  { "minDays": 181, "maxDays": null, "segment": "JURIDICA", "casePriority": "URGENT", "label": "Cartera castigada" }
+  { "minDays": 181, "maxDays": null, "segment": "PREJUDICIAL", "casePriority": "URGENT", "label": "Mora crítica prejurídica" }
 ]
 
 ## 8) Configuracion de workflow (umbrales de decision)

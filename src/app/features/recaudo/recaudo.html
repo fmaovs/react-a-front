@@ -95,8 +95,18 @@
           <lucide-icon [img]="paymentStatusLoading() ? LoaderIcon : SearchIcon" [class.spin]="paymentStatusLoading()" class="btn-icon"></lucide-icon>
           {{ paymentStatusLoading() ? 'Consultando...' : 'Consultar Estado' }}
         </button>
-        <div class="status-chip mt-4" *ngIf="paymentStatus()">
-          Estado: {{ paymentStatus() }}
+        <div class="payment-status-card mt-4" *ngIf="paymentStatus()">
+          <div>
+            <span class="status-label">Estado</span>
+            <strong>{{ paymentStatus() }}</strong>
+          </div>
+          <div *ngIf="paymentStatusId()">
+            <span class="status-label">PaymentId</span>
+            <span class="mono-value">{{ paymentStatusId() }}</span>
+          </div>
+          <a *ngIf="paymentStatusUrl()" [href]="paymentStatusUrl()" target="_blank" class="status-link">
+            Abrir link
+          </a>
         </div>
         <div class="error-message mt-4" *ngIf="paymentStatusError()">
           {{ paymentStatusError() }}

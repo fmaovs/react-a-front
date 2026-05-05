@@ -348,3 +348,62 @@ export type ResolutionType =
   | 'WRITE_OFF'
   | 'UNABLE_TO_COLLECT'
   | 'DISPUTE_RESOLVED';
+
+// ========== CHART CONFIGURATION TYPES ==========
+
+export interface ChartOption {
+  title?: any;
+  tooltip?: any;
+  legend?: any;
+  series?: any[];
+  xAxis?: any;
+  yAxis?: any;
+  grid?: any;
+  color?: string[];
+  [key: string]: any;
+}
+
+export interface PieChartItem {
+  value: number;
+  name: string;
+  percentage?: number;
+  icon?: string;
+}
+
+export interface BarChartItem {
+  name: string;
+  value: number;
+  extra?: string;
+}
+
+export interface AdvisorPerformanceItem extends BarChartItem {
+  advisorId: number;
+  advisorCode: string;
+}
+
+export interface TableColumn {
+  label: string;
+  key: string;
+  width?: string;
+  sortable?: boolean;
+  formatter?: (value: any) => string;
+}
+
+export interface TableData {
+  columns: TableColumn[];
+  rows: any[];
+  pagination?: {
+    total: number;
+    pageSize: number;
+    currentPage: number;
+  };
+}
+
+// Dashboard Chart Configurations
+export interface DashboardChartConfig {
+  portfolioPie: ChartOption;
+  agingStackedBar: ChartOption;
+  riskPie: ChartOption;
+  casesDonut: ChartOption;
+  advisorBar: ChartOption;
+}
