@@ -73,4 +73,20 @@ export class CollectionService {
       }))
     );
   }
+
+  consultPaymentStatus(paymentId: string): Observable<PaymentLinkUiResult> {
+    return this.http.get<PaymentLinkResponse>(`${this.paymentsUrl}/status/${encodeURIComponent(paymentId)}`).pipe(
+      catchError(err => {
+        if (err?.status === 404) {
+          return this.http.get<PaymentLinkResponse>(`${this.paymentsLegacyUrl}/status/${encodeURIComponent(paymentId)}`);
+        }
+        return throwError(() => err);
+      }),
+      map(res => ({
+        paymentId: res?.paymentId ?? paymentId,
+        status: res?.nombreEstado ?? (res?.estado !== undefined ? `Estado ${res.estado}` : 'CONSULTADO'),
+        paymentUrl: res?.urlLink ?? ''
+      }))
+    );
+  }
 }

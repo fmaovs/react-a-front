@@ -32,22 +32,22 @@ export class ReportingComponent implements OnInit {
   readonly ShieldCheckIcon = ShieldCheck;
 
   realAuditLogs = signal<AuditLog[]>([]);
-  dailyCollections = signal<any[]>([]);
+  recentBatches = signal<any[]>([]);
 
   channelEffectiveness = [
     { name: 'WhatsApp', value: 75, color: '#10989B' },
     { name: 'Llamada', value: 62, color: '#055177' },
     { name: 'Email', value: 45, color: '#0A3B4E' },
-    { name: 'SMS', value: 38, color: '#001822' },
+    { name: 'SMS', value: 38, color: '#001822' }
   ];
 
-  dailyRecoveryData = computed(() => {
-    const data = this.dailyCollections();
+  batchTimeline = computed(() => {
+    const data = this.recentBatches();
     if (!data || data.length === 0) return [];
 
     return data.map(item => ({
-      day: item.label || item.date,
-      amount: item.amount
+      day: item.fileName || item.batchNumber,
+      amount: item.successfulRecords ?? item.totalRecords ?? 0
     }));
   });
 
@@ -55,8 +55,8 @@ export class ReportingComponent implements OnInit {
     this.adminService.getAuditLogs().subscribe(logs => {
       this.realAuditLogs.set(logs);
     });
-    this.dashboardService.getDailyCollections().subscribe(data => {
-      this.dailyCollections.set(data);
+    this.dashboardService.getSummary().subscribe(summary => {
+      this.recentBatches.set(summary.recentBatches ?? []);
     });
   }
 }

@@ -73,6 +73,36 @@
         </div>
       </div>
 
+      <div class="card">
+        <h4 class="card-title">
+          <lucide-icon [img]="SearchIcon" class="accent-icon"></lucide-icon>
+          Consultar Estado de Pago
+        </h4>
+        <div class="form-group">
+          <label class="form-label">PaymentId</label>
+          <input
+            type="text"
+            [(ngModel)]="paymentIdQuery"
+            placeholder="Pega el PaymentId o usa el generado"
+            class="form-input"
+          >
+        </div>
+        <button
+          (click)="consultPaymentStatus()"
+          [disabled]="paymentStatusLoading()"
+          class="primary-btn w-full mt-4"
+        >
+          <lucide-icon [img]="paymentStatusLoading() ? LoaderIcon : SearchIcon" [class.spin]="paymentStatusLoading()" class="btn-icon"></lucide-icon>
+          {{ paymentStatusLoading() ? 'Consultando...' : 'Consultar Estado' }}
+        </button>
+        <div class="status-chip mt-4" *ngIf="paymentStatus()">
+          Estado: {{ paymentStatus() }}
+        </div>
+        <div class="error-message mt-4" *ngIf="paymentStatusError()">
+          {{ paymentStatusError() }}
+        </div>
+      </div>
+
       <div class="compliance-card gradient-brand">
         <h4 class="compliance-title">Conciliación Automática</h4>
         <p class="compliance-desc">
@@ -197,6 +227,7 @@
           <p class="success-desc">El link de pago ya está listo para ser enviado al cliente.</p>
           <p class="status-chip" *ngIf="generatedStatus()">Estado: {{ generatedStatus() }}</p>
 
+          <p class="status-chip" *ngIf="generatedPaymentId()">PaymentId: {{ generatedPaymentId() }}</p>
           <div class="link-display">
             <input type="text" [value]="generatedLink()" readonly class="link-input">
             <button (click)="copyToClipboard()" class="icon-btn" title="Copiar">

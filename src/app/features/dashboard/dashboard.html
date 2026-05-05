@@ -1,6 +1,5 @@
 <div class="dashboard-grid">
 
-  <!-- ── Recarga ── -->
   <div class="dash-header">
     <div>
       <h3 class="dash-title">Dashboard</h3>
@@ -16,7 +15,6 @@
     <div class="loading-row">Cargando dashboard...</div>
   }
 
-  <!-- ── Row 1: KPI Cards ── -->
   @if (!loading()) {
     <div class="stats-grid">
       @for (card of kpiCards(); track card.label) {
@@ -34,18 +32,16 @@
       }
     </div>
 
-    <!-- ── Row 2: Aging + Risk ── -->
     <div class="info-grid">
-
-      <!-- Aging Analysis -->
       <div class="chart-container">
         <div class="chart-header">
-          <h3 class="chart-title">Análisis de Aging</h3>
+          <h3 class="chart-title">Antiguedad de Mora</h3>
           <div class="live-indicator">
             <span class="pulse-dot"></span>
             <span class="live-text">En vivo</span>
           </div>
         </div>
+        <p class="chart-note">0 dias = sin mora. Los demas rangos muestran cuanto tiempo lleva vencida cada obligacion.</p>
         <div class="aging-list">
           @for (b of agingBuckets(); track b.bucket) {
             <div class="aging-item">
@@ -68,9 +64,8 @@
         </div>
       </div>
 
-      <!-- Risk Distribution -->
       <div class="chart-container">
-        <h3 class="chart-title" style="margin-bottom: 1.5rem">Distribución de Riesgo</h3>
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Distribucion de Riesgo</h3>
         <div class="risk-list">
           @for (r of (summary()?.riskDistribution ?? []); track r.riskLevel) {
             <div class="risk-item">
@@ -95,13 +90,10 @@
       </div>
     </div>
 
-    <!-- ── Row 3: Advisors + Batches ── -->
     <div class="info-grid">
-
-      <!-- Advisor workload -->
       <div class="chart-container">
         <div class="chart-header">
-          <h3 class="chart-title">Carga por Asesor</h3>
+          <h3 class="chart-title">Carga por Asesor activo</h3>
           <a routerLink="/settings" class="footer-link">Configurar</a>
         </div>
         <div class="agent-list">
@@ -126,17 +118,16 @@
             </div>
           }
           @if (advisorLoad().length === 0) {
-            <p class="empty-hint">Sin asesores asignados aún.</p>
+            <p class="empty-hint">Sin asesores asignados aun.</p>
           }
         </div>
         <div class="chart-footer">
-          <p class="footer-text">Asignación automática por menor carga activa.</p>
+          <p class="footer-text">Asignacion automatica por menor carga activa.</p>
         </div>
       </div>
 
-      <!-- Recent batches -->
       <div class="chart-container">
-        <h3 class="chart-title" style="margin-bottom: 1.5rem">Últimos Lotes CSV</h3>
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Ultimos Lotes CSV</h3>
         <div class="batches-list">
           @for (b of (summary()?.recentBatches ?? []); track b.batchId) {
             <div class="batch-row">
@@ -159,12 +150,10 @@
       </div>
     </div>
 
-    <!-- ── Row 4: Portfolio by segment + Case status ── -->
     <div class="info-grid three-col">
-
-      <!-- Portfolio by segment -->
       <div class="chart-container">
-        <h3 class="chart-title" style="margin-bottom: 1.5rem">Cartera por Segmento</h3>
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Segmentacion de cartera</h3>
+        <p class="chart-note">Calculada por rango de mora y reglas de gestion activas.</p>
         <div class="segment-list">
           @for (s of (summary()?.portfolioBySegment ?? []); track s.segment) {
             <div class="segment-row">
@@ -179,14 +168,13 @@
             </div>
           }
           @if ((summary()?.portfolioBySegment ?? []).length === 0) {
-            <p class="empty-hint">Sin datos de segmentación.</p>
+            <p class="empty-hint">Sin datos de segmentacion.</p>
           }
         </div>
       </div>
 
-      <!-- Case status -->
       <div class="chart-container">
-        <h3 class="chart-title" style="margin-bottom: 1.5rem">Estado de Casos</h3>
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Casos por estado operativo</h3>
         <div class="cases-status-list">
           @for (s of (summary()?.casesByStatus ?? []); track s.status) {
             <div class="case-status-row">
@@ -205,26 +193,24 @@
         </div>
       </div>
 
-      <!-- Compliance card -->
       <div class="compliance-card gradient-brand">
         <div class="compliance-header">
           <h3 class="compliance-title">Cumplimiento Ley 2300</h3>
           <p class="compliance-desc">
-            Estrategias de contacto bajo normativa vigente. Horarios y canales auditados automáticamente.
+            Estrategias de contacto bajo normativa vigente. Horarios y canales auditados automaticamente.
           </p>
         </div>
         <div class="compliance-content">
           <div class="schedule-info">
-            <span>Horario Habilitado</span>
+            <span>Horario habilitado</span>
             <span class="font-bold">
-              {{ summary()?.kpis ? '' : '' }}
               {{ summary()?.kpis?.activeAdvisors ?? 0 }} asesores activos
             </span>
           </div>
           <div class="compliance-progress">
             <div class="compliance-fill" style="width: 100%"></div>
           </div>
-          <p class="compliance-note">* Auditoría inalterable activa en cada interacción.</p>
+          <p class="compliance-note">* Auditoria inalterable activa en cada interaccion.</p>
         </div>
       </div>
     </div>

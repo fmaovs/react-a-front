@@ -128,17 +128,30 @@ export class SettingsComponent implements OnInit {
     this.scoringConfigService.getActiveModel().subscribe({
       next: model => {
         this.activeModel.set(model);
-        this.scoringConfigService.getThresholds(model.modelVersion).subscribe(t => this.thresholds.set(t));
-        this.scoringConfigService.getIntensityPolicies(model.modelVersion).subscribe(p => this.intensityPolicies.set(p));
-        this.scoringConfigService.getVariables(model.modelVersion).subscribe(vars => {
-          this.variables.set(vars);
-          const current = this.selectedVariableKey();
-          const selected = vars.find(v => v.variableKey === current)?.variableKey ?? vars[0]?.variableKey ?? '';
-          this.selectedVariableKey.set(selected);
+        this.scoringConfigService.getThresholds(model.modelVersion).subscribe({
+          next: t => this.thresholds.set(t),
+          error: () => this.thresholds.set([])
+        });
+        this.scoringConfigService.getIntensityPolicies(model.modelVersion).subscribe({
+          next: p => this.intensityPolicies.set(p),
+          error: () => this.intensityPolicies.set([])
+        });
+        this.scoringConfigService.getVariables(model.modelVersion).subscribe({
+          next: vars => {
+            this.variables.set(vars);
+            const current = this.selectedVariableKey();
+            const selected = vars.find(v => v.variableKey === current)?.variableKey ?? vars[0]?.variableKey ?? '';
+            this.selectedVariableKey.set(selected);
 
-          if (selected) {
-            this.loadVariableRanges(model.modelVersion, selected);
-          } else {
+            if (selected) {
+              this.loadVariableRanges(model.modelVersion, selected);
+            } else {
+              this.variableRanges.set([]);
+            }
+          },
+          error: () => {
+            this.variables.set([]);
+            this.selectedVariableKey.set('');
             this.variableRanges.set([]);
           }
         });
@@ -147,15 +160,24 @@ export class SettingsComponent implements OnInit {
   }
 
   loadSegmentation() {
-    this.scoringConfigService.getActiveSegmentRules().subscribe(r => this.segmentRules.set(r));
+    this.scoringConfigService.getActiveSegmentRules().subscribe({
+      next: r => this.segmentRules.set(r),
+      error: () => this.segmentRules.set([])
+    });
   }
 
   loadWorkflow() {
-    this.scoringConfigService.getActiveWorkflowConfig().subscribe(cfg => this.workflowConfig.set(cfg));
+    this.scoringConfigService.getActiveWorkflowConfig().subscribe({
+      next: cfg => this.workflowConfig.set(cfg),
+      error: () => this.workflowConfig.set(null)
+    });
   }
 
   loadUsers() {
-    this.userService.getUsers().subscribe(users => this.realUsers.set(users));
+    this.userService.getUsers().subscribe({
+      next: users => this.realUsers.set(users),
+      error: () => this.realUsers.set([])
+    });
   }
 
   // ── Guardar scoring ───────────────────────────────────────────────────────
@@ -326,9 +348,12 @@ export class SettingsComponent implements OnInit {
   }
 
   private loadVariableRanges(version: string, key: string) {
-    this.scoringConfigService.getVariableRanges(version, key).subscribe(ranges => {
-      const sorted = [...ranges].sort((a, b) => a.minValue - b.minValue);
-      this.variableRanges.set(sorted);
+    this.scoringConfigService.getVariableRanges(version, key).subscribe({
+      next: ranges => {
+        const sorted = [...ranges].sort((a, b) => a.minValue - b.minValue);
+        this.variableRanges.set(sorted);
+      },
+      error: () => this.variableRanges.set([])
     });
   }
 

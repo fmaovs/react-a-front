@@ -2,6 +2,7 @@ import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { StoreService } from '../../core/store/app-store.service';
+import { DashboardSummary } from '../../models/types';
 import {
   LucideAngularModule,
   Brain,
@@ -26,43 +27,51 @@ export class AnalyticsComponent implements OnInit {
   readonly ShieldAlertIcon = ShieldAlert;
   readonly TargetIcon = Target;
 
-  metrics = signal<any>(null);
-  dailyCollections = signal<any[]>([]);
+  summary = signal<DashboardSummary | null>(null);
 
   ngOnInit() {
-    this.dashboardService.getMetrics().subscribe(m => this.metrics.set(m));
-    this.dashboardService.getDailyCollections().subscribe(data => this.dailyCollections.set(data));
+    this.dashboardService.getSummary().subscribe({
+      next: summary => this.summary.set(summary),
+      error: () => this.summary.set(null)
+    });
   }
 
   riskData = computed(() => {
-    const m = this.metrics();
-    if (!m || !m.riskDistribution) return [];
+    const riskDistribution = this.summary()?.riskDistribution ?? [];
+    if (riskDistribution.length === 0) return [];
 
-    return Object.entries(m.riskDistribution).map(([name, value]) => ({
-      name,
-      value: Number(value),
-      color: this.getRiskColor(name)
+    return riskDistribution.map(item => ({
+      name: item.label || item.riskLevel,
+      value: item.clientCount,
+      color: this.getRiskColor(item.riskLevel)
     }));
   });
 
-  recoveryTrend = computed(() => {
-    const m = this.metrics();
-    if (!m || !m.monthlyRecovery) return [];
+  riskTotal = computed(() => this.riskData().reduce((acc, item) => acc + item.value, 0));
 
-    return Object.entries(m.monthlyRecovery).map(([month, recovery]) => ({
-      month,
-      recovery: Number(recovery),
-      goal: 80 // Hardcoded goal for UI reference only
+  recoveryTrend = computed(() => {
+    const batches = this.summary()?.recentBatches ?? [];
+    if (batches.length === 0) return [];
+
+    return batches.slice(0, 4).map(batch => ({
+      month: batch.fileName || batch.batchNumber,
+      recovery: batch.successfulRecords,
+      goal: batch.totalRecords
     }));
   });
 
   private getRiskColor(risk: string): string {
-    switch(risk.toLowerCase()) {
-      case 'bajo': return '#10989B';
-      case 'medio': return '#055177';
-      case 'alto': return '#0A3B4E';
-      case 'crítico': return '#001822';
-      default: return '#cbd5e1';
+    switch (risk.toLowerCase()) {
+      case 'bajo':
+        return '#10989B';
+      case 'medio':
+        return '#055177';
+      case 'alto':
+        return '#0A3B4E';
+      case 'critico':
+        return '#001822';
+      default:
+        return '#cbd5e1';
     }
   }
 }

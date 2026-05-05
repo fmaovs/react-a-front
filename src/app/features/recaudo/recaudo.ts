@@ -48,10 +48,15 @@ export class RecaudoComponent implements OnInit {
   selectedObligation = signal<Obligation | null>(null);
   paymentAmountValue = 0;
   generatedLink = signal<string | null>(null);
+  generatedPaymentId = signal<string | null>(null);
   generatedStatus = signal<string | null>(null);
   copied = signal(false);
   showGenerationAnimation = signal(false);
   error = signal<string | null>(null);
+  paymentIdQuery = '';
+  paymentStatus = signal<string | null>(null);
+  paymentStatusLoading = signal(false);
+  paymentStatusError = signal<string | null>(null);
 
   readonly DollarSignIcon = DollarSign;
   readonly LinkIcon = LinkIcon;
@@ -92,6 +97,7 @@ export class RecaudoComponent implements OnInit {
     this.selectedObligation.set(null);
     this.paymentAmountValue = 0;
     this.generatedLink.set(null);
+    this.generatedPaymentId.set(null);
     this.generatedStatus.set(null);
     this.copied.set(false);
     this.showGenerationAnimation.set(false);
@@ -100,6 +106,10 @@ export class RecaudoComponent implements OnInit {
     this.searchQueryValue = '';
     this.clients.set([]);
     this.obligations.set([]);
+    this.paymentIdQuery = '';
+    this.paymentStatus.set(null);
+    this.paymentStatusLoading.set(false);
+    this.paymentStatusError.set(null);
   }
 
   searchClients() {
@@ -142,7 +152,6 @@ export class RecaudoComponent implements OnInit {
       Valor: amount,
       Url: this.buildReturnUrl()
     };
-    console.log("La request", request);
 
     this.isGenerating.set(true);
     this.showGenerationAnimation.set(true);
@@ -151,14 +160,12 @@ export class RecaudoComponent implements OnInit {
 
     this.collectionService.generatePaymentLink(request).pipe(
       catchError(() => {
-        console.log('Error detallado de la consulta');
         this.showGenerationAnimation.set(false);
         this.isGenerating.set(false);
         this.error.set('No fue posible generar el link de pago. Verifica los datos e intenta de nuevo.');
         return of(null);
       })
     ).subscribe(res => {
-      console.log('Respuesta del servidor:', res);
       if (!res?.paymentUrl) {
         this.showGenerationAnimation.set(false);
         this.isGenerating.set(false);
@@ -168,12 +175,37 @@ export class RecaudoComponent implements OnInit {
 
       // Mantiene una transición corta para dar feedback visual antes de mostrar el link final.
       window.setTimeout(() => {
+        this.generatedPaymentId.set(res.paymentId || null);
         this.generatedLink.set(res.paymentUrl);
         this.generatedStatus.set(res.status || 'GENERADO');
+        this.paymentIdQuery = res.paymentId || this.paymentIdQuery;
         this.showGenerationAnimation.set(false);
         this.isGenerating.set(false);
         this.loadData();
       }, 900);
+    });
+  }
+
+  consultPaymentStatus() {
+    const paymentId = this.paymentIdQuery.trim() || this.generatedPaymentId();
+    if (!paymentId) {
+      this.paymentStatusError.set('Ingresa un PaymentId para consultar su estado.');
+      return;
+    }
+
+    this.paymentStatusLoading.set(true);
+    this.paymentStatusError.set(null);
+
+    this.collectionService.consultPaymentStatus(paymentId).subscribe({
+      next: res => {
+        this.paymentStatus.set(res.status);
+        this.paymentIdQuery = res.paymentId || paymentId;
+        this.paymentStatusLoading.set(false);
+      },
+      error: () => {
+        this.paymentStatusLoading.set(false);
+        this.paymentStatusError.set('No fue posible consultar el estado del pago.');
+      }
     });
   }
 

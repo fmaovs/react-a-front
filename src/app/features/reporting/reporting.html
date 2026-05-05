@@ -1,13 +1,13 @@
 <div class="module-container">
   <div class="module-header">
     <div class="header-text">
-      <h3 class="module-title">M7. Reporting, Auditoría y Gobierno</h3>
-      <p class="module-subtitle">Indicadores de gestión, monitoreo del modelo y trazabilidad inalterable.</p>
+      <h3 class="module-title">M7. Reporting, Auditoria y Gobierno</h3>
+      <p class="module-subtitle">Indicadores de gestion, monitoreo del modelo y trazabilidad inalterable.</p>
     </div>
     <div class="header-actions">
       <button class="outline-btn">
         <lucide-icon [img]="CalendarIcon" class="btn-icon-small"></lucide-icon>
-        Últimos 30 días
+        Ultimos 30 dias
       </button>
       <button class="primary-btn shadow-lg">
         <lucide-icon [img]="DownloadIcon" class="btn-icon"></lucide-icon>
@@ -20,10 +20,9 @@
     <div class="card lg-span">
       <h4 class="card-title">
         <lucide-icon [img]="BarChart3Icon" class="accent-icon"></lucide-icon>
-        Recuperación Diaria (COP)
+        Procesamiento reciente
       </h4>
       <div class="chart-box">
-        <!-- SVG Area Chart -->
         <svg viewBox="0 0 400 200" class="area-chart">
           <defs>
             <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
@@ -42,7 +41,7 @@
             points="40,120 100,100 160,130 220,80 280,60 340,150"
           />
           <line x1="40" y1="180" x2="380" y2="180" stroke="#f0f0f0" />
-          @for (d of dailyRecoveryData(); track d.day; let i = $index) {
+          @for (d of batchTimeline(); track d.day; let i = $index) {
             <text [attr.x]="40 + (i * 60)" y="195" class="chart-label">{{ d.day }}</text>
           }
         </svg>
@@ -65,7 +64,7 @@
           </div>
         }
       </div>
-      <p class="chart-note">* Porcentaje de promesas de pago generadas por canal.</p>
+      <p class="chart-note">* Indicador de referencia para la operacion del equipo.</p>
     </div>
   </div>
 
@@ -73,7 +72,7 @@
     <div class="card">
       <h4 class="card-title">
         <lucide-icon [img]="HistoryIcon" class="accent-icon"></lucide-icon>
-        Auditoría de Cambios (Gobierno)
+        Auditoria de Cambios (Gobierno)
       </h4>
       <div class="audit-list">
         @for (audit of realAuditLogs(); track audit.id) {
@@ -98,7 +97,7 @@
       </h4>
       <div class="health-grid">
         <div class="health-card green">
-          <p class="health-label">Precisión Scoring</p>
+          <p class="health-label">Precision Scoring</p>
           <p class="health-value">94.2%</p>
         </div>
         <div class="health-card blue">
@@ -110,7 +109,7 @@
           <p class="health-value">SHAP/LIME</p>
         </div>
         <div class="health-card amber">
-          <p class="health-label">Último Retrain</p>
+          <p class="health-label">Ultimo Retrain</p>
           <p class="health-value">18 Mar</p>
         </div>
       </div>

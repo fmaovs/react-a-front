@@ -1,7 +1,7 @@
 <div class="module-container">
   <div class="module-header">
     <div class="header-text">
-      <h3 class="module-title">M2. Analítica y Perfilamiento IA</h3>
+      <h3 class="module-title">M2. Analitica y Perfilamiento IA</h3>
       <p class="module-subtitle">Modelos predictivos de comportamiento de pago y scoring de riesgo.</p>
     </div>
     <div class="engine-status">
@@ -14,16 +14,13 @@
     <div class="card lg-span">
       <h4 class="card-title">
         <lucide-icon [img]="TrendingUpIcon" class="accent-icon"></lucide-icon>
-        Tendencia de Recuperación vs Meta
+        Tendencia de Recuperacion vs Meta
       </h4>
       <div class="chart-box">
-        <!-- Simplified SVG Line Chart -->
         <svg viewBox="0 0 400 200" class="line-chart">
-          <!-- Grid Lines -->
           <line x1="40" y1="20" x2="40" y2="180" class="grid-line" />
           <line x1="40" y1="180" x2="380" y2="180" class="grid-line" />
 
-          <!-- Goal Line (dashed) -->
           <polyline
             fill="none"
             stroke="#cbd5e1"
@@ -32,7 +29,6 @@
             points="40,140 140,140 240,120 340,100"
           />
 
-          <!-- Recovery Line -->
           <polyline
             fill="none"
             stroke="#10989B"
@@ -40,13 +36,11 @@
             points="40,150 140,136 240,124 340,110"
           />
 
-          <!-- Dots -->
           <circle cx="40" cy="150" r="4" fill="#10989B" />
           <circle cx="140" cy="136" r="4" fill="#10989B" />
           <circle cx="240" cy="124" r="4" fill="#10989B" />
           <circle cx="340" cy="110" r="4" fill="#10989B" />
 
-          <!-- Labels -->
           <text x="40" y="195" class="chart-label">Ene</text>
           <text x="140" y="195" class="chart-label">Feb</text>
           <text x="240" y="195" class="chart-label">Mar</text>
@@ -58,10 +52,9 @@
     <div class="card">
       <h4 class="card-title">
         <lucide-icon [img]="ShieldAlertIcon" class="accent-icon"></lucide-icon>
-        Distribución de Riesgo
+        Distribucion de Riesgo
       </h4>
       <div class="donut-chart-box">
-        <!-- Simplified CSS/SVG Donut Chart -->
         <svg viewBox="0 0 100 100" class="donut-chart">
           <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f3f4f6" stroke-width="10" />
           <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10989B" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="180" />
@@ -76,7 +69,7 @@
               <span class="legend-name">{{ risk.name }}</span>
             </div>
             <span class="legend-value">
-              {{ store.associates().length > 0 ? ((risk.value / store.associates().length) * 100 | number:'1.1-1') : 0 }}%
+              {{ riskTotal() > 0 ? ((risk.value / riskTotal()) * 100 | number:'1.1-1') : 0 }}%
             </span>
           </div>
         }
@@ -87,7 +80,7 @@
   <div class="card full-width">
     <h4 class="card-title">
       <lucide-icon [img]="TargetIcon" class="accent-icon"></lucide-icon>
-      Perfilamiento de Asociados (Top Propensión)
+      Perfilamiento de Asociados (Top Propension)
     </h4>
     <div class="table-container">
       <table class="data-table">
@@ -95,8 +88,8 @@
           <tr>
             <th>Asociado</th>
             <th>Score IA</th>
-            <th>Propensión</th>
-            <th>Mejor Acción</th>
+            <th>Propension</th>
+            <th>Mejor Accion</th>
             <th>Riesgo</th>
           </tr>
         </thead>
