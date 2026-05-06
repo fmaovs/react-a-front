@@ -151,6 +151,7 @@ export interface Client {
   fullName: string; // Updated from name to match ClientDTO
   email: string;
   phone: string;
+  mobile?: string;
   segment: string;
   riskLevel: string;
   creditScore: number; // Updated from score to match ClientDTO

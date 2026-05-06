@@ -264,25 +264,30 @@ export class RecaudoComponent implements OnInit {
       return;
     }
 
+    const recipient = client.mobile || client.phone || '';
+    if (!recipient) {
+      this.smsError.set('El cliente no tiene un teléfono móvil registrado.');
+      return;
+    }
+
     // Crear mensaje SMS (máximo 160 caracteres)
     const message = `Hola ${client.fullName}, hemos generado tu link de pago. Accede aquí: ${link}`;
 
     // Validar longitud
     if (message.length > 160) {
       const truncatedMsg = `Tu link de pago está listo: ${link}`;
-      this.sendSMSRequest(truncatedMsg, client.id);
+      this.sendSMSRequest(truncatedMsg, client.id, recipient);
     } else {
-      this.sendSMSRequest(message, client.id);
+      this.sendSMSRequest(message, client.id, recipient);
     }
   }
 
-  private sendSMSRequest(message: string, clientId: number) {
+  private sendSMSRequest(message: string, clientId: number, recipient: string) {
     this.sendingSMS.set(true);
     this.smsError.set(null);
     this.smsSent.set(false);
 
-    // El backend busca automáticamente el número de teléfono del cliente
-    this.notificationService.sendSMS('', message, clientId, 'Envío de link de pago').pipe(
+    this.notificationService.sendSMS(recipient, message, clientId, 'Envío de link de pago').pipe(
       catchError(error => {
         this.sendingSMS.set(false);
         this.smsError.set(
@@ -321,19 +326,24 @@ export class RecaudoComponent implements OnInit {
       return;
     }
 
+    const recipient = client.email || '';
+    if (!recipient) {
+      this.emailError.set('El cliente no tiene un email registrado.');
+      return;
+    }
+
     // Crear mensaje para email
     const message = `Tu link de pago está listo: ${link}`;
 
-    this.sendEmailRequest(message, client.id);
+    this.sendEmailRequest(message, client.id, recipient);
   }
 
-  private sendEmailRequest(message: string, clientId: number) {
+  private sendEmailRequest(message: string, clientId: number, recipient: string) {
     this.sendingEmail.set(true);
     this.emailError.set(null);
     this.emailSent.set(false);
 
-    // El backend busca automáticamente el email del cliente
-    this.notificationService.sendEmail('', message, clientId, 'Envío de link de pago').pipe(
+    this.notificationService.sendEmail(recipient, message, clientId, 'Envío de link de pago').pipe(
       catchError(error => {
         this.sendingEmail.set(false);
         this.emailError.set(
