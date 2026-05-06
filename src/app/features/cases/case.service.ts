@@ -11,8 +11,12 @@ export class CaseService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/management/cases`;
 
-  getCases(page: number = 0, size: number = 50): Observable<Page<Case>> {
+  getCases(page: number = 0, size: number = 10): Observable<Page<Case>> {
     return this.http.get<Page<Case>>(this.apiUrl, { params: { page, size } });
+  }
+
+  getCasesPageByStatus(status: string, page: number = 0, size: number = 10): Observable<Page<Case>> {
+    return this.http.get<Page<Case>>(`${this.apiUrl}/status/${status}`, { params: { page, size } });
   }
 
   getCase(id: number): Observable<Case> {

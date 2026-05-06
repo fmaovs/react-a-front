@@ -49,6 +49,15 @@ export class AnalyticsComponent implements OnInit {
 
   riskTotal = computed(() => this.riskData().reduce((acc, item) => acc + item.value, 0));
 
+  caseStats = computed(() => {
+    const kpis = this.summary()?.kpis;
+    const byStatus = this.summary()?.casesByStatus ?? [];
+    return {
+      total: kpis?.totalCases ?? 0,
+      byStatus
+    };
+  });
+
   recoveryTrend = computed(() => {
     const batches = this.summary()?.recentBatches ?? [];
     if (batches.length === 0) return [];

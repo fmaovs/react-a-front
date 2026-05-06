@@ -10,6 +10,20 @@
     </div>
   </div>
 
+  <div class="cases-kpi-grid">
+    <div class="cases-kpi-card total-card">
+      <p class="kpi-label">Total Casos Cargados</p>
+      <h3 class="kpi-value">{{ caseStats().total }}</h3>
+    </div>
+    @for (s of caseStats().byStatus; track s.status) {
+      <div class="cases-kpi-card">
+        <p class="kpi-label">{{ s.label }}</p>
+        <h3 class="kpi-value">{{ s.count }}</h3>
+        <p class="kpi-pct">{{ s.percentage | number:'1.1-1' }}%</p>
+      </div>
+    }
+  </div>
+
   <div class="top-grid">
     <div class="card lg-span">
       <h4 class="card-title">

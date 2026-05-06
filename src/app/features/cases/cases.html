@@ -29,7 +29,7 @@
       <h4 class="card-title-text">Cola de Gestión</h4>
       <div class="filter-block">
         <lucide-icon [img]="FilterIcon" class="btn-icon-small"></lucide-icon>
-        <select class="filter-select" [ngModel]="selectedStatusFilter()" (ngModelChange)="selectedStatusFilter.set($event)">
+        <select class="filter-select" [ngModel]="selectedStatusFilter()" (ngModelChange)="onStatusFilterChange($event)">
           <option value="ALL">Todos</option>
           @for (status of statuses; track status) {
             <option [value]="status">{{ status }}</option>
@@ -45,7 +45,7 @@
     @if (isLoading()) {
       <div class="loading-row">Cargando casos...</div>
     } @else {
-      <div class="table-container">
+      <div class="table-container" style="overflow-x:auto">
         <table class="data-table">
           <thead>
             <tr>
@@ -299,6 +299,18 @@
           </tbody>
         </table>
       </div>
+
+      @if (totalPages() > 1) {
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            Página {{ currentPage() + 1 }} de {{ totalPages() }} &mdash; {{ totalElements() }} casos en total
+          </span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="prevPage()" [disabled]="currentPage() === 0">&#8249; Anterior</button>
+            <button class="page-btn" (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1">Siguiente &#8250;</button>
+          </div>
+        </div>
+      }
     }
   </div>
 </div>

@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../core/store/app-store.service';
 import { CaseService } from './case.service';
-import { Case, CaseNote, EscalationReason, ResolutionType } from '../../models/types';
+import { DashboardService } from '../dashboard/dashboard.service';
+import { Case, CaseNote, CaseStatusBreakdown, EscalationReason, ResolutionType } from '../../models/types';
 import {
   LucideAngularModule,
   RefreshCw,
@@ -34,12 +35,18 @@ interface ActionPanel {
 export class CasesComponent {
   store = inject(StoreService);
   private caseService = inject(CaseService);
+  private dashboardService = inject(DashboardService);
 
   isLoading = signal(false);
   errorMessage = signal('');
   cases = signal<Case[]>([]);
   activePanel = signal<ActionPanel | null>(null);
   caseNotes = signal<Record<number, CaseNote[]>>({});
+
+  currentPage = signal(0);
+  totalPages = signal(0);
+  totalElements = signal(0);
+  caseStatusGlobal = signal<CaseStatusBreakdown[]>([]);
 
   // Campos del panel activo
   noteContent = '';
@@ -90,48 +97,53 @@ export class CasesComponent {
   ];
 
   filteredCases = computed(() => {
-    const status = this.selectedStatusFilter();
     const q = this.store.searchQuery().trim().toLowerCase();
-
-    let result = this.cases();
-
-    if (status !== 'ALL') {
-      result = result.filter(c => c.status === status);
-    }
-
-    if (q) {
-      result = result.filter(c =>
-        (c.caseNumber?.toLowerCase().includes(q)) ||
-        (c.client?.fullName?.toLowerCase().includes(q)) ||
-        (c.client?.documentNumber?.toLowerCase().includes(q)) ||
-        (c.obligation?.obligationNumber?.toLowerCase().includes(q)) ||
-        (c.escalatedAdvisorName?.toLowerCase().includes(q))
-      );
-    }
-
-    return result;
+    if (!q) return this.cases();
+    return this.cases().filter(c =>
+      (c.caseNumber?.toLowerCase().includes(q)) ||
+      (c.client?.fullName?.toLowerCase().includes(q)) ||
+      (c.client?.documentNumber?.toLowerCase().includes(q)) ||
+      (c.obligation?.obligationNumber?.toLowerCase().includes(q)) ||
+      (c.escalatedAdvisorName?.toLowerCase().includes(q))
+    );
   });
 
   stats = computed(() => {
-    const data = this.cases();
+    const get = (s: string) => this.caseStatusGlobal().find(c => c.status === s)?.count ?? 0;
     return [
-      { label: 'Abiertos',           value: data.filter(c => c.status === 'OPEN').length.toString(),                         color: 'bg-blue-500' },
-      { label: 'En gestión',         value: data.filter(c => c.status === 'IN_PROGRESS').length.toString(),                  color: 'bg-brand-accent' },
-      { label: 'Escalados',          value: data.filter(c => c.status === 'ESCALATED').length.toString(),                    color: 'bg-red-500' },
-      { label: 'Cerrados/Resueltos', value: data.filter(c => c.status === 'CLOSED' || c.status === 'RESOLVED').length.toString(), color: 'bg-emerald-500' },
+      { label: 'Abiertos',           value: get('OPEN').toString(),                      color: 'bg-blue-500' },
+      { label: 'En gestión',         value: get('IN_PROGRESS').toString(),               color: 'bg-brand-accent' },
+      { label: 'Escalados',          value: get('ESCALATED').toString(),                 color: 'bg-red-500' },
+      { label: 'Cerrados/Resueltos', value: (get('CLOSED') + get('RESOLVED')).toString(), color: 'bg-emerald-500' },
     ];
   });
 
   constructor() {
-    this.loadCases();
+    this.loadCases(0);
+    this.loadGlobalStats();
   }
 
-  loadCases() {
+  loadGlobalStats() {
+    this.dashboardService.getCasesByStatus().subscribe({
+      next: data => this.caseStatusGlobal.set(data),
+      error: () => {}
+    });
+  }
+
+  loadCases(page: number = 0) {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    this.caseService.getCases().subscribe({
-      next: page => {
-        this.cases.set(page.content ?? []);
+    const status = this.selectedStatusFilter();
+    const obs = status !== 'ALL'
+      ? this.caseService.getCasesPageByStatus(status, page)
+      : this.caseService.getCases(page);
+
+    obs.subscribe({
+      next: pageData => {
+        this.cases.set(pageData.content ?? []);
+        this.currentPage.set(pageData.number ?? 0);
+        this.totalPages.set(pageData.totalPages ?? 0);
+        this.totalElements.set(pageData.totalElements ?? 0);
         this.isLoading.set(false);
       },
       error: err => {
@@ -141,16 +153,33 @@ export class CasesComponent {
     });
   }
 
+  onStatusFilterChange(status: string) {
+    this.selectedStatusFilter.set(status);
+    this.loadCases(0);
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.loadCases(this.currentPage() + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 0) {
+      this.loadCases(this.currentPage() - 1);
+    }
+  }
+
   changeStatus(caseId: number, status: Case['status']) {
     this.caseService.updateCase(caseId, { status }).subscribe({
-      next: () => this.loadCases(),
+      next: () => { this.loadCases(this.currentPage()); this.loadGlobalStats(); },
       error: err => this.errorMessage.set(err?.error?.message || 'No fue posible actualizar estado')
     });
   }
 
   changePriority(caseId: number, priority: Case['priority']) {
     this.caseService.updateCase(caseId, { priority }).subscribe({
-      next: () => this.loadCases(),
+      next: () => this.loadCases(this.currentPage()),
       error: err => this.errorMessage.set(err?.error?.message || 'No fue posible actualizar prioridad')
     });
   }
@@ -186,21 +215,21 @@ export class CasesComponent {
   submitNote(caseId: number) {
     if (!this.noteContent.trim()) return;
     this.caseService.addNote(caseId, this.noteContent.trim(), this.noteType, 'HUMAN').subscribe({
-      next: () => { this.closePanel(); this.loadCases(); },
+      next: () => { this.closePanel(); this.loadCases(this.currentPage()); },
       error: err => this.errorMessage.set(err?.error?.message || 'No fue posible agregar la nota')
     });
   }
 
   submitEscalate(caseId: number) {
     this.caseService.escalateCase(caseId, this.escalationReason).subscribe({
-      next: () => { this.closePanel(); this.loadCases(); },
+      next: () => { this.closePanel(); this.loadCases(this.currentPage()); this.loadGlobalStats(); },
       error: err => this.errorMessage.set(err?.error?.message || 'No fue posible escalar el caso')
     });
   }
 
   submitResolve(caseId: number) {
     this.caseService.resolveCase(caseId, this.resolutionType, this.resolutionDetails).subscribe({
-      next: () => { this.closePanel(); this.loadCases(); },
+      next: () => { this.closePanel(); this.loadCases(this.currentPage()); this.loadGlobalStats(); },
       error: err => this.errorMessage.set(err?.error?.message || 'No fue posible resolver el caso')
     });
   }

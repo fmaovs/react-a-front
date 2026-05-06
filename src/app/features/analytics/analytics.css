@@ -228,3 +228,58 @@
 .risk-text.medio { color: #3b82f6; }
 .risk-text.alto { color: #f59e0b; }
 .risk-text.crítico { color: #ef4444; }
+
+/* ── KPI de casos ────────────────────────────────────────────────────── */
+
+.cases-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .cases-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cases-kpi-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.cases-kpi-card {
+  background-color: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cases-kpi-card.total-card {
+  border-color: var(--brand-accent);
+  border-width: 2px;
+}
+
+.kpi-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.35rem 0;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  margin: 0;
+}
+
+.kpi-pct {
+  font-size: 0.75rem;
+  color: var(--brand-accent);
+  margin: 0.15rem 0 0 0;
+}
