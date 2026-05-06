@@ -661,3 +661,122 @@
 .flex-1 { flex: 1; }
 .mt-4 { margin-top: 1rem; }
 .mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+.pt-6 { padding-top: 1.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+
+/* Notification Section Styles */
+.notification-section {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.notification-buttons-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 480px) {
+  .notification-buttons-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.notification-button-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notification-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  background: white;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.notification-btn:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.notification-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notification-btn.sms-btn {
+  color: #0891b2;
+  border-color: #cffafe;
+}
+
+.notification-btn.sms-btn:hover:not(:disabled) {
+  background: #ecf8ff;
+  border-color: #06b6d4;
+  color: #06b6d4;
+}
+
+.notification-btn.email-btn {
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+
+.notification-btn.email-btn:hover:not(:disabled) {
+  background: #f5f3ff;
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+
+.notification-btn.success {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.notification-btn.success:hover {
+  background: #d1fae5;
+  border-color: #059669;
+}
+
+.notification-helper-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+  padding: 0 0.25rem;
+}
+
+.border-t {
+  border-top: 1px solid currentColor;
+}
+
+.border-gray-200 {
+  border-color: #e5e7eb;
+}

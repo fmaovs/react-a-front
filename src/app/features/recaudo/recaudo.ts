@@ -17,10 +17,13 @@ import {
   X,
   Copy,
   ExternalLink,
-  Loader2
+  Loader2,
+  Mail,
+  CheckCircle
 } from 'lucide-angular';
 import { CollectionService } from './collection.service';
 import { PortfolioService } from '../../shared/services/portfolio.service';
+import { NotificationService } from '../../shared/services/notification.service';
 import { PaymentAgreement, Client, Obligation } from '../../models/types';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -35,6 +38,7 @@ import { of } from 'rxjs';
 export class RecaudoComponent implements OnInit {
   private collectionService = inject(CollectionService);
   private portfolioService = inject(PortfolioService);
+  private notificationService = inject(NotificationService);
 
   isGenerating = signal(false);
   realAgreements = signal<PaymentAgreement[]>([]);
@@ -60,13 +64,23 @@ export class RecaudoComponent implements OnInit {
   paymentStatusLoading = signal(false);
   paymentStatusError = signal<string | null>(null);
 
+  // Notification States
+  sendingSMS = signal(false);
+  sendingEmail = signal(false);
+  smsSent = signal(false);
+  emailSent = signal(false);
+  smsError = signal<string | null>(null);
+  emailError = signal<string | null>(null);
+
   readonly DollarSignIcon = DollarSign;
   readonly LinkIcon = LinkIcon;
   readonly SendIcon = Send;
   readonly CheckCircle2Icon = CheckCircle2;
+  readonly CheckCircleIcon = CheckCircle;
   readonly ClockIcon = Clock;
   readonly CreditCardIcon = CreditCard;
   readonly SmartphoneIcon = Smartphone;
+  readonly MailIcon = Mail;
   readonly ArrowRightIcon = ArrowRight;
   readonly PlusIcon = Plus;
   readonly SearchIcon = Search;
@@ -114,6 +128,12 @@ export class RecaudoComponent implements OnInit {
     this.paymentStatusUrl.set(null);
     this.paymentStatusLoading.set(false);
     this.paymentStatusError.set(null);
+    this.sendingSMS.set(false);
+    this.sendingEmail.set(false);
+    this.smsSent.set(false);
+    this.emailSent.set(false);
+    this.smsError.set(null);
+    this.emailError.set(null);
   }
 
   searchClients() {
@@ -229,6 +249,112 @@ export class RecaudoComponent implements OnInit {
         this.error.set('No se pudo copiar el enlace al portapapeles.');
       }
     }
+  }
+
+  /**
+   * Envía el link de pago por SMS al cliente
+   * El backend obtiene automáticamente el número de teléfono del cliente
+   */
+  sendPaymentLinkSMS() {
+    const client = this.selectedClient();
+    const link = this.generatedLink();
+
+    if (!client || !link) {
+      this.smsError.set('No hay cliente o link disponible.');
+      return;
+    }
+
+    // Crear mensaje SMS (máximo 160 caracteres)
+    const message = `Hola ${client.fullName}, hemos generado tu link de pago. Accede aquí: ${link}`;
+
+    // Validar longitud
+    if (message.length > 160) {
+      const truncatedMsg = `Tu link de pago está listo: ${link}`;
+      this.sendSMSRequest(truncatedMsg, client.id);
+    } else {
+      this.sendSMSRequest(message, client.id);
+    }
+  }
+
+  private sendSMSRequest(message: string, clientId: number) {
+    this.sendingSMS.set(true);
+    this.smsError.set(null);
+    this.smsSent.set(false);
+
+    // El backend busca automáticamente el número de teléfono del cliente
+    this.notificationService.sendSMS('', message, clientId, 'Envío de link de pago').pipe(
+      catchError(error => {
+        this.sendingSMS.set(false);
+        this.smsError.set(
+          error?.error?.message || 'No fue posible enviar el SMS. Intenta más tarde.'
+        );
+        return of(null);
+      })
+    ).subscribe(result => {
+      this.sendingSMS.set(false);
+
+      if (result) {
+        if (result.accepted) {
+          this.smsSent.set(true);
+          this.smsError.set(null);
+          // Auto-reset después de 3 segundos
+          window.setTimeout(() => this.smsSent.set(false), 3000);
+        } else if (result.skippedByLey2300) {
+          this.smsError.set('Envío bloqueado: Fuera de horario permitido (Ley 2300)');
+        } else {
+          this.smsError.set(result.statusDescription || 'No se pudo completar el envío');
+        }
+      }
+    });
+  }
+
+  /**
+   * Envía el link de pago por Email al cliente
+   * El backend obtiene automáticamente el email del cliente
+   */
+  sendPaymentLinkEmail() {
+    const client = this.selectedClient();
+    const link = this.generatedLink();
+
+    if (!client || !link) {
+      this.emailError.set('No hay cliente o link disponible.');
+      return;
+    }
+
+    // Crear mensaje para email
+    const message = `Tu link de pago está listo: ${link}`;
+
+    this.sendEmailRequest(message, client.id);
+  }
+
+  private sendEmailRequest(message: string, clientId: number) {
+    this.sendingEmail.set(true);
+    this.emailError.set(null);
+    this.emailSent.set(false);
+
+    // El backend busca automáticamente el email del cliente
+    this.notificationService.sendEmail('', message, clientId, 'Envío de link de pago').pipe(
+      catchError(error => {
+        this.sendingEmail.set(false);
+        this.emailError.set(
+          error?.error?.message || 'No fue posible enviar el email. Intenta más tarde.'
+        );
+        return of(null);
+      })
+    ).subscribe(result => {
+      this.sendingEmail.set(false);
+
+      if (result) {
+        if (result.accepted) {
+          this.emailSent.set(true);
+          this.emailError.set(null);
+          // Auto-reset después de 3 segundos
+          window.setTimeout(() => this.emailSent.set(false), 3000);
+        } else {
+          this.emailError.set(result.statusDescription || 'No se pudo completar el envío');
+        }
+      }
+    });
   }
 
   closeModal() {

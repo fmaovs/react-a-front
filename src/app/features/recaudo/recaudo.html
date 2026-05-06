@@ -255,6 +255,59 @@
               Finalizar
             </button>
           </div>
+
+          <!-- Sección de Envío de Notificaciones -->
+          <div class="notification-section mt-8 pt-6 border-t border-gray-200">
+            <h5 class="notification-title mb-4">Enviar Link al Cliente</h5>
+
+            <div class="notification-buttons-group">
+              <!-- Botón SMS -->
+              <div class="notification-button-wrapper">
+                <button
+                  (click)="sendPaymentLinkSMS()"
+                  [disabled]="sendingSMS() || smsSent()"
+                  class="notification-btn sms-btn"
+                  [class.success]="smsSent()"
+                >
+                  <lucide-icon
+                    [img]="sendingSMS() ? LoaderIcon : (smsSent() ? CheckCircleIcon : SmartphoneIcon)"
+                    class="btn-icon"
+                    [class.spin]="sendingSMS()"
+                  ></lucide-icon>
+                  <span>{{ sendingSMS() ? 'Enviando SMS...' : (smsSent() ? 'SMS Enviado ✓' : 'Enviar por SMS') }}</span>
+                </button>
+                <p class="notification-helper-text" *ngIf="!smsError() && !smsSent()">
+                  Envía el link por mensaje de texto
+                </p>
+                <p class="error-message text-xs mt-1" *ngIf="smsError()">
+                  {{ smsError() }}
+                </p>
+              </div>
+
+              <!-- Botón Email -->
+              <div class="notification-button-wrapper">
+                <button
+                  (click)="sendPaymentLinkEmail()"
+                  [disabled]="sendingEmail() || emailSent()"
+                  class="notification-btn email-btn"
+                  [class.success]="emailSent()"
+                >
+                  <lucide-icon
+                    [img]="sendingEmail() ? LoaderIcon : (emailSent() ? CheckCircleIcon : MailIcon)"
+                    class="btn-icon"
+                    [class.spin]="sendingEmail()"
+                  ></lucide-icon>
+                  <span>{{ sendingEmail() ? 'Enviando Email...' : (emailSent() ? 'Email Enviado ✓' : 'Enviar por Email') }}</span>
+                </button>
+                <p class="notification-helper-text" *ngIf="!emailError() && !emailSent()">
+                  Envía el link por correo electrónico
+                </p>
+                <p class="error-message text-xs mt-1" *ngIf="emailError()">
+                  {{ emailError() }}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
