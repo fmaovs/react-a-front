@@ -116,6 +116,28 @@
   box-shadow: 0 0 0 3px rgba(16, 152, 155, 0.1);
 }
 
+.invalid-input {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+  animation: invalid-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.error-text {
+  position: absolute;
+  bottom: -18px;
+  left: 12px;
+  font-size: 0.65rem;
+  color: #ef4444;
+  font-weight: 600;
+}
+
+@keyframes invalid-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
 .custom-select {
   width: 100%;
 }
