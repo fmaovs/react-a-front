@@ -14,7 +14,7 @@
     </button>
   </div>
 
-  <form #userForm="ngForm" (submit)="onSubmit()" class="modal-form">
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="modal-form">
     <mat-dialog-content>
       <div class="form-grid">
         <div class="form-group full-width">
@@ -23,13 +23,19 @@
             <lucide-icon [img]="UserIcon" class="input-icon"></lucide-icon>
             <input
               type="text"
-              name="fullName"
-              [(ngModel)]="userData.fullName"
-              required
+              formControlName="fullName"
               placeholder="Ej: Camilo Cantor"
               class="custom-input"
+              [class.invalid-shake]="hasPatternError('fullName')"
+              [class.field-error]="isInvalid('fullName')"
             />
           </div>
+          @if (isInvalid('fullName')) {
+            <div class="error-msg">
+              @if (userForm.get('fullName')?.hasError('required')) { El nombre es obligatorio. }
+              @if (userForm.get('fullName')?.hasError('pattern')) { No se permiten números ni caracteres especiales. }
+            </div>
+          }
         </div>
 
         @if (!isEditMode) {
@@ -39,13 +45,15 @@
               <lucide-icon [img]="UserIcon" class="input-icon"></lucide-icon>
               <input
                 type="text"
-                name="username"
-                [(ngModel)]="userData.username"
-                required
+                formControlName="username"
                 placeholder="usuario123"
                 class="custom-input"
+                [class.field-error]="isInvalid('username')"
               />
             </div>
+            @if (isInvalid('username')) {
+              <div class="error-msg">El nombre de usuario es obligatorio.</div>
+            }
           </div>
         }
 
@@ -55,13 +63,18 @@
             <lucide-icon [img]="MailIcon" class="input-icon"></lucide-icon>
             <input
               type="email"
-              name="email"
-              [(ngModel)]="userData.email"
-              required
+              formControlName="email"
               placeholder="correo@bankvision.com"
               class="custom-input"
+              [class.field-error]="isInvalid('email')"
             />
           </div>
+          @if (isInvalid('email')) {
+            <div class="error-msg">
+              @if (userForm.get('email')?.hasError('required')) { El email es obligatorio. }
+              @if (userForm.get('email')?.hasError('email')) { Debe ser un email válido. }
+            </div>
+          }
         </div>
 
         @if (!isEditMode) {
@@ -71,20 +84,26 @@
               <lucide-icon [img]="ShieldIcon" class="input-icon"></lucide-icon>
               <input
                 type="password"
-                name="password"
-                [(ngModel)]="userData.password"
-                required
+                formControlName="password"
                 placeholder="••••••••"
                 class="custom-input"
+                [class.field-error]="isInvalid('password')"
               />
             </div>
+            @if (isInvalid('password')) {
+              <div class="error-msg">
+                @if (userForm.get('password')?.hasError('required')) { La contraseña es obligatoria. }
+                @if (userForm.get('password')?.hasError('minlength')) { Mínimo 12 caracteres. }
+                @if (userForm.get('password')?.hasError('pattern')) { Debe incluir mayúscula, minúscula, número y símbolo. }
+              </div>
+            }
           </div>
         }
 
         <div class="form-group">
           <label>Rol de Acceso</label>
-          <mat-form-field appearance="outline" class="custom-select">
-            <mat-select name="roleId" [(ngModel)]="userData.roleId">
+          <mat-form-field appearance="outline" class="custom-select" [class.select-error]="isInvalid('roleId')">
+            <mat-select formControlName="roleId">
               @for (role of roles(); track role.id) {
                 <mat-option [value]="role.id">{{ role.name }}</mat-option>
               }
@@ -94,8 +113,8 @@
 
         <div class="form-group">
           <label>Estado</label>
-          <mat-form-field appearance="outline" class="custom-select">
-            <mat-select name="status" [(ngModel)]="userData.status">
+          <mat-form-field appearance="outline" class="custom-select" [class.select-error]="isInvalid('status')">
+            <mat-select formControlName="status">
               @for (st of statuses; track st.id) {
                 <mat-option [value]="st.id">{{ st.name }}</mat-option>
               }
@@ -109,7 +128,7 @@
       <button type="button" mat-button (click)="onCancel()" class="cancel-btn">Cancelar</button>
       <button
         type="submit"
-        [disabled]="!userForm.form.valid"
+        [disabled]="userForm.invalid"
         mat-raised-button color="primary"
         class="save-btn"
       >

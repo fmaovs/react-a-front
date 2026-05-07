@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,7 +15,7 @@ import { LucideAngularModule, User as UserIcon, Mail, Shield, Save, X } from 'lu
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -28,17 +28,11 @@ import { LucideAngularModule, User as UserIcon, Mail, Shield, Save, X } from 'lu
 })
 export class UserModalComponent implements OnInit {
   private userService = inject(UserService);
+  private fb = inject(FormBuilder);
 
   isEditMode = false;
   initialRoleName = '';
-  userData: any = {
-    username: '',
-    email: '',
-    fullName: '',
-    password: '',
-    roleId: null,
-    status: 'ACTIVE'
-  };
+  userForm: FormGroup;
 
   readonly UserIcon = UserIcon;
   readonly MailIcon = Mail;
@@ -62,14 +56,31 @@ export class UserModalComponent implements OnInit {
       this.roles.set(data.roles);
     }
 
+    this.isEditMode = !!data?.user;
     if (data?.user) {
-      this.isEditMode = true;
       this.initialRoleName = data.user.roleName || '';
-      this.userData = {
+    }
+
+    this.userForm = this.fb.group({
+      fullName: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)]],
+      username: [{ value: '', disabled: this.isEditMode }, [Validators.required, Validators.maxLength(100)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      password: ['', this.isEditMode ? [] : [
+        Validators.required,
+        Validators.minLength(12),
+        Validators.maxLength(255),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{12,}$/)
+      ]],
+      roleId: [null, Validators.required],
+      status: ['ACTIVE', Validators.required]
+    });
+
+    if (data?.user) {
+      this.userForm.patchValue({
         fullName: data.user.fullName,
         email: data.user.email,
         status: data.user.status
-      };
+      });
     }
   }
 
@@ -98,12 +109,12 @@ export class UserModalComponent implements OnInit {
 
     if (this.isEditMode) {
       const roleId = this.getRoleIdByName(this.initialRoleName);
-      this.userData.roleId = roleId > 0 ? roleId : availableRoles[0].id;
+      this.userForm.patchValue({ roleId: roleId > 0 ? roleId : availableRoles[0].id });
       return;
     }
 
     const agentRole = availableRoles.find(r => this.normalizeRoleName(r.name) === 'AGENT');
-    this.userData.roleId = agentRole ? agentRole.id : availableRoles[0].id;
+    this.userForm.patchValue({ roleId: agentRole ? agentRole.id : availableRoles[0].id });
   }
 
   private normalizeRoleName(name: string): string {
@@ -119,10 +130,22 @@ export class UserModalComponent implements OnInit {
   }
 
   onSubmit() {
-    this.dialogRef.close(this.userData);
+    if (this.userForm.valid) {
+      this.dialogRef.close(this.userForm.getRawValue());
+    }
   }
 
   onCancel() {
     this.dialogRef.close();
+  }
+
+  isInvalid(controlName: string): boolean {
+    const control = this.userForm.get(controlName);
+    return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  hasPatternError(controlName: string): boolean {
+    const control = this.userForm.get(controlName);
+    return !!(control && control.hasError('pattern') && (control.dirty || control.touched));
   }
 }
