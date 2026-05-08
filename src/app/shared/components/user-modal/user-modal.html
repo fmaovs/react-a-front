@@ -24,11 +24,18 @@
             <input
               type="text"
               name="fullName"
+              #fullName="ngModel"
               [(ngModel)]="userData.fullName"
               required
+              maxlength="50"
+              pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"
               placeholder="Ej: Camilo Cantor"
               class="custom-input"
+              [class.invalid-input]="fullName.invalid && fullName.touched"
             />
+            @if (fullName.invalid && fullName.touched) {
+              <span class="error-text">Nombre inválido (solo letras, máx 50 carac.)</span>
+            }
           </div>
         </div>
 
@@ -40,11 +47,18 @@
               <input
                 type="text"
                 name="username"
+                #username="ngModel"
                 [(ngModel)]="userData.username"
                 required
+                minlength="6"
+                maxlength="20"
                 placeholder="usuario123"
                 class="custom-input"
+                [class.invalid-input]="username.invalid && username.touched"
               />
+              @if (username.invalid && username.touched) {
+                <span class="error-text">Usuario inválido (6-20 carac.)</span>
+              }
             </div>
           </div>
         }
