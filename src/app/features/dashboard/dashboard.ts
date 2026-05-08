@@ -67,14 +67,22 @@ export class DashboardComponent implements OnInit {
     };
   });
 
+  private readonly riskColors: Record<string, string> = {
+    BAJO:    '#10b981',
+    MEDIO:   '#f59e0b',
+    ALTO:    '#f97316',
+    CRITICO: '#991b1b',
+  };
+
   riskChartOptions = computed<EChartsCoreOption>(() => {
     const data = (this.summary()?.riskDistribution ?? []).map((r: RiskDistribution) => ({
       name: r.label || r.riskLevel,
-      value: Number(r.clientCount)
+      value: Number(r.clientCount),
+      itemStyle: { color: this.riskColors[r.riskLevel] ?? '#64748b' }
     }));
 
     return {
-      color: ['#10b981', '#f59e0b', '#f97316', '#ef4444'],
+      color: ['#10b981', '#f59e0b', '#f97316', '#991b1b'],
       tooltip: { trigger: 'item', formatter: (p: any) => `${p.name}<br/>${p.value} clientes (${p.percent}%)` },
       legend: { bottom: 0, icon: 'circle', textStyle: { color: '#64748b', fontSize: 11 } },
       series: [
@@ -251,7 +259,7 @@ export class DashboardComponent implements OnInit {
       { label: 'Cartera total', value: this.fmtCurrency(k.totalPortfolioValue), icon: this.DatabaseIcon, color: 'blue' },
       { label: 'Clientes con mora', value: (k.clientsInDefault ?? 0).toLocaleString(), icon: this.UsersIcon, color: 'red' },
       { label: 'Casos activos', value: activeCases.toLocaleString(), icon: this.BriefcaseIcon, color: 'amber' },
-      { label: 'Tasa de recuperacion', value: `${recoveryPct}%`, icon: this.BarChart3Icon, color: 'emerald' },
+      { label: 'Tasa de recuperación', value: `${recoveryPct}%`, icon: this.BarChart3Icon, color: 'emerald' },
       { label: 'Acuerdos de pago activos', value: (k.activePaymentAgreements ?? 0).toLocaleString(), icon: this.CreditCardIcon, color: 'violet' },
       { label: 'Lotes del mes', value: (k.batchesThisMonth ?? 0).toLocaleString(), icon: this.FileTextIcon, color: 'cyan' }
     ];
@@ -274,17 +282,43 @@ export class DashboardComponent implements OnInit {
   });
 
   private batchStatusColors: Record<string, string> = {
-    COMPLETED: 'status-ok',
-    PROMOTED: 'status-ok',
+    COMPLETED:  'status-ok',
+    PROMOTED:   'status-ok',
     PROCESSING: 'status-in-progress',
     VALIDATING: 'status-in-progress',
-    FAILED: 'status-error',
-    UPLOADED: 'status-pending',
-    STAGING: 'status-pending'
+    FAILED:     'status-error',
+    UPLOADED:   'status-pending',
+    STAGING:    'status-pending',
+  };
+
+  private readonly batchStatusLabels: Record<string, string> = {
+    COMPLETED:  'Completado',
+    PROMOTED:   'Promovido',
+    PROCESSING: 'Procesando',
+    VALIDATING: 'Validando',
+    FAILED:     'Fallido',
+    UPLOADED:   'Cargado',
+    STAGING:    'En espera',
+  };
+
+  private readonly caseStatusLabels: Record<string, string> = {
+    OPEN:        'Abierto',
+    IN_PROGRESS: 'En gestión',
+    ESCALATED:   'Escalado',
+    RESOLVED:    'Resuelto',
+    CLOSED:      'Cerrado',
   };
 
   batchClass(status: string): string {
     return this.batchStatusColors[status] ?? '';
+  }
+
+  getBatchStatusLabel(status: string): string {
+    return this.batchStatusLabels[status] ?? status;
+  }
+
+  getStatusLabel(status: string): string {
+    return this.caseStatusLabels[status] ?? status;
   }
 
   formatCurrency(v: number): string {

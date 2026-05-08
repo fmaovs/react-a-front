@@ -13,11 +13,15 @@
     </button>
   </div>
 
+  <div class="pse-info-banner">
+    <strong>Conciliación automática PSE:</strong> cuando un cliente paga a través del link PSE, el sistema actualiza automáticamente la obligación a <em>Pagada</em>, recalcula la puntuación de riesgo y cierra el caso si todas las obligaciones quedan saldadas.
+  </div>
+
   <div class="content-grid">
     <div class="card lg-span">
       <h4 class="card-title">
         <lucide-icon [img]="LinkIcon" class="accent-icon"></lucide-icon>
-        Links de Pago Generados Recientemente
+        Acuerdos de pago recientes
       </h4>
       <div class="table-container">
         <table class="data-table">
@@ -38,7 +42,7 @@
                 <td class="text-xs gray-text">{{ agreement.createdAt | date:'shortDate' }}</td>
                 <td>
                   <span [class]="'status-badge ' + agreement.status.toLowerCase()">
-                    {{ agreement.status }}
+                    {{ agreementStatusLabels[agreement.status] ?? agreement.status }}
                   </span>
                 </td>
                 <td>

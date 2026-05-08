@@ -40,12 +40,12 @@
         @if ((summary()?.portfolioBySegment ?? []).length > 0) {
           <div echarts [options]="segmentChartOptions()" class="chart-wrapper chart-donut"></div>
         } @else {
-          <p class="empty-hint">Sin datos de segmentacion.</p>
+          <p class="empty-hint">Sin datos de segmentación.</p>
         }
       </div>
 
       <div class="chart-container">
-        <h3 class="chart-title" style="margin-bottom: 1.5rem">Distribucion de Riesgo</h3>
+        <h3 class="chart-title" style="margin-bottom: 1.5rem">Distribución de Riesgo</h3>
         @if ((summary()?.riskDistribution ?? []).length > 0) {
           <div echarts [options]="riskChartOptions()" class="chart-wrapper chart-donut"></div>
         } @else {
@@ -57,13 +57,13 @@
     <div class="info-grid">
       <div class="chart-container">
         <div class="chart-header">
-          <h3 class="chart-title">Antiguedad de Mora</h3>
+          <h3 class="chart-title">Antigüedad de Mora</h3>
           <div class="live-indicator">
             <span class="pulse-dot"></span>
             <span class="live-text">En vivo</span>
           </div>
         </div>
-        <p class="chart-note">0 dias = sin mora. Los demas rangos muestran cuanto tiempo lleva vencida cada obligacion.</p>
+        <p class="chart-note">0 días = sin mora. Los demás rangos muestran cuánto tiempo lleva vencida cada obligación.</p>
         @if (agingBuckets().length > 0) {
           <div echarts [options]="agingChartOptions()" class="chart-wrapper chart-bar"></div>
         } @else {
@@ -76,7 +76,7 @@
         <div class="cases-status-list">
           @for (s of (summary()?.casesByStatus ?? []); track s.status) {
             <div class="case-status-row">
-              <span class="case-label">{{ s.label || s.status }}</span>
+              <span class="case-label">{{ s.label || getStatusLabel(s.status) }}</span>
               <div class="case-bar-wrap">
                 <div class="progress-bar">
                   <div class="progress-fill" [style.width.%]="s.percentage"></div>
@@ -104,12 +104,12 @@
              <p class="footer-text">Top asesores por carga activa. Visualiza escalados en el tooltip.</p>
            </div>
          } @else {
-           <p class="empty-hint">Sin asesores asignados aun.</p>
+           <p class="empty-hint">Sin asesores asignados aún.</p>
          }
        </div>
 
        <div class="chart-container">
-         <h3 class="chart-title" style="margin-bottom: 1rem">Ultimos Lotes CSV</h3>
+         <h3 class="chart-title" style="margin-bottom: 1rem">Últimos Lotes CSV</h3>
          @if ((summary()?.recentBatches ?? []).length > 0) {
            <div echarts [options]="batchesLineChartOptions()" class="chart-wrapper chart-line"></div>
          }
@@ -123,7 +123,7 @@
                <div class="batch-right">
                  <span class="batch-records">{{ b.successfulRecords }}/{{ b.totalRecords }}</span>
                  <span [class]="'batch-status ' + batchClass(b.status)">
-                   {{ b.status }}
+                   {{ getBatchStatusLabel(b.status) }}
                  </span>
                </div>
              </div>
@@ -139,22 +139,24 @@
 
       <div class="compliance-card gradient-brand">
         <div class="compliance-header">
-          <h3 class="compliance-title">Buenas Prácticas de Contacto</h3>
+          <h3 class="compliance-title">Cumplimiento Ley 2300</h3>
           <p class="compliance-desc">
-            Estrategias prejurídicas de contacto. Horarios y canales controlados automáticamente.
+            El sistema valida automáticamente horario (L–V 8:00–20:00), límite de 1 contacto/día y frecuencia semanal por nivel de riesgo. Los clientes CRÍTICO se escalan sin notificación.
           </p>
         </div>
         <div class="compliance-content">
           <div class="schedule-info">
             <span>Horario habilitado</span>
-            <span class="font-bold">
-              {{ summary()?.kpis?.activeAdvisors ?? 0 }} asesores activos
-            </span>
+            <span class="font-bold">L–V · 8:00 a 20:00</span>
           </div>
-          <div class="compliance-progress">
+          <div class="schedule-info" style="margin-top:6px">
+            <span>Frecuencia máxima</span>
+            <span class="font-bold">BAJO 1/sem · MEDIO 2/sem · ALTO 3/sem</span>
+          </div>
+          <div class="compliance-progress" style="margin-top:8px">
             <div class="compliance-fill" style="width: 100%"></div>
           </div>
-          <p class="compliance-note">* Trazabilidad operativa activa en cada interacción.</p>
+          <p class="compliance-note">* Trazabilidad de cada intento de contacto registrada automáticamente.</p>
         </div>
       </div>
     </div>

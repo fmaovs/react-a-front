@@ -92,8 +92,16 @@ export class RecaudoComponent implements OnInit {
   gateways = [
     { name: 'PSE / ACH', status: 'Activo', icon: this.CheckCircle2Icon },
     { name: 'Bancolombia', status: 'Activo', icon: this.CheckCircle2Icon },
-    { name: 'Wompi', status: 'Mantenimiento', icon: this.ClockIcon },
+    { name: 'Wompi', status: 'En mantenimiento', icon: this.ClockIcon },
   ];
+
+  readonly agreementStatusLabels: Record<string, string> = {
+    ACTIVE:     'Activo',
+    COMPLETED:  'Completado',
+    DRAFT:      'Borrador',
+    DEFAULTED:  'En mora',
+    CANCELLED:  'Cancelado',
+  };
 
   ngOnInit() {
     this.loadData();

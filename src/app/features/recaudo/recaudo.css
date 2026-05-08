@@ -4,6 +4,18 @@
   gap: 2rem;
 }
 
+.pse-info-banner {
+  background: #f0fdf4;
+  border-left: 4px solid #16a34a;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: #14532d;
+  line-height: 1.5;
+}
+.pse-info-banner strong { color: #15803d; }
+.pse-info-banner em { font-style: normal; font-weight: 700; }
+
 .module-header {
   display: flex;
   flex-direction: column;

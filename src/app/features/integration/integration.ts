@@ -123,9 +123,24 @@ export class IntegrationComponent implements OnInit {
       },
       error: err => {
         this.isProcessing.set(null);
-        this.processError.set(err?.error?.message || 'Error al procesar el lote end-to-end.');
+        this.processError.set(err?.error?.message || 'Error al procesar el lote completo.');
         this.loadBatches();
       }
     });
+  }
+
+  private readonly batchStatusLabels: Record<string, string> = {
+    COMPLETED:  'Completado',
+    PROMOTED:   'Promovido',
+    PROCESSING: 'Procesando',
+    VALIDATING: 'Validando',
+    VALIDATED:  'Validado',
+    FAILED:     'Fallido',
+    UPLOADED:   'Cargado',
+    STAGING:    'En espera',
+  };
+
+  getBatchStatusLabel(status: string): string {
+    return this.batchStatusLabels[status] ?? status;
   }
 }

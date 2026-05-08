@@ -243,7 +243,7 @@
                 />
               </div>
               <button class="small-btn ok preview-button" (click)="calculatePreviewScore()" [disabled]="scoringPreviewLoading()">
-                {{ scoringPreviewLoading() ? 'Calculando...' : 'Calcular scoring' }}
+                {{ scoringPreviewLoading() ? 'Calculando...' : 'Calcular puntuación' }}
               </button>
             </div>
             @if (scoringPreviewError()) {
@@ -260,7 +260,7 @@
                   <strong>{{ scoringPreview()?.riskLevel || '-' }}</strong>
                 </div>
                 <div class="preview-metric">
-                  <span class="metric-label">Risk score</span>
+                  <span class="metric-label">Puntaje de riesgo</span>
                   <strong>{{ getPreviewRiskScore() }}%</strong>
                 </div>
                 <div class="preview-metric">
@@ -300,7 +300,10 @@
                   @for (s of SEGMENTS; track s) { <option [value]="s">{{ s }}</option> }
                 </select>
                 <select class="field-select" [(ngModel)]="r.casePriority">
-                  @for (p of PRIORITIES; track p) { <option [value]="p">{{ p }}</option> }
+                  <option value="LOW">Baja</option>
+                  <option value="MEDIUM">Media</option>
+                  <option value="HIGH">Alta</option>
+                  <option value="URGENT">Urgente</option>
                 </select>
                 <input type="text" class="field-text" [(ngModel)]="r.label" placeholder="Ej. 31 – 90 días" />
               </div>

@@ -268,9 +268,21 @@
 .amount-label { font-size: 0.625rem; color: #9ca3af; font-style: italic; }
 
 .mora-text { font-size: 0.75rem; font-weight: 700; }
-.mora-text.critical { color: #ef4444; }
+.mora-text.critical { color: #991b1b; }
 .mora-text.warning { color: #f59e0b; }
 .mora-text.good { color: #10b981; }
+.critico-badge {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 5px;
+  background: #991b1b;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
 
 .status-container { display: flex; flex-direction: column; gap: 0.25rem; }
 

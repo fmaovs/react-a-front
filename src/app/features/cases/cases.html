@@ -32,7 +32,7 @@
         <select class="filter-select" [ngModel]="selectedStatusFilter()" (ngModelChange)="onStatusFilterChange($event)">
           <option value="ALL">Todos</option>
           @for (status of statuses; track status) {
-            <option [value]="status">{{ status }}</option>
+            <option [value]="status">{{ getStatusLabel(status) }}</option>
           }
         </select>
       </div>
@@ -51,8 +51,8 @@
             <tr>
               <th>Caso</th>
               <th>Cliente</th>
-              <th>Obligacion</th>
-              <th>Mora</th>
+              <th>Obligación</th>
+              <th>Días de mora</th>
               <th>Estado</th>
               <th>Prioridad</th>
               <th>Acciones</th>
@@ -82,21 +82,24 @@
                   </div>
                 </td>
                 <td>
-                  <span [class]="'mora-text ' + (getDaysPastDue(caseItem) > 60 ? 'critical' : getDaysPastDue(caseItem) > 30 ? 'warning' : 'good')">
-                    {{ getDaysPastDue(caseItem) }} dias
+                  <span [class]="'mora-text ' + getMoraClass(getDaysPastDue(caseItem))">
+                    {{ getDaysPastDue(caseItem) }} días
+                    @if (getDaysPastDue(caseItem) > 90) {
+                      <span class="critico-badge">CRÍTICO</span>
+                    }
                   </span>
                 </td>
                 <td>
                   <div class="select-wrap">
                     <span class="status-pill" [style.backgroundColor]="getStatusColor(caseItem.status)">
-                      {{ caseItem.status }}
+                      {{ getStatusLabel(caseItem.status) }}
                     </span>
                     @if (!isFinal(caseItem)) {
                       <select class="compact-select"
                               [ngModel]="caseItem.status"
                               (ngModelChange)="changeStatus(caseItem.id, $event)">
                         @for (status of statuses; track status) {
-                          <option [value]="status">{{ status }}</option>
+                          <option [value]="status">{{ getStatusLabel(status) }}</option>
                         }
                       </select>
                     }
@@ -110,11 +113,11 @@
                 </td>
                 <td>
                   @if (isFinal(caseItem)) {
-                    <span class="priority-readonly">{{ caseItem.priority }}</span>
+                    <span class="priority-readonly">{{ getPriorityLabel(caseItem.priority) }}</span>
                   } @else {
                     <select class="compact-select" [ngModel]="caseItem.priority" (ngModelChange)="changePriority(caseItem.id, $event)">
                       @for (priority of priorities; track priority) {
-                        <option [value]="priority">{{ priority }}</option>
+                        <option [value]="priority">{{ getPriorityLabel(priority) }}</option>
                       }
                     </select>
                   }
@@ -125,7 +128,7 @@
                       <!-- Caso cerrado: solo historial de notas -->
                       <span class="locked-badge">
                         <lucide-icon [img]="LockIcon" class="action-icon"></lucide-icon>
-                        {{ caseItem.status === 'RESOLVED' ? 'Resuelto' : 'Cerrado' }}
+                        {{ getStatusLabel(caseItem.status) }}
                       </span>
                       <button class="action-btn neutral"
                               [class.active]="isPanelOpen(caseItem.id, 'notes')"

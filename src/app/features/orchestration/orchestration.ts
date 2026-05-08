@@ -44,10 +44,10 @@ export class OrchestrationComponent {
   readonly EyeIcon = Eye;
 
   channels = [
-    { name: 'WhatsApp', icon: this.MessageCircleIcon, colorClass: 'emerald', sent: 4500, delivered: 4200 },
-    { name: 'SMS', icon: this.MessageSquareIcon, colorClass: 'blue', sent: 8200, delivered: 7900 },
-    { name: 'Voz / VoIP', icon: this.PhoneIcon, colorClass: 'accent', sent: 1200, delivered: 1150 },
-    { name: 'Email', icon: this.MailIcon, colorClass: 'violet', sent: 15000, delivered: 14800 },
+    { name: 'SMS',         icon: this.MessageSquareIcon,  colorClass: 'blue',    sent: 8200,  delivered: 7900,  active: true  },
+    { name: 'Email',       icon: this.MailIcon,            colorClass: 'violet',  sent: 15000, delivered: 14800, active: true  },
+    { name: 'WhatsApp',    icon: this.MessageCircleIcon,   colorClass: 'emerald', sent: 0,     delivered: 0,     active: false },
+    { name: 'Voz / VoIP',  icon: this.PhoneIcon,           colorClass: 'accent',  sent: 0,     delivered: 0,     active: false },
   ];
 
   campaigns = [

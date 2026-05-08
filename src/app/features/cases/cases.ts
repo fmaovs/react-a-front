@@ -72,20 +72,35 @@ export class CasesComponent {
   readonly statuses: Case['status'][] = ['OPEN', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'];
   readonly priorities: Case['priority'][] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 
+  readonly statusLabels: Record<string, string> = {
+    OPEN:        'Abierto',
+    IN_PROGRESS: 'En gestión',
+    ESCALATED:   'Escalado',
+    RESOLVED:    'Resuelto',
+    CLOSED:      'Cerrado',
+  };
+
+  readonly priorityLabels: Record<string, string> = {
+    LOW:    'Baja',
+    MEDIUM: 'Media',
+    HIGH:   'Alta',
+    URGENT: 'Urgente',
+  };
+
   readonly escalationReasons: { value: EscalationReason; label: string }[] = [
     { value: 'MAX_CONTACT_ATTEMPTS', label: 'Máximos intentos de contacto agotados' },
     { value: 'PAYMENT_REFUSED',      label: 'Cliente se negó a pagar' },
-    { value: 'HIGH_RISK_SCORE',      label: 'Puntaje de riesgo alto' },
+    { value: 'HIGH_RISK_SCORE',      label: 'Puntaje de riesgo alto (CRITICO)' },
+    { value: 'LEGAL_REQUIRED',       label: 'Mora ≥ 90 días — escalamiento jurídico' },
     { value: 'COMPLEX_SITUATION',    label: 'Situación compleja' },
   ];
 
   private readonly escalationReasonLabels: Record<string, string> = {
     MAX_CONTACT_ATTEMPTS: 'Máximos intentos de contacto agotados',
-    PAYMENT_REFUSED: 'Cliente se negó a pagar',
-    HIGH_RISK_SCORE: 'Puntaje de riesgo alto',
-    COMPLEX_SITUATION: 'Situación compleja',
-    // Compatibilidad con datos legacy.
-    LEGAL_REQUIRED: 'Escalamiento por complejidad operativa'
+    PAYMENT_REFUSED:      'Cliente se negó a pagar',
+    HIGH_RISK_SCORE:      'Puntaje de riesgo alto (CRITICO)',
+    LEGAL_REQUIRED:       'Mora ≥ 90 días — escalamiento jurídico',
+    COMPLEX_SITUATION:    'Situación compleja',
   };
 
   readonly resolutionTypes: { value: ResolutionType; label: string; obligationEffect: string }[] = [
@@ -278,6 +293,20 @@ export class CasesComponent {
       case 'CLOSED':      return '#6b7280';
       default:            return '#64748b';
     }
+  }
+
+  getStatusLabel(status: string): string {
+    return this.statusLabels[status] ?? status;
+  }
+
+  getPriorityLabel(priority: string): string {
+    return this.priorityLabels[priority] ?? priority;
+  }
+
+  getMoraClass(dpd: number): string {
+    if (dpd > 90) return 'critical';
+    if (dpd > 30) return 'warning';
+    return 'good';
   }
 
   isFinal(caseItem: Case): boolean {

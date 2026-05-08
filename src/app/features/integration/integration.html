@@ -57,14 +57,14 @@
     <div class="process-result-card">
       <p class="result-title">Lote procesado — {{ result.batchNumber }}</p>
       <div class="result-grid">
-        <div class="result-stat"><span class="stat-label">Staging</span><span class="stat-value">{{ result.stagedRecords ?? result.totalRecords }}</span></div>
+        <div class="result-stat"><span class="stat-label">En espera</span><span class="stat-value">{{ result.stagedRecords ?? result.totalRecords }}</span></div>
         <div class="result-stat"><span class="stat-label">Válidos</span><span class="stat-value">{{ result.validRecords }}</span></div>
-        <div class="result-stat"><span class="stat-label">Clientes upsert</span><span class="stat-value">{{ result.clientsUpserted ?? '-' }}</span></div>
-        <div class="result-stat"><span class="stat-label">Obligaciones upsert</span><span class="stat-value">{{ result.obligationsUpserted ?? '-' }}</span></div>
-        <div class="result-stat"><span class="stat-label">Scores</span><span class="stat-value">{{ result.scoresGenerated }}</span></div>
-        <div class="result-stat"><span class="stat-label">Casos</span><span class="stat-value">{{ result.casesCreated }}</span></div>
-        <div class="result-stat"><span class="stat-label">Scores fallidos</span><span class="stat-value">{{ result.scoresFailed ?? 0 }}</span></div>
-        <div class="result-stat"><span class="stat-label">Fallidos</span><span class="stat-value">{{ result.failedRecords }}</span></div>
+        <div class="result-stat"><span class="stat-label">Clientes actualizados</span><span class="stat-value">{{ result.clientsUpserted ?? '-' }}</span></div>
+        <div class="result-stat"><span class="stat-label">Obligaciones actualizadas</span><span class="stat-value">{{ result.obligationsUpserted ?? '-' }}</span></div>
+        <div class="result-stat"><span class="stat-label">Puntuaciones generadas</span><span class="stat-value">{{ result.scoresGenerated }}</span></div>
+        <div class="result-stat"><span class="stat-label">Casos creados</span><span class="stat-value">{{ result.casesCreated }}</span></div>
+        <div class="result-stat"><span class="stat-label">Puntuaciones fallidas</span><span class="stat-value">{{ result.scoresFailed ?? 0 }}</span></div>
+        <div class="result-stat"><span class="stat-label">Registros fallidos</span><span class="stat-value">{{ result.failedRecords }}</span></div>
       </div>
     </div>
   }
@@ -116,7 +116,7 @@
             <div class="batch-header">
               <span class="batch-name">{{ batch.fileName }}</span>
               <span [class]="'status-badge-small ' + batch.status.toLowerCase()">
-                {{ batch.status }}
+                {{ getBatchStatusLabel(batch.status) }}
               </span>
             </div>
             <div class="batch-footer">
@@ -134,7 +134,7 @@
               <button mat-button color="accent"
                 [disabled]="isProcessing() === batch.id"
                 (click)="processBatch(batch.id)">
-                {{ isProcessing() === batch.id ? 'Procesando...' : 'Recalcular scoring' }}
+                {{ isProcessing() === batch.id ? 'Procesando...' : 'Recalcular puntuación' }}
                 <lucide-icon [img]="ArrowRightIcon" class="small-icon"></lucide-icon>
               </button>
             }

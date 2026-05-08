@@ -29,6 +29,9 @@
 
   @if (activeTab() === 'dashboard') {
     <div class="dashboard-view">
+      <div class="ley-2300-banner">
+        <strong>Ley 2300 activa:</strong> el sistema solo envía notificaciones de lunes a viernes entre las 8:00 y las 20:00 h, con un máximo de 1 contacto por día por cliente y frecuencia semanal según el nivel de riesgo. Los clientes con nivel CRÍTICO se escalan a asesor humano sin envío de mensajes.
+      </div>
       <div class="channels-grid">
         @for (ch of channels; track ch.name) {
           <div class="channel-card">
@@ -37,20 +40,29 @@
                 <lucide-icon [img]="ch.icon" class="icon-white"></lucide-icon>
               </div>
               <div class="channel-status">
-                <span class="status-dot-green"></span>
-                <span class="status-text-green">Activo</span>
+                @if (ch.active) {
+                  <span class="status-dot-green"></span>
+                  <span class="status-text-green">Activo</span>
+                } @else {
+                  <span class="status-dot-gray"></span>
+                  <span class="status-text-gray">No disponible</span>
+                }
               </div>
             </div>
             <h4 class="channel-name">{{ ch.name }}</h4>
             <div class="channel-stats">
-              <div class="stats-info">
-                <span class="stats-label">Entregados</span>
-                <span class="stats-value">{{ (ch.delivered / ch.sent) * 100 | number:'1.0-0' }}%</span>
-              </div>
-              <div class="progress-bar">
-                <div [class]="'progress-fill ' + ch.colorClass" [style.width.%]="(ch.delivered / ch.sent) * 100"></div>
-              </div>
-              <p class="stats-meta">{{ ch.sent | number }} enviados hoy</p>
+              @if (ch.active) {
+                <div class="stats-info">
+                  <span class="stats-label">Entregados</span>
+                  <span class="stats-value">{{ (ch.delivered / ch.sent) * 100 | number:'1.0-0' }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div [class]="'progress-fill ' + ch.colorClass" [style.width.%]="(ch.delivered / ch.sent) * 100"></div>
+                </div>
+                <p class="stats-meta">{{ ch.sent | number }} enviados hoy</p>
+              } @else {
+                <p class="stats-meta" style="color:#9ca3af;font-style:italic">Integración pendiente</p>
+              }
             </div>
           </div>
         }
