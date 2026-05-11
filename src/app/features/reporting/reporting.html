@@ -1,13 +1,13 @@
 <div class="module-container">
   <div class="module-header">
     <div class="header-text">
-      <h3 class="module-title">M7. Reporting, Auditoria y Gobierno</h3>
-      <p class="module-subtitle">Indicadores de gestion, monitoreo del modelo y trazabilidad inalterable.</p>
+      <h3 class="module-title">M7. Informes, Auditoría y Gobierno</h3>
+      <p class="module-subtitle">Indicadores de gestión, monitoreo del modelo y trazabilidad inalterable.</p>
     </div>
     <div class="header-actions">
       <button class="outline-btn">
         <lucide-icon [img]="CalendarIcon" class="btn-icon-small"></lucide-icon>
-        Ultimos 30 dias
+        Últimos 30 días
       </button>
       <button class="primary-btn shadow-lg">
         <lucide-icon [img]="DownloadIcon" class="btn-icon"></lucide-icon>
@@ -64,7 +64,7 @@
           </div>
         }
       </div>
-      <p class="chart-note">* Indicador de referencia para la operacion del equipo.</p>
+      <p class="chart-note">* Indicador de referencia para la operación del equipo.</p>
     </div>
   </div>
 
@@ -72,7 +72,7 @@
     <div class="card">
       <h4 class="card-title">
         <lucide-icon [img]="HistoryIcon" class="accent-icon"></lucide-icon>
-        Auditoria de Cambios (Gobierno)
+        Auditoría de Cambios (Gobierno)
       </h4>
       <div class="audit-list">
         @for (audit of realAuditLogs(); track audit.id) {
@@ -97,7 +97,7 @@
       </h4>
       <div class="health-grid">
         <div class="health-card green">
-          <p class="health-label">Precision Scoring</p>
+          <p class="health-label">Precisión Scoring</p>
           <p class="health-value">94.2%</p>
         </div>
         <div class="health-card blue">
@@ -109,7 +109,7 @@
           <p class="health-value">SHAP/LIME</p>
         </div>
         <div class="health-card amber">
-          <p class="health-label">Ultimo Retrain</p>
+          <p class="health-label">Último Reentrenamiento</p>
           <p class="health-value">18 Mar</p>
         </div>
       </div>
