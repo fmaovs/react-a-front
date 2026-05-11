@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { PaymentAgreement, Installment, Page, ZolevTokenResponse, PaymentLinkRequest, PaymentLinkResponse, PaymentLinkUiResult } from '../../models/types';
 import { environment } from '../../../environments/environment';
 import { Observable, catchError, map, throwError } from 'rxjs';
@@ -41,8 +41,11 @@ export class CollectionService {
     return this.http.get<Installment[]>(`${this.apiUrl}/agreements/${agreementId}/installments`);
   }
 
-  payInstallment(installmentId: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/agreements/installments/${installmentId}/pay`, {});
+  payInstallment(installmentId: number, amount: number): Observable<Installment> {
+    const params = new HttpParams().set('amount', amount.toString());
+    return this.http.post<Installment>(
+      `${this.apiUrl}/agreements/installments/${installmentId}/pay`, {}, { params }
+    );
   }
 
   getZolevToken(): Observable<ZolevTokenResponse> {

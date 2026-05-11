@@ -239,6 +239,18 @@ export interface PaymentAgreement {
   paidInstallments?: number;
   createdAt: string;
   updatedAt?: string;
+  obligation?: {
+    id?: number;
+    obligationNumber?: string;
+    currentBalance?: number;
+    status?: string;
+    lastPaymentDate?: string;
+  };
+  client?: {
+    id?: number;
+    fullName?: string;
+    documentNumber?: string;
+  };
 }
 
 export interface Installment {
@@ -247,6 +259,8 @@ export interface Installment {
   installmentNumber: number;
   dueDate: string;
   amount: number;
+  paidAmount?: number;
+  paymentDate?: string;
   status: 'PENDING' | 'PAID' | 'OVERDUE' | 'PARTIAL';
 }
 

@@ -19,12 +19,15 @@ import {
   ExternalLink,
   Loader2,
   Mail,
-  CheckCircle
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  BadgeCheck
 } from 'lucide-angular';
 import { CollectionService } from './collection.service';
 import { PortfolioService } from '../../shared/services/portfolio.service';
 import { NotificationService } from '../../shared/services/notification.service';
-import { PaymentAgreement, Client, Obligation } from '../../models/types';
+import { PaymentAgreement, Installment, Client, Obligation } from '../../models/types';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -88,6 +91,15 @@ export class RecaudoComponent implements OnInit {
   readonly CopyIcon = Copy;
   readonly ExternalLinkIcon = ExternalLink;
   readonly LoaderIcon = Loader2;
+  readonly ChevronDownIcon = ChevronDown;
+  readonly ChevronUpIcon = ChevronUp;
+  readonly BadgeCheckIcon = BadgeCheck;
+
+  // Installment expansion state
+  expandedAgreementId = signal<number | null>(null);
+  installmentsMap = signal<Record<number, Installment[]>>({});
+  loadingInstallments = signal<Record<number, boolean>>({});
+  payingInstallmentId = signal<number | null>(null);
 
   gateways = [
     { name: 'PSE / ACH', status: 'Activo', icon: this.CheckCircle2Icon },
@@ -380,8 +392,37 @@ export class RecaudoComponent implements OnInit {
     this.resetForm();
   }
 
-  payInstallment(id: number) {
-    this.collectionService.payInstallment(id).subscribe(() => this.loadData());
+  toggleInstallments(agreementId: number) {
+    if (this.expandedAgreementId() === agreementId) {
+      this.expandedAgreementId.set(null);
+      return;
+    }
+    this.expandedAgreementId.set(agreementId);
+    if (!this.installmentsMap()[agreementId]) {
+      this.loadingInstallments.update(m => ({ ...m, [agreementId]: true }));
+      this.collectionService.getInstallmentsByAgreement(agreementId).subscribe({
+        next: items => {
+          this.installmentsMap.update(m => ({ ...m, [agreementId]: items }));
+          this.loadingInstallments.update(m => ({ ...m, [agreementId]: false }));
+        },
+        error: () => this.loadingInstallments.update(m => ({ ...m, [agreementId]: false }))
+      });
+    }
+  }
+
+  payInstallment(installmentId: number, amount: number, agreementId: number) {
+    this.payingInstallmentId.set(installmentId);
+    this.collectionService.payInstallment(installmentId, amount).subscribe({
+      next: updated => {
+        this.installmentsMap.update(m => ({
+          ...m,
+          [agreementId]: (m[agreementId] ?? []).map(i => i.id === updated.id ? updated : i)
+        }));
+        this.payingInstallmentId.set(null);
+        this.loadData();
+      },
+      error: () => this.payingInstallmentId.set(null)
+    });
   }
 
   private buildReference(clientId: number, obligationId: number): string {

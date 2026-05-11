@@ -27,31 +27,139 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Asociado</th>
-              <th>Valor a Pagar</th>
-              <th>Vigencia</th>
-              <th>Estado</th>
-              <th>Canal</th>
+              <th>Acuerdo / Cliente</th>
+              <th>Pagado / Total</th>
+              <th>Cuotas</th>
+              <th>Obligación</th>
+              <th>Estado Acuerdo</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             @for (agreement of realAgreements(); track agreement.id) {
-              <tr class="table-row">
-                <td class="font-bold">{{ agreement.agreementNumber }}</td>
-                <td class="font-mono text-sm">{{ agreement.finalAmount | currency }}</td>
-                <td class="text-xs gray-text">{{ agreement.createdAt | date:'shortDate' }}</td>
+              <!-- Agreement row -->
+              <tr class="table-row" [class.bg-emerald-50]="agreement.status === 'COMPLETED'">
+                <td>
+                  <div class="font-bold text-sm">{{ agreement.agreementNumber }}</div>
+                  <div class="text-xs gray-text" *ngIf="agreement.client?.fullName">{{ agreement.client!.fullName }}</div>
+                  <div class="text-xs gray-text">{{ agreement.createdAt | date:'dd/MM/yyyy' }}</div>
+                </td>
+                <td class="font-mono text-sm">
+                  <div>{{ (agreement.paidAmount ?? 0) | currency }}</div>
+                  <div class="text-xs gray-text">de {{ agreement.finalAmount | currency }}</div>
+                  <!-- Progress bar -->
+                  <div class="installment-progress-track mt-1">
+                    <div class="installment-progress-fill"
+                         [style.width.%]="agreement.finalAmount > 0 ? ((agreement.paidAmount ?? 0) / agreement.finalAmount * 100) : 0">
+                    </div>
+                  </div>
+                </td>
+                <td class="text-sm">
+                  {{ agreement.paidInstallments ?? 0 }} / {{ agreement.numberOfInstallments }}
+                </td>
+                <td>
+                  @if (agreement.obligation?.status === 'PAID') {
+                    <span class="ob-status-badge paid">
+                      <lucide-icon [img]="BadgeCheckIcon" class="mini-icon"></lucide-icon>
+                      Saldada
+                    </span>
+                  } @else if (agreement.obligation?.status === 'IN_COLLECTION') {
+                    <span class="ob-status-badge in-collection">En cobro</span>
+                  } @else if (agreement.obligation) {
+                    <span class="ob-status-badge default">{{ agreement.obligation.status }}</span>
+                  } @else {
+                    <span class="text-xs gray-text">—</span>
+                  }
+                  @if (agreement.obligation?.currentBalance != null) {
+                    <div class="text-xs gray-text mt-0.5">Saldo: {{ agreement.obligation!.currentBalance | currency }}</div>
+                  }
+                </td>
                 <td>
                   <span [class]="'status-badge ' + agreement.status.toLowerCase()">
                     {{ agreementStatusLabels[agreement.status] ?? agreement.status }}
                   </span>
                 </td>
                 <td>
-                  <div class="channel-cell">
-                    <lucide-icon [img]="LinkIcon" class="mini-icon"></lucide-icon>
-                    Web Link
-                  </div>
+                  <button (click)="toggleInstallments(agreement.id)" class="icon-btn" title="Ver cuotas">
+                    <lucide-icon [img]="expandedAgreementId() === agreement.id ? ChevronUpIcon : ChevronDownIcon" class="mini-icon"></lucide-icon>
+                  </button>
                 </td>
               </tr>
+
+              <!-- Installments expansion row -->
+              @if (expandedAgreementId() === agreement.id) {
+                <tr>
+                  <td colspan="6" class="installment-expansion-cell">
+                    <!-- Deuda saldada banner -->
+                    @if (agreement.status === 'COMPLETED' || agreement.obligation?.status === 'PAID') {
+                      <div class="debt-cleared-banner">
+                        <lucide-icon [img]="BadgeCheckIcon" class="banner-icon"></lucide-icon>
+                        <div>
+                          <strong>Deuda saldada</strong>
+                          <span class="ml-2 text-sm">Acuerdo completado — obligación marcada como pagada.</span>
+                          @if (agreement.obligation?.lastPaymentDate) {
+                            <span class="ml-2 text-xs">Último pago: {{ agreement.obligation!.lastPaymentDate | date:'dd/MM/yyyy' }}</span>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Loading state -->
+                    @if (loadingInstallments()[agreement.id]) {
+                      <div class="installment-loading">
+                        <lucide-icon [img]="LoaderIcon" class="spin mini-icon"></lucide-icon>
+                        Cargando cuotas...
+                      </div>
+                    }
+
+                    <!-- Installment list -->
+                    @if (!loadingInstallments()[agreement.id] && installmentsMap()[agreement.id]) {
+                      <div class="installment-list">
+                        @for (inst of installmentsMap()[agreement.id]; track inst.id) {
+                          <div class="installment-item" [class.paid]="inst.status === 'PAID'">
+                            <div class="inst-number">Cuota {{ inst.installmentNumber }}</div>
+                            <div class="inst-due text-xs gray-text">Vence: {{ inst.dueDate | date:'dd/MM/yyyy' }}</div>
+                            <div class="inst-amount font-mono text-sm">{{ inst.amount | currency }}</div>
+                            @if (inst.status === 'PAID') {
+                              <div class="inst-paid-info text-xs">
+                                <span class="inst-status-badge paid">Pagada</span>
+                                @if (inst.paymentDate) {
+                                  <span class="ml-1">{{ inst.paymentDate | date:'dd/MM/yyyy' }}</span>
+                                }
+                                @if (inst.paidAmount) {
+                                  <span class="ml-1">{{ inst.paidAmount | currency }}</span>
+                                }
+                              </div>
+                            } @else if (inst.status === 'PARTIAL') {
+                              <div class="inst-paid-info text-xs">
+                                <span class="inst-status-badge partial">Parcial</span>
+                                @if (inst.paidAmount) {
+                                  <span class="ml-1">Pagado: {{ inst.paidAmount | currency }}</span>
+                                }
+                              </div>
+                            } @else if (inst.status === 'OVERDUE') {
+                              <span class="inst-status-badge overdue">Vencida</span>
+                            } @else {
+                              <span class="inst-status-badge pending">Pendiente</span>
+                            }
+                            @if (inst.status === 'PENDING' || inst.status === 'OVERDUE' || inst.status === 'PARTIAL') {
+                              <button
+                                (click)="payInstallment(inst.id, inst.amount, agreement.id)"
+                                [disabled]="payingInstallmentId() === inst.id"
+                                class="pay-installment-btn"
+                              >
+                                <lucide-icon [img]="payingInstallmentId() === inst.id ? LoaderIcon : DollarSignIcon"
+                                  [class.spin]="payingInstallmentId() === inst.id" class="mini-icon"></lucide-icon>
+                                {{ payingInstallmentId() === inst.id ? 'Procesando...' : 'Registrar Pago' }}
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
