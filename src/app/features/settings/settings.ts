@@ -4,7 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { StoreService } from '../../core/store/app-store.service';
 import { UserService } from './user.service';
-import { ScoringConfigService, ScoringModelConfig, RiskThreshold, IntensityPolicy, SegmentRule, WorkflowConfig, ScoringVariable, VariableRange } from './scoring-config.service';
+import {
+  ScoringConfigService,
+  ScoringModelConfig,
+  RiskThreshold,
+  IntensityPolicy,
+  SegmentRule,
+  WorkflowConfig,
+  ScoringVariable,
+  VariableRange,
+  ScoreCalculationDetail,
+  ScoreResult
+} from './scoring-config.service';
 import { User, UserCreateRequest, UserUpdateRequest } from '../../models/types';
 import { UserModalComponent } from '../../shared/components/user-modal/user-modal';
 import {
@@ -13,6 +24,8 @@ import {
   CheckCircle2, AlertTriangle, Users, Lock, Shield, Mail, UserPlus,
   Briefcase, Sliders, GitBranch, RefreshCw
 } from 'lucide-angular';
+import { forkJoin, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 type TabId = 'scoring' | 'segmentation' | 'workflow' | 'users' | 'file-structure';
 
@@ -72,7 +85,8 @@ export class SettingsComponent implements OnInit {
   selectedVariableKey = signal('');
   variableRanges = signal<VariableRange[]>([]);
   scoringClientId = signal<number | null>(null);
-  scoringPreview = signal<any | null>(null);
+  scoringPreview = signal<ScoreResult | null>(null);
+  scoringPreviewDetail = signal<ScoreCalculationDetail | null>(null);
   scoringPreviewLoading = signal(false);
   scoringPreviewError = signal('');
 
@@ -277,13 +291,29 @@ export class SettingsComponent implements OnInit {
 
     this.scoringPreviewLoading.set(true);
     this.scoringPreviewError.set('');
-    this.scoringConfigService.calculateClientScore(clientId).subscribe({
-      next: score => {
-        this.scoringPreview.set(score);
+
+    this.scoringConfigService.calculateClientScore(clientId).pipe(
+      switchMap(() => forkJoin({
+        score: this.scoringConfigService.getCurrentClientScore(clientId).pipe(catchError(() => of(null))),
+        detail: this.scoringConfigService.getCurrentClientScoreDetail(clientId).pipe(catchError(() => of(null)))
+      }))
+    ).subscribe({
+      next: ({ score, detail }) => {
+        const normalizedScore = this.normalizeScoreResult(score);
+        const normalizedDetail = detail ?? this.parseCalculationDetail(normalizedScore?.calculationDetail);
+        const fallbackScore = normalizedScore ?? this.buildPreviewScoreFromDetail(normalizedDetail);
+
+        this.scoringPreview.set(fallbackScore);
+        this.scoringPreviewDetail.set(normalizedDetail);
         this.scoringPreviewLoading.set(false);
+
+        if (!fallbackScore && !normalizedDetail) {
+          this.scoringPreviewError.set('El scoring fue calculado, pero no fue posible leer la respuesta del backend.');
+        }
       },
       error: err => {
         this.scoringPreview.set(null);
+        this.scoringPreviewDetail.set(null);
         this.scoringPreviewLoading.set(false);
         this.scoringPreviewError.set(err?.error?.message || 'No fue posible calcular el scoring del cliente.');
       }
@@ -297,12 +327,75 @@ export class SettingsComponent implements OnInit {
 
   getPreviewCreditScore(): number {
     const preview = this.scoringPreview();
-    return preview?.creditScore ?? preview?.score ?? 0;
+    return this.clampNumber(preview?.creditScore ?? preview?.score ?? 0, 0, 1000);
   }
 
   getPreviewRiskScore(): number {
+    return Math.round(this.getPreviewRiskScoreFraction() * 100);
+  }
+
+  getPreviewRiskScoreFraction(): number {
     const risk = this.scoringPreview()?.riskScore;
-    return typeof risk === 'number' ? Math.round(risk * 100) : 0;
+    return this.clampNumber(typeof risk === 'number' ? risk : 0, 0, 1);
+  }
+
+  getPreviewCollectionProbability(): number {
+    const probability = this.scoringPreview()?.collectionProbability;
+    return Math.round(this.clampNumber(typeof probability === 'number' ? probability : 0, 0, 1) * 100);
+  }
+
+  getPreviewScorePercentage(): number {
+    return Math.round((this.getPreviewCreditScore() / 1000) * 100);
+  }
+
+  getPreviewRiskLevel(): string {
+    const preview = this.scoringPreview();
+    const backendRisk = this.normalizeRiskLevel(preview?.riskLevel);
+    if (backendRisk) return backendRisk;
+
+    const band = this.getPreviewThresholdBand();
+    return this.normalizeRiskLevel(band?.riskLevel) || 'SIN NIVEL';
+  }
+
+  getPreviewRiskBadgeClass(): string {
+    const level = this.getPreviewRiskLevel();
+    const slug = this.slugifyRiskLevel(level);
+    return ['bajo', 'medio', 'alto', 'critico'].includes(slug) ? `risk-${slug}` : 'risk-neutral';
+  }
+
+  getPreviewScoreBandLabel(): string {
+    const band = this.getPreviewThresholdBand();
+    if (!band) return 'Sin umbral configurado';
+
+    return `${this.formatRiskLevelLabel(band.riskLevel)} · ${band.minScore} - ${band.maxScore}`;
+  }
+
+  getPreviewModelVersion(): string {
+    return this.scoringPreview()?.modelVersion || this.scoringPreviewDetail()?.modelVersion || this.scoringPreviewDetail()?.model_version || '-';
+  }
+
+  getPreviewCalculatedAt(): string {
+    return this.scoringPreview()?.calculatedAt || '-';
+  }
+
+  getPreviewRecommendedSegment(): string {
+    return this.scoringPreview()?.recommendedSegment || this.getDetailResultValue('recommended_segment', 'recommendedSegment') || '-';
+  }
+
+  getPreviewDetailInputs(): Record<string, unknown> {
+    return (this.scoringPreviewDetail()?.inputs as Record<string, unknown>) ?? {};
+  }
+
+  getPreviewDetailResult(): Record<string, unknown> {
+    return (this.scoringPreviewDetail()?.result as Record<string, unknown>) ?? {};
+  }
+
+  getPreviewDetailModelVersion(): string {
+    return this.scoringPreviewDetail()?.model_version || this.scoringPreviewDetail()?.modelVersion || '-';
+  }
+
+  getPreviewRiskLevelLabel(): string {
+    return this.formatRiskLevelLabel(this.getPreviewRiskLevel());
   }
 
   addVariableRange() {
@@ -393,6 +486,129 @@ export class SettingsComponent implements OnInit {
   getWeight(field: keyof ScoringModelConfig): number {
     const m = this.activeModel();
     return m ? Math.round((m[field] as number) * 100) : 0;
+  }
+
+  private normalizeScoreResult(score: ScoreResult | null): ScoreResult | null {
+    if (!score) return null;
+
+    return {
+      ...score,
+      creditScore: this.clampNumber(score.creditScore ?? score.score ?? 0, 0, 1000),
+      score: this.clampNumber(score.score ?? score.creditScore ?? 0, 0, 1000),
+      riskScore: this.clampNumber(typeof score.riskScore === 'number' ? score.riskScore : 0, 0, 1),
+      collectionProbability: this.clampNumber(typeof score.collectionProbability === 'number' ? score.collectionProbability : 0, 0, 1),
+      calculationDetail: this.parseCalculationDetail(score.calculationDetail) ?? score.calculationDetail ?? undefined
+    };
+  }
+
+  private buildPreviewScoreFromDetail(detail: ScoreCalculationDetail | null): ScoreResult | null {
+    if (!detail) return null;
+
+    const result = (detail.result ?? {}) as Record<string, unknown>;
+    const creditScore = this.readNumericValue(result, 'credit_score', 'creditScore', 'score');
+    const riskScore = this.readNumericValue(result, 'risk_score', 'riskScore');
+    const collectionProbability = this.readNumericValue(result, 'collection_probability', 'collectionProbability');
+
+    return {
+      creditScore: creditScore ?? undefined,
+      score: creditScore ?? undefined,
+      riskScore: riskScore ?? undefined,
+      collectionProbability: collectionProbability ?? undefined,
+      riskLevel: this.readStringValue(result, 'risk_level', 'riskLevel'),
+      recommendedSegment: this.readStringValue(result, 'recommended_segment', 'recommendedSegment'),
+      modelVersion: this.readStringValue(detail, 'model_version', 'modelVersion'),
+      calculatedAt: this.readStringValue(result, 'calculated_at', 'calculatedAt'),
+      calculationDetail: detail
+    };
+  }
+
+  private parseCalculationDetail(detail: ScoreResult['calculationDetail']): ScoreCalculationDetail | null {
+    if (!detail) return null;
+    if (typeof detail === 'string') {
+      try {
+        const parsed = JSON.parse(detail);
+        return parsed && typeof parsed === 'object' ? parsed as ScoreCalculationDetail : null;
+      } catch {
+        return null;
+      }
+    }
+
+    return typeof detail === 'object' ? detail as ScoreCalculationDetail : null;
+  }
+
+  private getPreviewThresholdBand(): RiskThreshold | null {
+    const score = this.getPreviewCreditScore();
+    const thresholds = [...this.thresholds()].sort((a, b) => a.minScore - b.minScore);
+    if (!thresholds.length) return null;
+
+    const exactMatch = thresholds.find(t => score >= t.minScore && score <= t.maxScore);
+    if (exactMatch) return exactMatch;
+
+    if (score < thresholds[0].minScore) return thresholds[0];
+    return thresholds[thresholds.length - 1];
+  }
+
+  private normalizeRiskLevel(value?: string | null): string {
+    const normalized = (value || '').toString().trim().toUpperCase().replace(/Á/g, 'A').replace(/Í/g, 'I').replace(/É/g, 'E').replace(/Ó/g, 'O').replace(/Ú/g, 'U');
+    if (!normalized) return '';
+    if (normalized === 'CRITICO' || normalized === 'CRITICAL') return 'CRITICO';
+    if (normalized === 'ALTO' || normalized === 'HIGH') return 'ALTO';
+    if (normalized === 'MEDIO' || normalized === 'MEDIUM') return 'MEDIO';
+    if (normalized === 'BAJO' || normalized === 'LOW') return 'BAJO';
+    return normalized;
+  }
+
+  private slugifyRiskLevel(value: string): string {
+    return this.normalizeRiskLevel(value).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+
+  private formatRiskLevelLabel(value: string): string {
+    const normalized = this.normalizeRiskLevel(value);
+    switch (normalized) {
+      case 'BAJO': return 'Bajo';
+      case 'MEDIO': return 'Medio';
+      case 'ALTO': return 'Alto';
+      case 'CRITICO': return 'Crítico';
+      default: return normalized || '-';
+    }
+  }
+
+  private getDetailResultValue(...keys: string[]): string {
+    const result = this.getPreviewDetailResult();
+    for (const key of keys) {
+      const value = result?.[key];
+      if (value !== undefined && value !== null && value !== '') {
+        return String(value);
+      }
+    }
+    return '';
+  }
+
+  private clampNumber(value: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
+  }
+
+  private readNumericValue(source: Record<string, unknown>, ...keys: string[]): number | null {
+    for (const key of keys) {
+      const value = source?.[key];
+      const parsed = Number(value);
+      if (value !== undefined && value !== null && Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+
+    return null;
+  }
+
+  private readStringValue(source: Record<string, unknown> | ScoreCalculationDetail, ...keys: string[]): string | undefined {
+    for (const key of keys) {
+      const value = source?.[key as keyof typeof source];
+      if (value !== undefined && value !== null && String(value).trim() !== '') {
+        return String(value);
+      }
+    }
+
+    return undefined;
   }
 
   private loadVariableRanges(version: string, key: string) {

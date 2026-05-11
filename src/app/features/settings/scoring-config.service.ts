@@ -105,6 +105,14 @@ export interface ScoreResult {
   calculationDetail?: string | Record<string, unknown>;
 }
 
+export interface ScoreCalculationDetail {
+  model_version?: string;
+  modelVersion?: string;
+  inputs?: Record<string, unknown>;
+  result?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ScoringConfigService {
   private http = inject(HttpClient);
@@ -173,6 +181,10 @@ export class ScoringConfigService {
 
   getCurrentClientScore(clientId: number): Observable<ScoreResult> {
     return this.http.get<ScoreResult>(`${this.baseUrl}/${clientId}`);
+  }
+
+  getCurrentClientScoreDetail(clientId: number): Observable<ScoreCalculationDetail> {
+    return this.http.get<ScoreCalculationDetail>(`${this.baseUrl}/${clientId}/detail`);
   }
 
   getClientScoreHistory(clientId: number): Observable<ScoreResult[]> {

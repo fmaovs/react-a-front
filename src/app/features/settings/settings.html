@@ -250,24 +250,94 @@
               <div class="error-banner compact">{{ scoringPreviewError() }}</div>
             }
             @if (scoringPreview()) {
-              <div class="preview-metrics">
-                <div class="preview-metric">
-                  <span class="metric-label">Score</span>
-                  <strong>{{ getPreviewCreditScore() }}</strong>
+              <div class="preview-score-grid">
+                <div class="preview-score-card">
+                  <div class="score-meter">
+                    <div
+                      class="score-ring"
+                      [ngClass]="getPreviewRiskBadgeClass()"
+                      [style.--score-angle]="getPreviewScorePercentage() * 3.6 + 'deg'"
+                    >
+                      <span class="score-ring-value">{{ getPreviewCreditScore() }}</span>
+                      <span class="score-ring-scale">/ 1000</span>
+                    </div>
+
+                    <div class="score-meter-copy">
+                      <span class="risk-badge" [ngClass]="getPreviewRiskBadgeClass()">{{ getPreviewRiskLevelLabel() }}</span>
+                      <p class="score-band-label">{{ getPreviewScoreBandLabel() }}</p>
+                      <div class="score-track">
+                        <div
+                          class="score-track-fill"
+                          [ngClass]="getPreviewRiskBadgeClass()"
+                          [style.width.%]="getPreviewScorePercentage()"
+                        ></div>
+                      </div>
+                      <div class="score-track-scale">
+                        <span>0</span>
+                        <span>500</span>
+                        <span>1000</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="preview-metric">
-                  <span class="metric-label">Riesgo</span>
-                  <strong>{{ scoringPreview()?.riskLevel || '-' }}</strong>
-                </div>
-                <div class="preview-metric">
-                  <span class="metric-label">Puntaje de riesgo</span>
-                  <strong>{{ getPreviewRiskScore() }}%</strong>
-                </div>
-                <div class="preview-metric">
-                  <span class="metric-label">Segmento</span>
-                  <strong>{{ scoringPreview()?.recommendedSegment || '-' }}</strong>
+
+                <div class="preview-summary-card">
+                  <div class="preview-metrics">
+                    <div class="preview-metric">
+                      <span class="metric-label">Score</span>
+                      <strong>{{ getPreviewCreditScore() }}</strong>
+                    </div>
+                    <div class="preview-metric">
+                      <span class="metric-label">Riesgo</span>
+                      <strong>{{ getPreviewRiskLevelLabel() }}</strong>
+                    </div>
+                    <div class="preview-metric">
+                      <span class="metric-label">Riesgo %</span>
+                      <strong>{{ getPreviewRiskScore() }}%</strong>
+                    </div>
+                    <div class="preview-metric">
+                      <span class="metric-label">Cobro %</span>
+                      <strong>{{ getPreviewCollectionProbability() }}%</strong>
+                    </div>
+                    <div class="preview-metric">
+                      <span class="metric-label">Segmento</span>
+                      <strong>{{ getPreviewRecommendedSegment() }}</strong>
+                    </div>
+                    <div class="preview-metric">
+                      <span class="metric-label">Modelo</span>
+                      <strong>{{ getPreviewModelVersion() }}</strong>
+                    </div>
+                    <div class="preview-metric preview-metric-wide">
+                      <span class="metric-label">Calculado</span>
+                      <strong>{{ getPreviewCalculatedAt() }}</strong>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <details class="detail-panel">
+                <summary>Ver detalle del cálculo</summary>
+
+                <div class="detail-grid">
+                  <div class="detail-block">
+                    <h5>Detalle de respuesta</h5>
+                    <div class="detail-kv">
+                      <span>Modelo</span>
+                      <strong>{{ getPreviewDetailModelVersion() }}</strong>
+                    </div>
+                    <div class="detail-json">
+                      <pre>{{ getPreviewDetailResult() | json }}</pre>
+                    </div>
+                  </div>
+
+                  <div class="detail-block">
+                    <h5>Inputs del cálculo</h5>
+                    <div class="detail-json">
+                      <pre>{{ getPreviewDetailInputs() | json }}</pre>
+                    </div>
+                  </div>
+                </div>
+              </details>
             }
           </div>
 
