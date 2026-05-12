@@ -90,6 +90,22 @@ export class SettingsComponent implements OnInit {
   scoringPreviewLoading = signal(false);
   scoringPreviewError = signal('');
 
+  // ── Formulario agregar variable ───────────────────────────────────────────
+  showNewVarForm = signal(false);
+  newVarKey = '';
+  newVarLabel = '';
+  newVarWeight = 10;
+  newVarActive = true;
+
+  // ── Formulario agregar política de intensidad ─────────────────────────────
+  showNewPolicyForm = signal(false);
+  newPolicyRiskLevel = '';
+  newPolicyLabel = '';
+  newPolicySms = 1;
+  newPolicyEmail = 7;
+  newPolicyCalls = 1;
+  newPolicyWhatsapp = 1;
+
   weightsTotal = computed(() => {
     const m = this.activeModel();
     if (!m) return 0;
@@ -277,7 +293,7 @@ export class SettingsComponent implements OnInit {
 
     this.setSaving();
     this.scoringConfigService.updateVariableRanges(model.modelVersion, key, this.variableRanges()).subscribe({
-      next: ranges => { this.variableRanges.set(ranges); this.setSuccess(`Rangos de ${key} guardados`); },
+      next: ranges => { this.variableRanges.set(ranges); this.setSuccess('Rangos de variable guardados'); },
       error: () => this.setError('Error al guardar rangos de variable')
     });
   }
@@ -407,6 +423,57 @@ export class SettingsComponent implements OnInit {
 
   removeVariableRange(index: number) {
     this.variableRanges.update(ranges => ranges.filter((_, i) => i !== index));
+  }
+
+  commitAddVariable() {
+    const key = this.newVarKey.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+    const label = this.newVarLabel.trim();
+    if (!key || !label) { this.setError('La clave y la etiqueta son obligatorias'); return; }
+    if (this.variables().some(v => v.variableKey === key)) {
+      this.setError(`Ya existe una variable con la clave "${key}"`); return;
+    }
+    this.variables.update(vars => [
+      ...vars, { variableKey: key, label, weight: this.newVarWeight / 100, active: this.newVarActive }
+    ]);
+    this.newVarKey = ''; this.newVarLabel = ''; this.newVarWeight = 10; this.newVarActive = true;
+    this.showNewVarForm.set(false);
+  }
+
+  removeVariable(index: number) {
+    const removed = this.variables()[index];
+    this.variables.update(vars => vars.filter((_, i) => i !== index));
+    if (removed && this.selectedVariableKey() === removed.variableKey) {
+      const next = this.variables()[0]?.variableKey ?? '';
+      this.selectedVariableKey.set(next);
+      const model = this.activeModel();
+      if (model && next) this.loadVariableRanges(model.modelVersion, next);
+      else this.variableRanges.set([]);
+    }
+  }
+
+  commitAddPolicy() {
+    const riskLevel = this.newPolicyRiskLevel.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
+    if (!riskLevel) { this.setError('El nivel de riesgo es obligatorio'); return; }
+    if (this.intensityPolicies().some(p => p.riskLevel === riskLevel)) {
+      this.setError(`Ya existe una política para el nivel "${riskLevel}"`); return;
+    }
+    this.intensityPolicies.update(policies => [...policies, {
+      riskLevel,
+      intensityLabel: this.newPolicyLabel.trim() || riskLevel,
+      smsPerWeek: this.newPolicySms,
+      emailEveryDays: this.newPolicyEmail,
+      callsPerWeek: this.newPolicyCalls,
+      whatsappPerWeek: this.newPolicyWhatsapp,
+      physicalNotice: false,
+      contactReferences: false
+    }]);
+    this.newPolicyRiskLevel = ''; this.newPolicyLabel = '';
+    this.newPolicySms = 1; this.newPolicyEmail = 7; this.newPolicyCalls = 1; this.newPolicyWhatsapp = 1;
+    this.showNewPolicyForm.set(false);
+  }
+
+  removeIntensityPolicy(index: number) {
+    this.intensityPolicies.update(p => p.filter((_, i) => i !== index));
   }
 
   // ── Guardar segmentación ──────────────────────────────────────────────────

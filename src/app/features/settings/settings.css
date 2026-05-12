@@ -42,9 +42,12 @@
   padding: 0.25rem;
   border-radius: 1rem;
   border: 1px solid rgba(0,0,0,0.05);
-  width: fit-content;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
 }
+.tab-switcher::-webkit-scrollbar { display: none; }
 
 .tab-btn {
   display: flex;
@@ -283,7 +286,15 @@
   gap: 0.375rem;
   margin-bottom: 0.5rem;
   overflow-x: auto;
+  min-width: 0;      /* no hereda min-width de los hijos; el scroll funciona */
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
+.param-table::-webkit-scrollbar { height: 4px; }
+.param-table::-webkit-scrollbar-track { background: transparent; }
+.param-table::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
 .param-table-head {
   display: grid;
@@ -314,22 +325,22 @@
 /* ── Columnas explícitas por sección ────────────────────────────────────── */
 
 /* Umbrales: [nivel 150px] [min 90px] [max 90px] */
-.cols-thresholds { grid-template-columns: 160px 90px 90px; }
+.cols-thresholds { grid-template-columns: 160px 90px 90px; min-width: 360px; }
 
-/* Intensidad: [nivel 120px] [intensidad 120px] [sms 80px] [email 90px] [calls 90px] [wa 110px] */
-.cols-intensity { grid-template-columns: 120px 120px 80px 90px 90px 110px; }
+/* Intensidad: [nivel] [etiqueta] [sms] [email] [llamadas] [whatsapp] [acción] */
+.cols-intensity { grid-template-columns: 100px 120px 70px 80px 70px 100px 70px; min-width: 620px; }
 
-/* Variables: [key 180px] [label auto] [peso 100px] [activa 70px] */
-.cols-variables { grid-template-columns: 180px 1fr 100px 70px; }
+/* Variables: [etiqueta auto] [peso] [activa] [acción] */
+.cols-variables { grid-template-columns: 1fr 90px 60px 70px; min-width: 320px; }
 
 /* Rangos: [min 90px] [max 90px] [base 110px] [accion 90px] */
-.cols-ranges { grid-template-columns: 90px 90px 110px 90px; }
+.cols-ranges { grid-template-columns: 90px 90px 110px 90px; min-width: 400px; }
 
 /* Segmentación: [min 70px] [max 70px] [segmento 140px] [prioridad 100px] [label auto] */
-.cols-segments   { grid-template-columns: 70px 70px 140px 100px 1fr; }
+.cols-segments { grid-template-columns: 70px 70px 140px 100px 1fr; min-width: 430px; }
 
 /* Cuotas: [min 70px] [max 70px] [cuotas 70px] [label auto] */
-.cols-installments { grid-template-columns: 70px 70px 70px 1fr; }
+.cols-installments { grid-template-columns: 70px 70px 70px 1fr; min-width: 300px; }
 
 /* ── Campos de formulario en tablas ─────────────────────────────────────── */
 
@@ -408,6 +419,8 @@ input[type="number"].field-number::-webkit-outer-spin-button {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-width: 0;      /* evita que el grid item expanda más allá de su celda */
+  overflow: hidden;  /* recorta cualquier hijo más ancho que la celda */
 }
 
 .pair-card .section-header { margin-bottom: 0; }
@@ -544,8 +557,9 @@ input[type="number"].field-number::-webkit-outer-spin-button {
 .score-track-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #10b981 0%, #3b82f6 50%, #ef4444 100%);
-  transition: width 0.25s ease;
+  /* el color viene del nivel de riesgo via --score-ring-color (verde=BAJO, rojo=CRITICO) */
+  background: var(--score-ring-color, #10b981);
+  transition: width 0.25s ease, background 0.25s ease;
 }
 
 .score-track-scale {
@@ -859,3 +873,76 @@ input[type="number"].field-input::-webkit-outer-spin-button {
 .text-right { text-align: right; }
 
 .group:hover .group-hover-opacity-100 { opacity: 1; }
+
+/* ── Formulario agregar ítem (variable / política) ───────────────────────── */
+
+.new-item-form {
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+  margin-bottom: 0.75rem;
+}
+
+.new-item-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.75rem;
+}
+
+.new-item-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.new-item-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 140px;
+}
+
+.new-item-field.narrow {
+  flex: 0 1 80px;
+  min-width: 70px;
+}
+
+.new-item-field.check-field {
+  justify-content: flex-end;
+}
+
+.new-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── Responsive: mobile/tablet ───────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .settings-section { padding: 1rem; }
+  .pair-card { padding: 0.875rem 1rem; }
+  .preview-panel { padding: 0.875rem 1rem; }
+  .tab-btn { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+  .section-header { flex-direction: column; align-items: flex-start; }
+  .header-actions { flex-wrap: wrap; }
+}
+
+/* ── Card tag (etiqueta inline en título de tarjeta) ─────────────────────── */
+
+.card-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #475569;
+  vertical-align: middle;
+  margin-left: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

@@ -108,7 +108,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (row of store.associates(); track row.id) {
+          @for (row of sortedAssociates(); track row.id) {
             <tr>
               <td class="font-bold">{{ row.name }}</td>
               <td>
@@ -120,7 +120,7 @@
                 </div>
               </td>
               <td>
-                <span [class]="'badge ' + row.propensity.toLowerCase()">
+                <span [class]="'badge ' + row.propensity.toLowerCase().replace(' ', '-')">
                   {{ row.propensity }}
                 </span>
               </td>

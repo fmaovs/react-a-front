@@ -11,6 +11,16 @@
     </button>
   </div>
 
+  @if (criticalAlert()) {
+    <div class="critical-alert-banner">
+      <lucide-icon [img]="AlertTriangleIcon" class="critical-alert-icon"></lucide-icon>
+      <div class="critical-alert-body">
+        <span class="critical-alert-title">Alerta: {{ criticalAlert() }} cliente{{ criticalAlert()! > 1 ? 's' : '' }} en riesgo CRÍTICO</span>
+        <span class="critical-alert-sub">Requieren gestión humana inmediata. Los casos han sido escalados automáticamente a asesores.</span>
+      </div>
+    </div>
+  }
+
   @if (loading()) {
     <div class="loading-row">Cargando dashboard...</div>
   }

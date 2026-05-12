@@ -66,6 +66,7 @@ export interface KpiSummary {
   activePaymentAgreements: number;
   batchesThisMonth: number;
   totalRecordsThisMonth: number;
+  criticalClientsCount?: number;
 }
 
 export interface AgingBucket {
@@ -200,7 +201,7 @@ export interface Case {
   advisorId?: number;
   batchId?: number;
   assignedTo?: number | string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'ESCALATED' | 'RESOLVED' | 'CLOSED';
+  status: 'OPEN' | 'IN_PROGRESS' | 'ESCALATED' | 'RESOLVED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   contactAttempts?: number;
   aiEscalationCount?: number;
@@ -279,7 +280,7 @@ export interface Associate extends Client {
   balance: number;
   daysOverdue: number;
   lastAction?: string;
-  propensity: 'Alta' | 'Media' | 'Baja';
+  propensity: 'Alta' | 'Media' | 'Baja' | 'Muy Baja';
   name: string; // Keep for UI
 }
 

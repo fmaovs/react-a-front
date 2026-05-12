@@ -119,15 +119,55 @@
               <div class="section-header">
                 <div>
                   <h4 class="section-title">Políticas de Intensidad</h4>
-                  <p class="section-subtitle">Acciones por nivel de riesgo y frecuencia</p>
+                  <p class="section-subtitle">Acciones por nivel de riesgo y frecuencia semanal</p>
                 </div>
-                <button class="small-btn ok" (click)="saveIntensityPolicies()" [disabled]="isSaving()">Guardar</button>
+                <div class="header-actions">
+                  <button class="small-btn neutral" (click)="showNewPolicyForm.set(!showNewPolicyForm())">+ Agregar</button>
+                  <button class="small-btn ok" (click)="saveIntensityPolicies()" [disabled]="isSaving()">Guardar</button>
+                </div>
               </div>
+
+              @if (showNewPolicyForm()) {
+                <div class="new-item-form">
+                  <p class="new-item-title">Nueva política de intensidad</p>
+                  <div class="new-item-fields">
+                    <div class="new-item-field">
+                      <label class="panel-label">Nivel de riesgo</label>
+                      <input class="field-text" [(ngModel)]="newPolicyRiskLevel" placeholder="Ej: BAJO" />
+                    </div>
+                    <div class="new-item-field">
+                      <label class="panel-label">Etiqueta</label>
+                      <input class="field-text" [(ngModel)]="newPolicyLabel" placeholder="Ej: Intensidad baja" />
+                    </div>
+                    <div class="new-item-field narrow">
+                      <label class="panel-label">SMS/sem</label>
+                      <input class="field-number" type="number" [(ngModel)]="newPolicySms" min="0" max="14" />
+                    </div>
+                    <div class="new-item-field narrow">
+                      <label class="panel-label">Email c/días</label>
+                      <input class="field-number" type="number" [(ngModel)]="newPolicyEmail" min="1" max="60" />
+                    </div>
+                    <div class="new-item-field narrow">
+                      <label class="panel-label">Llam./sem</label>
+                      <input class="field-number" type="number" [(ngModel)]="newPolicyCalls" min="0" max="14" />
+                    </div>
+                    <div class="new-item-field narrow">
+                      <label class="panel-label">WhatsApp/sem</label>
+                      <input class="field-number" type="number" [(ngModel)]="newPolicyWhatsapp" min="0" max="14" />
+                    </div>
+                  </div>
+                  <div class="new-item-actions">
+                    <button class="small-btn ok" (click)="commitAddPolicy()">Confirmar</button>
+                    <button class="small-btn neutral" (click)="showNewPolicyForm.set(false)">Cancelar</button>
+                  </div>
+                </div>
+              }
+
               <div class="param-table">
                 <div class="param-table-head cols-intensity">
-                  <span>Nivel</span><span>Intensidad</span><span>SMS/sem</span><span>Email c/días</span><span>Llamadas/sem</span><span>WhatsApp/sem</span>
+                  <span>Nivel</span><span>Etiqueta</span><span>SMS/sem</span><span>Email c/días</span><span>Llam./sem</span><span>WhatsApp/sem</span><span>Acción</span>
                 </div>
-                @for (p of intensityPolicies(); track p.riskLevel) {
+                @for (p of intensityPolicies(); track p.riskLevel; let i = $index) {
                   <div class="param-table-row cols-intensity">
                     <span [class]="'risk-badge risk-' + p.riskLevel.toLowerCase()">{{ p.riskLevel }}</span>
                     <input type="text" class="field-text" [(ngModel)]="p.intensityLabel" />
@@ -135,6 +175,7 @@
                     <input type="number" class="field-number" [(ngModel)]="p.emailEveryDays" min="1" max="60" />
                     <input type="number" class="field-number" [(ngModel)]="p.callsPerWeek" min="0" max="14" />
                     <input type="number" class="field-number" [(ngModel)]="p.whatsappPerWeek" min="0" max="14" />
+                    <button class="small-btn warn" (click)="removeIntensityPolicy(i)">Quitar</button>
                   </div>
                 }
               </div>
@@ -149,35 +190,58 @@
               <div class="section-header">
                 <div>
                   <h4 class="section-title">Variables de Scoring</h4>
-                  <p class="section-subtitle">La suma de variables activas debe ser 100%</p>
+                  <p class="section-subtitle">Variables activas deben sumar 100%</p>
                 </div>
                 <div class="header-actions">
                   <span [class]="'badge-total ' + (variableWeightsTotal() === 100 ? 'green' : 'red')">
                     {{ variableWeightsTotal() }}%
                   </span>
+                  <button class="small-btn neutral" (click)="showNewVarForm.set(!showNewVarForm())">+ Agregar</button>
                   <button class="small-btn ok" (click)="saveVariables()" [disabled]="isSaving() || variableWeightsTotal() !== 100">
                     Guardar
                   </button>
                 </div>
               </div>
 
+              @if (showNewVarForm()) {
+                <div class="new-item-form">
+                  <p class="new-item-title">Nueva variable de scoring</p>
+                  <div class="new-item-fields">
+                    <div class="new-item-field">
+                      <label class="panel-label">Clave interna</label>
+                      <input class="field-text" [(ngModel)]="newVarKey" placeholder="Ej: MONTO_MORA" />
+                    </div>
+                    <div class="new-item-field">
+                      <label class="panel-label">Etiqueta visible</label>
+                      <input class="field-text" [(ngModel)]="newVarLabel" placeholder="Ej: Monto en mora" />
+                    </div>
+                    <div class="new-item-field narrow">
+                      <label class="panel-label">Peso (%)</label>
+                      <input class="field-number" type="number" [(ngModel)]="newVarWeight" min="0" max="100" />
+                    </div>
+                    <div class="new-item-field narrow check-field">
+                      <label class="panel-label">Activa</label>
+                      <input type="checkbox" [(ngModel)]="newVarActive" />
+                    </div>
+                  </div>
+                  <div class="new-item-actions">
+                    <button class="small-btn ok" (click)="commitAddVariable()">Confirmar</button>
+                    <button class="small-btn neutral" (click)="showNewVarForm.set(false)">Cancelar</button>
+                  </div>
+                </div>
+              }
+
               <div class="param-table">
                 <div class="param-table-head cols-variables">
-                  <span>Variable</span><span>Etiqueta</span><span>Peso (%)</span><span>Activa</span>
+                  <span>Etiqueta</span><span>Peso (%)</span><span>Activa</span><span>Acción</span>
                 </div>
                 @for (v of variables(); track v.variableKey; let i = $index) {
                   <div class="param-table-row cols-variables">
-                    <span class="mono small">{{ v.variableKey }}</span>
                     <input type="text" class="field-text" [(ngModel)]="v.label" />
-                    <input
-                      type="number"
-                      class="field-number"
-                      [value]="getVariableWeight(i)"
-                      (input)="updateVariableWeight(i, +$any($event.target).value)"
-                      min="0"
-                      max="100"
-                    />
+                    <input type="number" class="field-number" [value]="getVariableWeight(i)"
+                           (input)="updateVariableWeight(i, +$any($event.target).value)" min="0" max="100" />
                     <input type="checkbox" [(ngModel)]="v.active" />
+                    <button class="small-btn warn" (click)="removeVariable(i)">Quitar</button>
                   </div>
                 }
               </div>
@@ -200,7 +264,7 @@
                 <select class="field-select" [ngModel]="selectedVariableKey()" (ngModelChange)="onVariableKeyChange($event)">
                   <option value="">Seleccione una variable</option>
                   @for (v of variables(); track v.variableKey) {
-                    <option [value]="v.variableKey">{{ v.label }} ({{ v.variableKey }})</option>
+                    <option [value]="v.variableKey">{{ v.label }}</option>
                   }
                 </select>
               </div>

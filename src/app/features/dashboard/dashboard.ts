@@ -11,7 +11,7 @@ import {
 import {
   LucideAngularModule,
   Database, BarChart3, Briefcase, Users, FileText, CreditCard,
-  RefreshCw
+  RefreshCw, AlertTriangle
 } from 'lucide-angular';
 import { NgxEchartsDirective, provideEchartsCore } from 'ngx-echarts';
 import { EChartsCoreOption } from 'echarts/core';
@@ -40,9 +40,15 @@ export class DashboardComponent implements OnInit {
   readonly FileTextIcon = FileText;
   readonly CreditCardIcon = CreditCard;
   readonly RefreshIcon = RefreshCw;
+  readonly AlertTriangleIcon = AlertTriangle;
 
   summary = signal<DashboardSummary | null>(null);
   loading = signal(true);
+
+  criticalAlert = computed(() => {
+    const count = this.summary()?.kpis?.criticalClientsCount ?? 0;
+    return count > 0 ? count : null;
+  });
 
   segmentChartOptions = computed<EChartsCoreOption>(() => {
     const data = (this.summary()?.portfolioBySegment ?? []).map((s: SegmentBreakdown) => ({
@@ -306,7 +312,6 @@ export class DashboardComponent implements OnInit {
     IN_PROGRESS: 'En gestión',
     ESCALATED:   'Escalado',
     RESOLVED:    'Resuelto',
-    CLOSED:      'Cerrado',
   };
 
   batchClass(status: string): string {

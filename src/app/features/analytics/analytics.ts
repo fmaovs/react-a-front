@@ -27,6 +27,19 @@ export class AnalyticsComponent implements OnInit {
   readonly ShieldAlertIcon = ShieldAlert;
   readonly TargetIcon = Target;
 
+  private readonly riskOrder: Record<string, number> = {
+    CRITICO: 0, ALTO: 1, MEDIO: 2, BAJO: 3
+  };
+
+  sortedAssociates = computed(() =>
+    [...this.store.associates()].sort((a, b) => {
+      const ra = this.riskOrder[(a.risk ?? '').toUpperCase()] ?? 4;
+      const rb = this.riskOrder[(b.risk ?? '').toUpperCase()] ?? 4;
+      if (ra !== rb) return ra - rb;
+      return (b.creditScore ?? 0) - (a.creditScore ?? 0);
+    })
+  );
+
   summary = signal<DashboardSummary | null>(null);
 
   ngOnInit() {
@@ -72,13 +85,13 @@ export class AnalyticsComponent implements OnInit {
   private getRiskColor(risk: string): string {
     switch (risk.toLowerCase()) {
       case 'bajo':
-        return '#10989B';
+        return '#22c55e';
       case 'medio':
-        return '#055177';
+        return '#eab308';
       case 'alto':
-        return '#0A3B4E';
+        return '#f97316';
       case 'critico':
-        return '#001822';
+        return '#ef4444';
       default:
         return '#cbd5e1';
     }

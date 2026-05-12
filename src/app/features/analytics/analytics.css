@@ -197,7 +197,9 @@
 
 .score-fill {
   height: 100%;
-  background-color: var(--brand-accent);
+  /* rojo (score bajo=CRITICO) → verde (score alto=BAJO) */
+  background: linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 55%, #22c55e 100%);
+  border-radius: inherit;
 }
 
 .score-text {
@@ -212,9 +214,10 @@
   border-radius: 0.5rem;
 }
 
-.badge.alta { background-color: #ecfdf5; color: #059669; }
-.badge.media { background-color: #eff6ff; color: #2563eb; }
-.badge.baja { background-color: #fef2f2; color: #dc2626; }
+.badge.alta     { background-color: #ecfdf5; color: #16a34a; }
+.badge.media    { background-color: #fefce8; color: #ca8a04; }
+.badge.baja     { background-color: #fff7ed; color: #ea580c; }
+.badge.muy-baja { background-color: #fef2f2; color: #dc2626; }
 
 .gray-text { color: #4b5563; }
 .text-sm { font-size: 0.875rem; }
@@ -224,10 +227,10 @@
   font-weight: 700;
 }
 
-.risk-text.bajo { color: #10b981; }
-.risk-text.medio { color: #3b82f6; }
-.risk-text.alto { color: #f59e0b; }
-.risk-text.crítico { color: #ef4444; }
+.risk-text.bajo    { color: #16a34a; font-weight: 700; }
+.risk-text.medio   { color: #ca8a04; font-weight: 700; }
+.risk-text.alto    { color: #ea580c; font-weight: 700; }
+.risk-text.critico { color: #dc2626; font-weight: 700; }
 
 /* ── KPI de casos ────────────────────────────────────────────────────── */
 

@@ -69,7 +69,7 @@ export class CasesComponent {
   readonly UserIcon = User;
   readonly LockIcon = Lock;
 
-  readonly statuses: Case['status'][] = ['OPEN', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED', 'CLOSED'];
+  readonly statuses: Case['status'][] = ['OPEN', 'IN_PROGRESS', 'ESCALATED', 'RESOLVED'];
   readonly priorities: Case['priority'][] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 
   readonly statusLabels: Record<string, string> = {
@@ -77,7 +77,6 @@ export class CasesComponent {
     IN_PROGRESS: 'En gestión',
     ESCALATED:   'Escalado',
     RESOLVED:    'Resuelto',
-    CLOSED:      'Cerrado',
   };
 
   readonly priorityLabels: Record<string, string> = {
@@ -129,7 +128,7 @@ export class CasesComponent {
       { label: 'Abiertos',           value: get('OPEN').toString(),                      color: 'bg-blue-500' },
       { label: 'En gestión',         value: get('IN_PROGRESS').toString(),               color: 'bg-brand-accent' },
       { label: 'Escalados',          value: get('ESCALATED').toString(),                 color: 'bg-red-500' },
-      { label: 'Cerrados/Resueltos', value: (get('CLOSED') + get('RESOLVED')).toString(), color: 'bg-emerald-500' },
+      { label: 'Resueltos',           value: get('RESOLVED').toString(),                  color: 'bg-emerald-500' },
     ];
   });
 
@@ -290,7 +289,6 @@ export class CasesComponent {
       case 'IN_PROGRESS': return '#10989B';
       case 'ESCALATED':   return '#ef4444';
       case 'RESOLVED':    return '#10b981';
-      case 'CLOSED':      return '#6b7280';
       default:            return '#64748b';
     }
   }
@@ -310,7 +308,7 @@ export class CasesComponent {
   }
 
   isFinal(caseItem: Case): boolean {
-    return caseItem.status === 'RESOLVED' || caseItem.status === 'CLOSED';
+    return caseItem.status === 'RESOLVED';
   }
 
   getEscalationLabel(reason: string): string {

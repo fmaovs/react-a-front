@@ -41,6 +41,12 @@ export class StoreService {
           const totalBalance = clientObs.reduce((sum, o) => sum + o.currentBalance, 0);
           const maxDays = Math.max(0, ...clientObs.map(o => o.daysPastDue));
 
+          const score = c.creditScore ?? 0;
+          const propensity = score >= 701 ? 'Alta'
+            : score >= 501 ? 'Media'
+            : score >= 301 ? 'Baja'
+            : 'Muy Baja';
+
           return {
             ...c,
             name: c.fullName,
@@ -48,7 +54,7 @@ export class StoreService {
             risk: c.riskLevel as any,
             balance: totalBalance,
             daysOverdue: maxDays,
-            propensity: 'Media'
+            propensity
           };
         });
         this.associates.set(mappedAssociates);

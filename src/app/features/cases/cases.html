@@ -125,7 +125,7 @@
                 <td>
                   <div class="action-bar">
                     @if (isFinal(caseItem)) {
-                      <!-- Caso cerrado: solo historial de notas -->
+                      <!-- Caso resuelto: solo historial de notas -->
                       <span class="locked-badge">
                         <lucide-icon [img]="LockIcon" class="action-icon"></lucide-icon>
                         {{ getStatusLabel(caseItem.status) }}
