@@ -8,7 +8,7 @@ import {
   Database,
   BarChart3,
   Settings2,
-  MessageSquare,
+  ShieldCheck,
   Briefcase,
   DollarSign,
   Menu,
@@ -30,22 +30,21 @@ export class SidebarComponent {
   readonly DatabaseIcon = Database;
   readonly BarChart3Icon = BarChart3;
   readonly Settings2Icon = Settings2;
-  readonly MessageSquareIcon = MessageSquare;
+  readonly ShieldCheckIcon = ShieldCheck;
   readonly BriefcaseIcon = Briefcase;
   readonly DollarSignIcon = DollarSign;
   readonly MenuIcon = Menu;
   readonly XIcon = X;
 
   modules = [
-    { id: 'dashboard', name: 'Dashboard General', icon: this.LayoutDashboardIcon, path: '/dashboard' },
-    { id: 'm1', name: 'M1. Integración', icon: this.DatabaseIcon, path: '/integration' },
-    { id: 'm2', name: 'M2. Analítica', icon: this.BarChart3Icon, path: '/analytics' },
-    { id: 'm3', name: 'M3. Políticas', icon: this.Settings2Icon, path: '/policies' },
-    { id: 'm4', name: 'M4. Orquestación', icon: this.MessageSquareIcon, path: '/orchestration' },
-    { id: 'm5', name: 'M5. Gestión de Casos', icon: this.BriefcaseIcon, path: '/cases' },
-    { id: 'm6', name: 'M6. Recaudo', icon: this.DollarSignIcon, path: '/recaudo' },
-    { id: 'm7', name: 'M7. Reporting', icon: this.BarChart3Icon, path: '/reporting' },
-    { id: 'settings', name: 'Configuración', icon: this.Settings2Icon, path: '/settings' },
+    { id: 'dashboard', name: 'Dashboard General',           icon: this.LayoutDashboardIcon, path: '/dashboard' },
+    { id: 'm1',        name: 'M1. Integración',             icon: this.DatabaseIcon,        path: '/integration' },
+    { id: 'm2',        name: 'M2. Analítica',               icon: this.BarChart3Icon,       path: '/analytics' },
+    { id: 'm3',        name: 'M3. Reglas de Contacto',      icon: this.ShieldCheckIcon,     path: '/contact-rules' },
+    { id: 'm4',        name: 'M4. Gestión de Casos',        icon: this.BriefcaseIcon,       path: '/cases' },
+    { id: 'm5',        name: 'M5. Recaudo',                 icon: this.DollarSignIcon,      path: '/recaudo' },
+    { id: 'm6',        name: 'M6. Reporting',               icon: this.BarChart3Icon,       path: '/reporting' },
+    { id: 'settings',  name: 'Configuración',               icon: this.Settings2Icon,       path: '/settings' },
   ];
 
   toggleSidebar() {

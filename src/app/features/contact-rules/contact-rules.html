@@ -1,0 +1,143 @@
+<div class="module-container">
+  <div class="module-header">
+    <div class="header-text">
+      <h3 class="module-title">M3. Reglas de Contacto</h3>
+      <p class="module-subtitle">Configuración de canal, frecuencia y plantilla por nivel de riesgo.</p>
+    </div>
+    <div class="header-actions">
+      <button class="outline-btn" (click)="loadRules()" [disabled]="isLoading()">
+        <lucide-icon [img]="RefreshCwIcon" class="btn-icon-small"></lucide-icon>
+        Actualizar
+      </button>
+      <button class="primary-btn" (click)="save()" [disabled]="isSaving()">
+        <lucide-icon [img]="SaveIcon" class="btn-icon-small"></lucide-icon>
+        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert-ok">
+      <lucide-icon [img]="CheckCircle2Icon" class="alert-icon"></lucide-icon>
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert-err">
+      <lucide-icon [img]="AlertCircleIcon" class="alert-icon"></lucide-icon>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <div class="info-banner">
+    <lucide-icon [img]="ShieldCheckIcon" class="info-icon"></lucide-icon>
+    <p>Las reglas determinan qué canal usa el sistema para contactar a cada cliente según su nivel de riesgo.
+       Modifica canal, frecuencia, prioridad y plantilla y guarda los cambios.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-block">Cargando reglas de contacto...</div>
+  } @else {
+    <div class="rules-grid">
+      @for (rule of rules(); track rule.riskLevel; let i = $index) {
+        <div class="rule-card" [style.border-color]="getRuleColor(rule.riskLevel)">
+
+          <!-- Header de la tarjeta -->
+          <div class="rule-card-header" [style.background-color]="getRuleColor(rule.riskLevel)">
+            <div class="rule-badge-text">
+              <span class="risk-label">{{ rule.riskLabel }}</span>
+              <span class="priority-tag">Prioridad {{ rule.priority }}</span>
+            </div>
+            <button class="edit-btn" (click)="toggleEdit(i)" title="Editar">
+              <lucide-icon [img]="Edit2Icon" class="icon-14"></lucide-icon>
+            </button>
+          </div>
+
+          <!-- Cuerpo -->
+          <div class="rule-card-body">
+
+            @if (editingIndex() !== i) {
+              <!-- Vista lectura -->
+              <div class="rule-info-row">
+                <span class="info-label">Canal</span>
+                <span class="channel-chip">{{ getChannelLabel(rule.contactChannel) }}</span>
+              </div>
+              <div class="rule-info-row">
+                <span class="info-label">Frecuencia</span>
+                <span class="info-val">
+                  @if (rule.contactChannel === 'EMAIL') {
+                    Cada {{ rule.emailEveryDays }} días
+                  } @else {
+                    {{ rule.frequencyPerWeek }}x por semana
+                  }
+                </span>
+              </div>
+              <div class="rule-info-row">
+                <span class="info-label">Intensidad</span>
+                <span class="info-val">{{ rule.intensityLabel }}</span>
+              </div>
+              <div class="rule-info-row">
+                <span class="info-label">Plantilla</span>
+                <span class="info-val">{{ rule.plantillaNombre || '—' }}</span>
+              </div>
+              @if (rule.description) {
+                <p class="rule-desc">{{ rule.description }}</p>
+              }
+
+            } @else {
+              <!-- Vista edición -->
+              <div class="edit-field">
+                <label class="edit-label">Canal de contacto</label>
+                <select class="edit-select" [(ngModel)]="rule.contactChannel">
+                  @for (ch of channelOptions; track ch) {
+                    <option [value]="ch">{{ getChannelLabel(ch) }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="edit-row">
+                <div class="edit-field half">
+                  <label class="edit-label">Frec. semanal</label>
+                  <input type="number" class="edit-input" [(ngModel)]="rule.frequencyPerWeek" min="0" max="14">
+                </div>
+                <div class="edit-field half">
+                  <label class="edit-label">Email cada N días</label>
+                  <input type="number" class="edit-input" [(ngModel)]="rule.emailEveryDays" min="0" max="30">
+                </div>
+              </div>
+
+              <div class="edit-field">
+                <label class="edit-label">Prioridad (1=más alta)</label>
+                <input type="number" class="edit-input" [(ngModel)]="rule.priority" min="1" max="10">
+              </div>
+
+              <div class="edit-field">
+                <label class="edit-label">Plantilla asociada</label>
+                <select class="edit-select" [(ngModel)]="rule.plantillaId">
+                  <option [ngValue]="null">— Sin plantilla —</option>
+                  @for (p of plantillasFiltradas(rule.contactChannel); track p.id) {
+                    <option [ngValue]="p.id">{{ p.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="edit-field">
+                <label class="edit-label">Descripción</label>
+                <textarea class="edit-textarea" [(ngModel)]="rule.description" rows="2"></textarea>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (!rules().length) {
+      <div class="empty-state">
+        <lucide-icon [img]="ShieldCheckIcon" class="empty-icon"></lucide-icon>
+        <p>No hay reglas de contacto configuradas. Se cargarán los valores por defecto.</p>
+        <button class="outline-btn" (click)="loadRules()">Cargar reglas</button>
+      </div>
+    }
+  }
+</div>

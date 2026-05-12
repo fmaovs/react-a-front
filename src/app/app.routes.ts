@@ -15,12 +15,8 @@ export const routes: Routes = [
     loadComponent: () => import('./features/analytics/analytics').then(m => m.AnalyticsComponent)
   },
   {
-    path: 'policies',
-    loadComponent: () => import('./features/policies/policies').then(m => m.PoliciesComponent)
-  },
-  {
-    path: 'orchestration',
-    loadComponent: () => import('./features/orchestration/orchestration').then(m => m.OrchestrationComponent)
+    path: 'contact-rules',
+    loadComponent: () => import('./features/contact-rules/contact-rules').then(m => m.ContactRulesComponent)
   },
   {
     path: 'cases',

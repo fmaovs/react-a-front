@@ -1,7 +1,7 @@
 <div class="module-container">
   <div class="module-header">
     <div class="header-text">
-      <h3 class="module-title">M7. Informes, Auditoría y Gobierno</h3>
+      <h3 class="module-title">M6. Informes, Auditoría y Gobierno</h3>
       <p class="module-subtitle">Indicadores de gestión, monitoreo del modelo y trazabilidad inalterable.</p>
     </div>
     <div class="header-actions">
@@ -48,46 +48,97 @@
       </div>
     </div>
 
+    <!-- Efectividad por canal (datos reales) -->
     <div class="card">
       <h4 class="card-title">
         <lucide-icon [img]="PieIcon" class="accent-icon"></lucide-icon>
         Efectividad por Canal
       </h4>
-      <div class="bar-chart-vertical">
-        @for (item of channelEffectiveness; track item.name) {
-          <div class="bar-row">
-            <span class="bar-label">{{ item.name }}</span>
-            <div class="bar-container">
-              <div class="bar-fill" [style.width.%]="item.value" [style.backgroundColor]="item.color"></div>
-              <span class="bar-value">{{ item.value }}%</span>
+
+      @if (isLoadingEffectiveness()) {
+        <p class="loading-text">Calculando métricas...</p>
+      } @else {
+        @if (bestChannel(); as best) {
+          <div class="best-channel-banner">
+            <lucide-icon [img]="AwardIcon" class="award-icon"></lucide-icon>
+            <div>
+              <p class="best-label">Mayor recuperación</p>
+              <p class="best-value">{{ canalLabel(best.canal) }} — {{ best.efectividadPct | number:'1.1-1' }}%</p>
             </div>
           </div>
         }
-      </div>
-      <p class="chart-note">* Indicador de referencia para la operación del equipo.</p>
+
+        <div class="bar-chart-vertical">
+          @for (item of channelEffectiveness(); track item.canal) {
+            <div class="bar-row">
+              <span class="bar-label">{{ canalLabel(item.canal) }}</span>
+              <div class="bar-container">
+                <div class="bar-fill"
+                     [style.width.%]="item.efectividadPct"
+                     [style.backgroundColor]="getChannelColor(item.canal)">
+                </div>
+                <span class="bar-value">{{ item.efectividadPct | number:'1.1-1' }}%</span>
+              </div>
+            </div>
+            <div class="channel-stats">
+              <span>Enviados: {{ item.totalEnviados }}</span>
+              <span>Fallidos: {{ item.totalFallidos }}</span>
+              <span>Exitosos: {{ item.contactosExitosos }}</span>
+            </div>
+          }
+        </div>
+      }
+      <p class="chart-note">* Efectividad = contactos exitosos / total enviados</p>
     </div>
   </div>
 
   <div class="bottom-grid">
+    <!-- Auditoría paginada -->
     <div class="card">
-      <h4 class="card-title">
-        <lucide-icon [img]="HistoryIcon" class="accent-icon"></lucide-icon>
-        Auditoría de Cambios (Gobierno)
-      </h4>
-      <div class="audit-list">
-        @for (audit of realAuditLogs(); track audit.id) {
-          <div class="audit-item">
-            <div class="audit-left">
-              <div class="audit-avatar">A</div>
-              <div class="audit-info">
-                <p class="audit-action">{{ audit.action }}</p>
-                <p class="audit-user">Por: {{ audit.userId }}</p>
-              </div>
-            </div>
-            <span class="audit-date">{{ audit.timestamp | date:'short' }}</span>
-          </div>
-        }
+      <div class="audit-card-header">
+        <h4 class="card-title">
+          <lucide-icon [img]="HistoryIcon" class="accent-icon"></lucide-icon>
+          Auditoría de Cambios (Gobierno)
+        </h4>
+        <span class="total-badge">{{ totalAuditLogs() }} registros</span>
       </div>
+
+      @if (isLoadingAudit()) {
+        <p class="loading-text">Cargando registros...</p>
+      } @else {
+        <div class="audit-list">
+          @for (audit of realAuditLogs(); track audit.id) {
+            <div class="audit-item">
+              <div class="audit-left">
+                <div class="audit-avatar">{{ (audit.userId || 'S')[0].toUpperCase() }}</div>
+                <div class="audit-info">
+                  <p class="audit-action">{{ audit.action }}</p>
+                  <p class="audit-user">Por: {{ audit.userId }}</p>
+                </div>
+              </div>
+              <span class="audit-date">{{ audit.timestamp | date:'dd/MM/yy HH:mm' }}</span>
+            </div>
+          }
+          @if (!realAuditLogs().length) {
+            <p class="empty-audit">Sin registros de auditoría.</p>
+          }
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination-bar">
+          <span class="pagination-info">
+            Página {{ auditPage() + 1 }} de {{ totalAuditPages() }}
+          </span>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="prevAuditPage()" [disabled]="auditPage() === 0">
+              <lucide-icon [img]="ChevronLeftIcon" class="page-icon"></lucide-icon>
+            </button>
+            <button class="page-btn" (click)="nextAuditPage()" [disabled]="auditPage() >= totalAuditPages() - 1">
+              <lucide-icon [img]="ChevronRightIcon" class="page-icon"></lucide-icon>
+            </button>
+          </div>
+        </div>
+      }
     </div>
 
     <div class="card">

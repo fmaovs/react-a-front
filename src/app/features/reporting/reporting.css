@@ -261,3 +261,99 @@
 }
 
 .shadow-lg { box-shadow: 0 10px 15px -3px rgba(10, 59, 78, 0.2); }
+
+/* Paginación */
+.audit-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.audit-card-header .card-title { margin: 0; }
+
+.total-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.pagination-info {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.page-btn {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: white;
+  cursor: pointer;
+  color: var(--brand-primary);
+}
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-btn:hover:not(:disabled) { background: #f1f5f9; }
+.page-icon { width: 0.875rem; height: 0.875rem; }
+
+.loading-text {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 2rem 0;
+  margin: 0;
+}
+
+.empty-audit {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  text-align: center;
+  padding: 1.5rem 0;
+  margin: 0;
+}
+
+/* Best channel banner */
+.best-channel-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  margin-bottom: 1.25rem;
+  color: #15803d;
+}
+.award-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+.best-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin: 0; opacity: 0.7; }
+.best-value { font-size: 0.9rem; font-weight: 700; margin: 0; }
+
+/* Channel stats micro row */
+.channel-stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.6875rem;
+  color: #9ca3af;
+  padding: 0 0 0.25rem 5.75rem;
+  margin-top: -0.875rem;
+}
+.channel-stats span { white-space: nowrap; }

@@ -18,6 +18,10 @@ export class AdminService {
     );
   }
 
+  getAuditLogsPaged(page: number = 0, size: number = 5): Observable<Page<AuditLog>> {
+    return this.http.get<Page<AuditLog>>(`${this.apiUrl}/audit/log?page=${page}&size=${size}&sort=timestamp,desc`);
+  }
+
   getSlaConfig(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/admin/sla`);
   }

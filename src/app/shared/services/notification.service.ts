@@ -8,6 +8,10 @@ export interface SendNotificationRequest {
   message: string;
   clientId?: number;
   reason?: string;
+  template?: string;
+  subject?: string;
+  templateData?: Record<string, string>;
+  riskLevel?: string;
 }
 
 export interface NotificationDispatchResult {
@@ -28,7 +32,8 @@ export const NOTIFICATION_CHANNELS = {
   PHONE: 'PHONE'
 } as const;
 
-export const MAX_MESSAGE_LENGTH = 160;
+export const MAX_MESSAGE_LENGTH = 5000;
+export const MAX_SMS_LENGTH = 160;
 export const PHONE_REGEX = /^\+?\d{7,15}$/;
 export const EMAIL_REGEX = /^[\w._%+\-]+@[\w.\-]+\.[a-zA-Z]{2,}$/;
 
@@ -62,8 +67,14 @@ export class NotificationService {
   /**
    * Método de conveniencia: Enviar Email
    */
-  sendEmail(recipient: string, message: string, clientId?: number, reason?: string) {
-    return this.sendNotification('EMAIL', { recipient, message, clientId, reason });
+  sendEmail(recipient: string, message: string, clientId?: number, reason?: string,
+            template?: string, subject?: string, riskLevel?: string) {
+    return this.sendNotification('EMAIL', {
+      recipient, message, clientId, reason,
+      template: template ?? 'COBRANZA_PREVENTIVA_BVS',
+      subject:  subject  ?? 'Recordatorio de pago - BankVision',
+      riskLevel
+    });
   }
 
   /**
