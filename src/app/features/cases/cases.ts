@@ -243,7 +243,7 @@ export class CasesComponent {
 
   submitResolve(caseId: number) {
     this.caseService.resolveCase(caseId, this.resolutionType, this.resolutionDetails).subscribe({
-      next: () => { this.closePanel(); this.loadCases(this.currentPage()); this.loadGlobalStats(); },
+      next: () => { this.closePanel(); this.selectedStatusFilter.set('ALL'); this.loadCases(0); this.loadGlobalStats(); },
       error: err => this.errorMessage.set(err?.error?.message || 'No fue posible resolver el caso')
     });
   }
