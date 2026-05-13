@@ -62,6 +62,20 @@ export class AnalyticsComponent implements OnInit {
 
   riskTotal = computed(() => this.riskData().reduce((acc, item) => acc + item.value, 0));
 
+  donutSegments = computed(() => {
+    const data = this.riskData();
+    const total = this.riskTotal();
+    if (total === 0) return [];
+    const circumference = 2 * Math.PI * 40;
+    let startAngle = -90;
+    return data.map(item => {
+      const arc = (item.value / total) * circumference;
+      const seg = { color: item.color, dasharray: `${arc} ${circumference - arc}`, rotate: startAngle };
+      startAngle += (item.value / total) * 360;
+      return seg;
+    });
+  });
+
   caseStats = computed(() => {
     const kpis = this.summary()?.kpis;
     const byStatus = this.summary()?.casesByStatus ?? [];

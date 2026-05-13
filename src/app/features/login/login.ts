@@ -4,7 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
-import { LucideAngularModule, Shield, Mail, Lock, ChevronRight, AlertCircle } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Shield, Mail, Lock, ChevronRight, AlertCircle, Eye, EyeOff
+} from 'lucide-angular';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +21,7 @@ export class LoginComponent {
   password = '';
   error = signal('');
   isLoading = signal(false);
+  showPassword = signal(false);
 
   private authService = inject(AuthService);
 
@@ -26,6 +30,8 @@ export class LoginComponent {
   readonly LockIcon = Lock;
   readonly ChevronRightIcon = ChevronRight;
   readonly AlertCircleIcon = AlertCircle;
+  readonly EyeIcon = Eye;
+  readonly EyeOffIcon = EyeOff;
 
   handleSubmit() {
     this.isLoading.set(true);

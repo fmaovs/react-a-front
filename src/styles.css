@@ -1,23 +1,76 @@
+/* ═══════════════════════════════════════════════════════════
+   BANKVISION — Global Design System
+   Angular 21 + Angular Material MDC v21
+   Font: Inter 400/500/600/700/800
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ──────────────────────────────────────── */
 :root {
-  --brand-primary: #0A3B4E;
+  /* Brand palette */
+  --brand-primary:   #0A3B4E;
   --brand-secondary: #055177;
-  --brand-accent: #10989B;
-  --brand-bg: #F5F5F5;
-  --brand-dark: #001822;
+  --brand-accent:    #10989B;
+  --brand-bg:        #F2F5F7;
+  --brand-dark:      #001822;
+  --brand-surface:   #FFFFFF;
+
+  /* Typography */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Border radius scale */
+  --r-xs:   0.375rem;   /*  6px — micro badges */
+  --r-sm:   0.5rem;     /*  8px — small inputs, tags */
+  --r-md:   0.75rem;    /* 12px — buttons, selects */
+  --r-lg:   1rem;       /* 16px — cards */
+  --r-xl:   1.5rem;     /* 24px — large panels */
+  --r-2xl:  2rem;       /* 32px — modal / login */
+  --r-full: 9999px;     /* pill */
+
+  /* Shadow system */
+  --sh-xs:     0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --sh-sm:     0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --sh-md:     0 4px 8px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --sh-lg:     0 10px 20px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -4px rgba(0, 0, 0, 0.04);
+  --sh-xl:     0 20px 32px -8px rgba(0, 0, 0, 0.10), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+  --sh-brand:  0 8px 24px -4px rgba(10, 59, 78, 0.18);
+  --sh-accent: 0 8px 24px -4px rgba(16, 152, 155, 0.22);
+
+  /* Transition presets */
+  --t-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset & base ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
   background-color: var(--brand-bg);
   color: var(--brand-dark);
 }
 
-.gradient-brand {
-  background: linear-gradient(135deg, #055177 0%, #0A3B4E 50%, #001822 100%);
-}
+/* ── Custom scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar               { width: 5px; height: 5px; }
+::-webkit-scrollbar-track         { background: transparent; }
+::-webkit-scrollbar-thumb         { background: #cbd5e1; border-radius: var(--r-full); }
+::-webkit-scrollbar-thumb:hover   { background: #94a3b8; }
+* { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
 
+/* ── Lucide icons ───────────────────────────────────────── */
 lucide-icon {
   display: inline-flex;
   align-items: center;
@@ -25,9 +78,167 @@ lucide-icon {
   line-height: 0;
   flex-shrink: 0;
 }
+lucide-icon svg { display: block; width: 100%; height: 100%; }
 
-lucide-icon svg {
-  display: block;
-  width: 100%;
-  height: 100%;
+/* ── Gradient utility ───────────────────────────────────── */
+.gradient-brand {
+  background: linear-gradient(135deg, #055177 0%, #0A3B4E 55%, #001822 100%);
+}
+
+/* ── Keyframe animations ────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+@keyframes pulse-border {
+  0%, 100% { border-left-color: #ef4444; }
+  50%       { border-left-color: #dc2626; }
+}
+
+/* ── Skeleton loader ────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--r-sm);
+}
+.skeleton-text  { height: 0.875rem; margin: 0.375rem 0; }
+.skeleton-title { height: 1.25rem; width: 60%; margin: 0.5rem 0; }
+.skeleton-card  {
+  background: var(--brand-surface);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  box-shadow: var(--sh-sm);
+}
+
+/* ── Angular Material — Global Overrides ────────────────── */
+
+/* Primary raised button */
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: var(--brand-accent) !important;
+  --mdc-protected-button-label-text-color: #ffffff !important;
+  border-radius: var(--r-md) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  box-shadow: var(--sh-accent) !important;
+  transition: all var(--t-base) !important;
+}
+.mat-mdc-raised-button.mat-primary:not(:disabled):hover {
+  --mdc-protected-button-container-color: #0d8386 !important;
+  box-shadow: var(--sh-lg) !important;
+  transform: translateY(-1px);
+}
+
+/* Form fields MDC */
+.mat-mdc-form-field {
+  font-family: var(--font-sans) !important;
+}
+.mat-mdc-text-field-wrapper {
+  background-color: #f8fafc !important;
+  border-radius: var(--r-sm) !important;
+}
+.mdc-text-field--outlined .mdc-notched-outline__leading  { border-radius: var(--r-sm) 0 0 var(--r-sm) !important; }
+.mdc-text-field--outlined .mdc-notched-outline__trailing { border-radius: 0 var(--r-sm) var(--r-sm) 0 !important; }
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing,
+.mdc-text-field--focused:not(.mdc-text-field--disabled) .mdc-notched-outline__notch {
+  border-color: var(--brand-accent) !important;
+}
+
+/* Dialog surface */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: var(--r-xl) !important;
+  box-shadow: var(--sh-xl) !important;
+}
+
+/* Tooltip */
+.mat-mdc-tooltip .mdc-tooltip__surface {
+  background-color: var(--brand-dark) !important;
+  border-radius: var(--r-xs) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0 !important;
+}
+
+/* Progress spinner */
+.mat-mdc-progress-spinner circle {
+  stroke: var(--brand-accent) !important;
+}
+
+/* ── Snackbar / Toast panel classes ─────────────────────── */
+.mat-mdc-snack-bar-container {
+  border-radius: var(--r-md) !important;
+  font-family: var(--font-sans) !important;
+}
+
+.snack-success .mdc-snackbar__surface {
+  background-color: #064e3b !important;
+  border-left: 4px solid #10b981 !important;
+  border-radius: var(--r-md) !important;
+}
+.snack-success .mdc-snackbar__label,
+.snack-success .mat-mdc-button { color: #fff !important; font-family: var(--font-sans) !important; }
+
+.snack-error .mdc-snackbar__surface {
+  background-color: #7f1d1d !important;
+  border-left: 4px solid #ef4444 !important;
+  border-radius: var(--r-md) !important;
+}
+.snack-error .mdc-snackbar__label,
+.snack-error .mat-mdc-button { color: #fff !important; font-family: var(--font-sans) !important; }
+
+.snack-info .mdc-snackbar__surface {
+  background-color: #1e3a5f !important;
+  border-left: 4px solid #3b82f6 !important;
+  border-radius: var(--r-md) !important;
+}
+.snack-info .mdc-snackbar__label,
+.snack-info .mat-mdc-button { color: #fff !important; font-family: var(--font-sans) !important; }
+
+.snack-warn .mdc-snackbar__surface {
+  background-color: #78350f !important;
+  border-left: 4px solid #f59e0b !important;
+  border-radius: var(--r-md) !important;
+}
+.snack-warn .mdc-snackbar__label,
+.snack-warn .mat-mdc-button { color: #fff !important; font-family: var(--font-sans) !important; }
+
+/* ── Chip / Select panel ────────────────────────────────── */
+.mat-mdc-select-panel {
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--sh-lg) !important;
+  font-family: var(--font-sans) !important;
+}
+.mat-mdc-option {
+  font-family: var(--font-sans) !important;
+  font-size: 0.875rem !important;
+}
+.mat-mdc-option.mdc-list-item--selected:not(.mat-mdc-option-multiple) {
+  background-color: rgba(16, 152, 155, 0.08) !important;
+  color: var(--brand-accent) !important;
+}
+
+/* ── Page entry animation ───────────────────────────────── */
+router-outlet + * {
+  animation: slideUp var(--t-slow) both;
 }

@@ -10,11 +10,12 @@ import { tap, catchError, map, Observable, throwError } from 'rxjs';
 export class AuthService {
   private http = inject(HttpClient);
   private userSignal = signal<User | null>(null);
+  private mustChangePasswordSignal = signal(false);
 
   user = this.userSignal.asReadonly();
+  mustChangePassword = this.mustChangePasswordSignal.asReadonly();
 
   constructor() {
-    // Sesión efímera: se limpia al recargar la página.
     localStorage.removeItem('bv_user');
   }
 
@@ -32,6 +33,7 @@ export class AuthService {
           token: res.token
         };
         this.userSignal.set(user);
+        this.mustChangePasswordSignal.set(res.mustChangePassword ?? false);
       }),
       map(() => true),
       catchError(err => {
@@ -41,8 +43,20 @@ export class AuthService {
     );
   }
 
+  changePassword(oldPassword: string, newPassword: string): Observable<string> {
+    return this.http.post(
+      `${environment.apiUrl}/auth/change-password`,
+      { oldPassword, newPassword },
+      { responseType: 'text' }
+    ).pipe(
+      tap(() => this.mustChangePasswordSignal.set(false)),
+      catchError(err => throwError(() => err))
+    );
+  }
+
   logout() {
     this.userSignal.set(null);
+    this.mustChangePasswordSignal.set(false);
     localStorage.removeItem('bv_user');
   }
 }

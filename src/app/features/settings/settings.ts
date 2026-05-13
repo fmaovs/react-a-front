@@ -18,11 +18,13 @@ import {
 } from './scoring-config.service';
 import { User, UserCreateRequest, UserUpdateRequest } from '../../models/types';
 import { UserModalComponent } from '../../shared/components/user-modal/user-modal';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog';
+import { UiToastService } from '../../shared/services/ui-toast.service';
 import {
   LucideAngularModule,
   Settings2, ShieldAlert, FileCode, Clock, Save, Plus, Trash2, Info,
   CheckCircle2, AlertTriangle, Users, Lock, Shield, Mail, UserPlus,
-  Briefcase, Sliders, GitBranch, RefreshCw
+  Briefcase, Sliders, GitBranch, RefreshCw, RotateCcw
 } from 'lucide-angular';
 import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
@@ -43,6 +45,7 @@ export class SettingsComponent implements OnInit {
   private userService = inject(UserService);
   private scoringConfigService = inject(ScoringConfigService);
   private dialog = inject(MatDialog);
+  private toast = inject(UiToastService);
 
   activeTab = signal<TabId>('scoring');
   isSaving = signal(false);
@@ -68,6 +71,7 @@ export class SettingsComponent implements OnInit {
   readonly SlidersIcon = Sliders;
   readonly GitBranchIcon = GitBranch;
   readonly RefreshCwIcon = RefreshCw;
+  readonly RotateCcwIcon = RotateCcw;
 
   tabs: Tab[] = [
     { id: 'scoring',       label: 'Scoring IA',         icon: this.ShieldAlertIcon },
@@ -509,9 +513,24 @@ export class SettingsComponent implements OnInit {
       if (result) {
         const req: UserCreateRequest = {
           username: result.username, email: result.email,
-          fullName: result.fullName, password: result.password, roleId: result.roleId
+          fullName: result.fullName, roleId: result.roleId
         };
-        this.userService.createUser(req).subscribe(() => this.loadUsers());
+        this.userService.createUser(req).subscribe({
+          next: (res) => {
+            this.loadUsers();
+            this.dialog.open(ConfirmDialogComponent, {
+              width: '420px',
+              data: {
+                title: 'Usuario creado',
+                message: `El usuario "${res.username}" fue creado exitosamente.`,
+                code: res.temporaryPassword,
+                confirmLabel: 'Entendido',
+                type: 'info'
+              }
+            });
+          },
+          error: () => this.toast.error('Error al crear el usuario.')
+        });
       }
     });
   }
@@ -524,15 +543,67 @@ export class SettingsComponent implements OnInit {
           email: result.email, fullName: result.fullName,
           roleId: result.roleId, status: result.status
         };
-        this.userService.updateUser(user.id, req).subscribe(() => this.loadUsers());
+        this.userService.updateUser(user.id, req).subscribe({
+          next: () => { this.loadUsers(); this.toast.success('Usuario actualizado correctamente.'); },
+          error: () => this.toast.error('Error al actualizar el usuario.')
+        });
       }
     });
   }
 
   removeUser(id: number) {
-    if (confirm('¿Está seguro de eliminar este usuario?')) {
-      this.userService.deleteUser(id).subscribe(() => this.loadUsers());
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Eliminar usuario',
+        message: '¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.',
+        confirmLabel: 'Eliminar',
+        cancelLabel: 'Cancelar',
+        type: 'danger'
+      }
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.userService.deleteUser(id).subscribe({
+          next: () => { this.loadUsers(); this.toast.success('Usuario eliminado.'); },
+          error: () => this.toast.error('Error al eliminar el usuario.')
+        });
+      }
+    });
+  }
+
+  resetPassword(user: User) {
+    if (!user.id) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Resetear contraseña',
+        message: `Se generará una contraseña temporal para "${user.fullName || user.username}". El usuario deberá cambiarla en su próximo ingreso.`,
+        confirmLabel: 'Resetear',
+        cancelLabel: 'Cancelar',
+        type: 'warning'
+      }
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && user.id) {
+        this.userService.resetPassword(user.id).subscribe({
+          next: res => {
+            this.loadUsers();
+            this.dialog.open(ConfirmDialogComponent, {
+              width: '420px',
+              data: {
+                title: 'Contraseña reseteada',
+                message: `La contraseña de "${res.username}" fue reseteada exitosamente.`,
+                code: res.temporaryPassword,
+                confirmLabel: 'Entendido',
+                type: 'info'
+              }
+            });
+          },
+          error: () => this.toast.error('Error al resetear la contraseña.')
+        });
+      }
+    });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

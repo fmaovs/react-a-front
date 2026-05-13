@@ -36,6 +36,38 @@
        Modifica canal, frecuencia, prioridad y plantilla y guarda los cambios.</p>
   </div>
 
+  <div class="ley-card">
+    <div class="ley-header">
+      <div class="ley-icon-box">
+        <lucide-icon [img]="ShieldCheckIcon" class="ley-icon"></lucide-icon>
+      </div>
+      <div class="ley-title-block">
+        <h4 class="ley-title">Cumplimiento Ley 2300</h4>
+        <p class="ley-subtitle">Validación automática de horarios, límites diarios y frecuencia semanal por riesgo</p>
+      </div>
+      <span class="ley-badge">ACTIVO</span>
+    </div>
+    <div class="ley-items">
+      <div class="ley-item">
+        <span class="ley-item-label">Horario habilitado</span>
+        <span class="ley-item-value">Lun–Vie · 8:00 a 20:00</span>
+      </div>
+      <div class="ley-item">
+        <span class="ley-item-label">Límite diario</span>
+        <span class="ley-item-value">Máx. 1 contacto / cliente / día</span>
+      </div>
+      <div class="ley-item">
+        <span class="ley-item-label">Frecuencia semanal</span>
+        <span class="ley-item-value">BAJO 1× · MEDIO 2× · ALTO 3×</span>
+      </div>
+      <div class="ley-item">
+        <span class="ley-item-label">Clientes CRÍTICO</span>
+        <span class="ley-item-value">Escalado automático sin notificación</span>
+      </div>
+    </div>
+    <p class="ley-note">Trazabilidad completa de cada intento de contacto registrada automáticamente por el sistema.</p>
+  </div>
+
   @if (isLoading()) {
     <div class="loading-block">Cargando reglas de contacto...</div>
   } @else {

@@ -8,6 +8,7 @@ export interface User {
   createdAt?: string;
   lastLogin?: string;
   token?: string;
+  temporaryPassword?: string;
   // Compatibility fields
   name?: string;
   role?: any;
@@ -20,14 +21,20 @@ export interface LoginResponse {
   username: string;
   email: string;
   role: string;
+  mustChangePassword: boolean;
 }
 
 export interface UserCreateRequest {
   username: string;
   email: string;
-  password?: string;
   fullName: string;
   roleId: number;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+  temporaryPassword: string;
+  username: string;
 }
 
 export interface UserUpdateRequest {

@@ -591,15 +591,18 @@
                       </div>
                     </div>
                   </td>
-                  <td><span class="mono">{{ user.username }}</span></td>
+                  <td><span class="username-text">{{ user.username }}</span></td>
                   <td><span class="role-text">{{ user.roleName }}</span></td>
                   <td>
                     <div class="action-row justify-end">
                       @if (user.id) {
-                        <button (click)="editUser(user)" class="icon-btn-gray">
+                        <button (click)="editUser(user)" class="icon-btn-gray" title="Editar usuario">
                           <lucide-icon [img]="Settings2Icon" class="mini-icon"></lucide-icon>
                         </button>
-                        <button (click)="removeUser(user.id)" class="icon-btn-gray hover-red">
+                        <button (click)="resetPassword(user)" class="icon-btn-gray hover-amber" title="Resetear contraseña">
+                          <lucide-icon [img]="RotateCcwIcon" class="mini-icon"></lucide-icon>
+                        </button>
+                        <button (click)="removeUser(user.id)" class="icon-btn-gray hover-red" title="Eliminar usuario">
                           <lucide-icon [img]="Trash2Icon" class="mini-icon"></lucide-icon>
                         </button>
                       }

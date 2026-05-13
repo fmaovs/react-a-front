@@ -70,9 +70,18 @@
       </h4>
       <div class="donut-chart-box">
         <svg viewBox="0 0 100 100" class="donut-chart">
-          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f3f4f6" stroke-width="10" />
-          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10989B" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="180" />
-          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#055177" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="220" transform="rotate(-90 50 50)" />
+          <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f1f5f9" stroke-width="10" />
+          @for (seg of donutSegments(); track $index) {
+            <circle
+              cx="50" cy="50" r="40"
+              fill="transparent"
+              [attr.stroke]="seg.color"
+              stroke-width="10"
+              stroke-linecap="butt"
+              [attr.stroke-dasharray]="seg.dasharray"
+              [attr.transform]="'rotate(' + seg.rotate + ', 50, 50)'"
+            />
+          }
         </svg>
       </div>
       <div class="risk-legend">
