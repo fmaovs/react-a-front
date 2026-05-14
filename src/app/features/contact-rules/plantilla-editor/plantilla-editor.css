@@ -1,0 +1,389 @@
+/* ── Dialog container ──────────────────────────────────────────────────── */
+.pe-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 92vw;
+  max-width: 1100px;
+  max-height: 92vh;
+  background: var(--brand-surface, #fff);
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: var(--font-sans, Arial, sans-serif);
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.pe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+}
+.pe-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.pe-header-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #10989B;
+  flex-shrink: 0;
+}
+.pe-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a2e4a;
+  margin: 0;
+}
+.pe-subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.1rem 0 0;
+  font-weight: 500;
+}
+.pe-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 6px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+.pe-close-btn:hover { background: #f1f5f9; color: #1a2e4a; }
+
+/* ── Alertas ────────────────────────────────────────────────────────────── */
+.pe-alert {
+  margin: 0.75rem 1.5rem 0;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.pe-alert-err { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.pe-alert-ok  { background: #ecfdf5; border: 1px solid #bbf7d0; color: #065f46; }
+
+/* ── Info banner ────────────────────────────────────────────────────────── */
+.pe-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 1.5rem 0;
+  padding: 0.6rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #92400e;
+}
+
+/* ── Variables disponibles ──────────────────────────────────────────────── */
+.pe-vars-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 1.5rem 0;
+}
+.pe-vars-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pe-vars-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.pe-chip {
+  font-size: 0.72rem;
+  font-family: monospace;
+  padding: 0.2rem 0.55rem;
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 20px;
+  border: 1px solid #bae6fd;
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* ── Body: dos columnas ─────────────────────────────────────────────────── */
+.pe-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+/* ── Columna formulario ─────────────────────────────────────────────────── */
+.pe-form-col {
+  padding: 0.75rem 1.5rem 1rem;
+  overflow-y: auto;
+  border-right: 1.5px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pe-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.pe-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #374151;
+}
+.pe-input,
+.pe-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font-sans, Arial, sans-serif);
+  color: #1a2e4a;
+  background: #fff;
+  resize: vertical;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.pe-input:focus,
+.pe-textarea:focus {
+  outline: none;
+  border-color: #10989B;
+  box-shadow: 0 0 0 2px rgba(16,152,155,0.15);
+}
+.pe-hint {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.4;
+}
+.pe-char-count {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  text-align: right;
+}
+.pe-over-limit { color: #ef4444; font-weight: 700; }
+
+/* ── Columna preview ────────────────────────────────────────────────────── */
+.pe-preview-col {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: #f4f7f9;
+}
+.pe-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1.25rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+/* ── Email preview ──────────────────────────────────────────────────────── */
+.pe-email-preview {
+  margin: 0.75rem;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  font-family: Arial, Helvetica, sans-serif;
+}
+.pep-email-header {
+  background: linear-gradient(135deg, #10989B 0%, #0d7a7d 100%);
+  padding: 1rem 1.25rem;
+  text-align: center;
+}
+.pep-logo {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.pep-tagline {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.8);
+  margin: 2px 0 0;
+}
+
+.pep-section { padding: 0.75rem 1.25rem 0; }
+.pep-center  { text-align: center; }
+
+.pep-saludo {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a2e4a;
+  margin: 0;
+}
+.pep-mensaje {
+  font-size: 0.8rem;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.pep-datos-box {
+  margin: 0.75rem 1.25rem;
+  border: 1.5px solid #b2e8ea;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pep-datos-header {
+  background: #10989B;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.4rem 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pep-datos-body { padding: 0.5rem 0.75rem; background: #f0fafa; }
+.pep-dato-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #e5f3f3;
+  font-size: 0.75rem;
+}
+.pep-dato-row:last-child { border-bottom: none; }
+.pep-dato-row span { color: #6b7280; }
+.pep-dato-row strong { color: #1a2e4a; }
+.pep-monto  { color: #10989B !important; }
+.pep-mora   { color: #ef4444 !important; }
+
+.pep-antes-boton {
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
+}
+.pep-boton {
+  display: inline-block;
+  background: #10989B;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
+
+.pep-despedida {
+  font-size: 0.8rem;
+  color: #4a5568;
+  margin: 0 0 4px;
+}
+.pep-firma {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #10989B;
+  margin: 0;
+}
+
+.pep-footer {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  margin-top: 0.75rem;
+}
+.pep-footer-text {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin: 0 0 4px;
+}
+.pep-aviso-legal {
+  font-size: 0.65rem;
+  color: #d1d5db;
+  margin: 0;
+}
+
+/* ── SMS preview ────────────────────────────────────────────────────────── */
+.pe-sms-preview {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pe-sms-bubble {
+  background: #e0f2fe;
+  border-radius: 12px 12px 12px 2px;
+  padding: 0.75rem 1rem;
+  max-width: 320px;
+  border: 1px solid #bae6fd;
+}
+.pe-sms-from {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #0369a1;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+.pe-sms-text {
+  font-size: 0.85rem;
+  color: #1e3a5f;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Footer acciones ────────────────────────────────────────────────────── */
+.pe-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+}
+.pe-btn-cancel {
+  padding: 0.55rem 1.25rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-sans, Arial, sans-serif);
+}
+.pe-btn-cancel:hover { background: #f9fafb; border-color: #9ca3af; }
+
+.pe-btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.25rem;
+  background: #10989B;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-sans, Arial, sans-serif);
+}
+.pe-btn-save:hover:not(:disabled) { background: #0d7a7d; }
+.pe-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Helpers ────────────────────────────────────────────────────────────── */
+.icon-14 { width: 0.875rem; height: 0.875rem; }
+.icon-16 { width: 1rem; height: 1rem; }

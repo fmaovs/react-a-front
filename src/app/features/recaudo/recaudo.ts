@@ -378,8 +378,9 @@ export class RecaudoComponent implements OnInit {
         if (result.accepted) {
           this.emailSent.set(true);
           this.emailError.set(null);
-          // Auto-reset después de 3 segundos
           window.setTimeout(() => this.emailSent.set(false), 3000);
+        } else if (result.skippedByLey2300) {
+          this.emailError.set('Envío bloqueado: Fuera de horario permitido (Ley 2300)');
         } else {
           this.emailError.set(result.statusDescription || 'No se pudo completar el envío');
         }

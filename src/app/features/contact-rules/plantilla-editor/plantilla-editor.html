@@ -1,0 +1,173 @@
+<div class="pe-dialog">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="pe-header">
+    <div class="pe-header-left">
+      <lucide-icon [img]="isEmail ? MailIcon : SmsIcon" class="pe-header-icon"></lucide-icon>
+      <div>
+        <h2 class="pe-title">Editar plantilla</h2>
+        <p class="pe-subtitle">{{ data.plantilla.nombre }} · {{ data.plantilla.canal }}</p>
+      </div>
+    </div>
+    <button class="pe-close-btn" (click)="cancelar()">
+      <lucide-icon [img]="XIcon" class="icon-16"></lucide-icon>
+    </button>
+  </div>
+
+  <!-- ── Alertas ──────────────────────────────────────────────────────────── -->
+  @if (errorMsg()) {
+    <div class="pe-alert pe-alert-err">{{ errorMsg() }}</div>
+  }
+  @if (successMsg()) {
+    <div class="pe-alert pe-alert-ok">{{ successMsg() }}</div>
+  }
+
+  <!-- ── Info: zonas bloqueadas ───────────────────────────────────────────── -->
+  <div class="pe-info-banner">
+    <lucide-icon [img]="InfoIcon" class="icon-14"></lucide-icon>
+    <span>Solo puedes editar las zonas de texto. La estructura HTML, estilos y variables del sistema están protegidos.</span>
+  </div>
+
+  <!-- ── Variables disponibles ───────────────────────────────────────────── -->
+  @if (isEmail) {
+    <div class="pe-vars-section">
+      <span class="pe-vars-label">Variables del sistema (clic para insertar):</span>
+      <div class="pe-vars-chips">
+        @for (v of variablesDisponibles; track v.var) {
+          <span class="pe-chip" title="{{ v.desc }}">{{ v.var }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Cuerpo: formulario + preview ────────────────────────────────────── -->
+  <div class="pe-body">
+
+    <!-- Columna formulario -->
+    <div class="pe-form-col">
+
+      @if (isEmail) {
+        <!-- Campos EMAIL -->
+        @for (field of emailFields; track field.key) {
+          <div class="pe-field">
+            <label class="pe-label">{{ field.label }}</label>
+            @if (!field.multiline) {
+              <input
+                class="pe-input"
+                type="text"
+                [(ngModel)]="zonas[field.key]"
+                [maxlength]="field.maxLength || 300"
+                [placeholder]="field.hint">
+            } @else {
+              <textarea
+                class="pe-textarea"
+                [(ngModel)]="zonas[field.key]"
+                [rows]="field.rows || 3"
+                [placeholder]="field.hint">
+              </textarea>
+            }
+            <p class="pe-hint">{{ field.hint }}</p>
+          </div>
+        }
+
+      } @else {
+        <!-- Campo SMS -->
+        <div class="pe-field">
+          <label class="pe-label">Plantilla SMS</label>
+          <textarea
+            class="pe-textarea"
+            [(ngModel)]="zonas.plantillaSms"
+            rows="4"
+            [placeholder]="smsPlaceholder">
+          </textarea>
+          <p class="pe-hint">{{ smsHint }}</p>
+          <span class="pe-char-count" [class.pe-over-limit]="(zonas.plantillaSms?.length || 0) > 160">
+            {{ zonas.plantillaSms?.length || 0 }}/160
+          </span>
+        </div>
+      }
+
+    </div>
+
+    <!-- Columna preview -->
+    <div class="pe-preview-col">
+      <div class="pe-preview-header">
+        <lucide-icon [img]="EyeIcon" class="icon-14"></lucide-icon>
+        <span>Vista previa (datos de prueba)</span>
+      </div>
+
+      @if (isEmail) {
+        <div class="pe-email-preview">
+          <!-- Header del email -->
+          <div class="pep-email-header">
+            <div class="pep-logo">BankVision</div>
+            <p class="pep-tagline">Sistema de Gestión de Cartera</p>
+          </div>
+
+          <!-- Saludo -->
+          <div class="pep-section">
+            <p class="pep-saludo">{{ previewSaludo }}</p>
+          </div>
+
+          <!-- Mensaje principal -->
+          <div class="pep-section">
+            <p class="pep-mensaje">{{ previewMensaje }}</p>
+          </div>
+
+          <!-- Datos obligación (mock) -->
+          <div class="pep-datos-box">
+            <div class="pep-datos-header">Detalle de su Obligación</div>
+            <div class="pep-datos-body">
+              <div class="pep-dato-row"><span>Cliente</span><strong>Juan Pérez García</strong></div>
+              <div class="pep-dato-row"><span>Obligación</span><strong>OBL-2024-00123</strong></div>
+              <div class="pep-dato-row"><span>Valor</span><strong class="pep-monto">$ 1.850.000 COP</strong></div>
+              <div class="pep-dato-row"><span>Mora</span><strong class="pep-mora">45 días</strong></div>
+              <div class="pep-dato-row"><span>Fecha límite</span><strong>15/01/2024</strong></div>
+            </div>
+          </div>
+
+          <!-- Texto antes del botón -->
+          <div class="pep-section pep-center">
+            <p class="pep-antes-boton">{{ previewTextoAntesBoton }}</p>
+          </div>
+
+          <!-- Botón -->
+          <div class="pep-section pep-center">
+            <div class="pep-boton">{{ previewTextoBoton }}</div>
+          </div>
+
+          <!-- Despedida -->
+          <div class="pep-section">
+            <p class="pep-despedida">{{ previewDespedida }}</p>
+            <p class="pep-firma">El equipo BankVision</p>
+          </div>
+
+          <!-- Footer -->
+          <div class="pep-footer">
+            <p class="pep-footer-text">{{ previewFooter }}</p>
+            <p class="pep-aviso-legal">{{ previewAvisoLegal }}</p>
+          </div>
+        </div>
+
+      } @else {
+        <!-- Preview SMS -->
+        <div class="pe-sms-preview">
+          <div class="pe-sms-bubble">
+            <span class="pe-sms-from">BANKVISION</span>
+            <p class="pe-sms-text">{{ previewSms }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Footer acciones ──────────────────────────────────────────────────── -->
+  <div class="pe-footer-actions">
+    <button class="pe-btn-cancel" (click)="cancelar()">Cancelar</button>
+    <button class="pe-btn-save" (click)="guardar()" [disabled]="isSaving()">
+      <lucide-icon [img]="SaveIcon" class="icon-16"></lucide-icon>
+      {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+    </button>
+  </div>
+
+</div>

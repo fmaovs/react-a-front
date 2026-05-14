@@ -242,3 +242,15 @@ lucide-icon svg { display: block; width: 100%; height: 100%; }
 router-outlet + * {
   animation: slideUp var(--t-slow) both;
 }
+
+/* ── Plantilla Editor Dialog ─────────────────────────────── */
+.pe-dialog-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  max-height: 92vh;
+}
+.pe-dialog-panel .mdc-dialog__surface {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
